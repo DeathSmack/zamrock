@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zamrock by DeathSmack - 8 Bit Music Menu</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            height: 100%;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
+            position: relative;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(46, 52, 64, 0.75); /* Changed opacity to 0.75 */
+            padding: 20px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 5px solid #d8dee9;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 0px 10px 0px rgba(255, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        .menu {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            height: 30px;
+            background-color: #81a1c1;
+            border-radius: 0;
+            margin-left: 10px;
+            margin-bottom: 20px;
+            padding: 5px;
+            border: 2px solid black;
+        }
+
+        .menu.open {
+            display: flex;
+        }
+
+        .menu ul {
+            display: flex;
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+
+        .menu li {
+            margin: 0 10px;
+        }
+
+        .menu a {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #d8dee9;
+            color: #2e3440;
+            font-family: sans-serif;
+            font-size: 14px;
+            border: 2px solid black;
+            border-radius: 5px;
+            text-shadow: 1px 1px black;
+        }
+
+        .menu a:hover {
+            background-color: #81a1c1;
+            color: white;
+            text-shadow: 1px 1px #2e3440;
+        }
+
+        .small {
+            font-size: 12px;
+            text-align: center;
+            color: white;
+        }
+
+        .toggle-menu {
+            display: block;
+            text-align: center;
+            background-color: #81a1c1;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-size: 14px;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            border: 2px solid black;
+            text-shadow: 1px 1px black;
+        }
+
+        .toggle-menu:hover {
+            background-color: #5e81ac;
+            text-shadow: 1px 1px #2e3440;
+        }
+
+        .play-btn {
+            font-size: 20px;
+            background-color: #81a1c1;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            text-align: center;
+            width: 200px;
+            font-family: sans-serif;
+            font-weight: bold;
+            text-shadow: 1px 1px #2e3440;
+        }
+
+        .play-btn:hover {
+            background-color: #5e81ac;
+        }
+
+        .song-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 20px;
+            text-shadow: 1px 1px black;
+            font-family: sans-serif;
+        }
+
+        .time {
+            font-size: 14px;
+            color: #d8dee9;
+            margin-top: 5px;
+            text-shadow: 1px 1px black;
+        }
+
+        @font-face {
+            font-family: "Pixel";
+            src: url("https://fonts.googleapis.com/css?family=Fjalla+One|VT323&display=swap");
+            src: local("Pixel"), local("Pixel-Regular"),
+            url("https://fonts.gstatic.com/s/f/d/d8iD19rTWOyG0UjNK6UZvQ.woff2") format("woff2"),
+            url("https://fonts.gstatic.com/s/f/d/d8iD19rTWOyG0UjNK6cZbg.woff") format("woff");
+            font-weight: normal;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="container">
+        <h1 style="color: #ec5f67">Zamrock</h1>
+        <span class="author">by DeathSmack</span>
+        <div class="toggle-menu" onclick="toggleMenu()">Menu</div>
+        <div class="menu" id="menu">
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Artists</a></li>
+                <li><a href="#">Events</a></li>
+                <li><a href="#">Merchandise</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </div>
+        <div>
+            <audio controls class="play-btn">
+                <source src="https://cdn.discordapp.com/attachments/1043281062660415508/1043288246064533554/Amanaz_Zambia_-_Khala_My_Friend.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <div class="song-name">Khala My Friend - Amanaz Zambia</div>
+            <div class="time">0:00 / 5:24</div>
+        </div>
+    </div>
+    <script>
+        var images = [
+            "https://wallpapercave.com/dwp1x/wp1933959.jpg",
+            "https://wallpapercave.com/dwp1x/wp1933958.jpg",
+            "https://wallpapercave.com/dwp1x/wp1933952.jpg"
+        ];
+
+        // Get a random image from the list
+        var randomIndex = Math.floor(Math.random() * images.length);
+        var backgroundImage = "url('" + images[randomIndex] + "')";
+        document.body.style.backgroundImage = backgroundImage;
+
+        function toggleMenu() {
+            document.getElementById('menu').classList.toggle('open');
+            document.querySelector('.container').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
