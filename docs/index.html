@@ -7,10 +7,8 @@
             margin: 0;
             padding: 0;
             font-family: sans-serif;
-            height: 100%;
-            background-repeat: no-repeat;
+            background: url('https://wallpapercave.com/dwp1x/wp1933959.jpg') no-repeat center center fixed;
             background-size: cover;
-            background-position: center;
             transition: background-image 1s ease-in-out;
             position: relative;
         }
@@ -35,7 +33,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            border: 14px solid #d8dee9; /* Increased border width by another 20% */
+            border: 14px solid #d8dee9;
             border-radius: 5px;
             text-align: center;
             box-shadow: 0px 0px 10px 0px rgba(255, 255, 255, 0.2);
@@ -162,45 +160,34 @@
     </style>
 </head>
 <body>
-    <div class="overlay"></div>
-    <div class="container">
-        <h1 style="color: #ec5f67">Zamrock</h1>
-        <span class="author">by DeathSmack</span>
-        <div class="toggle-menu" onclick="toggleMenu()">Menu</div>
-        <div class="menu" id="menu">
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Artists</a></li>
-                <li><a href="#">Events</a></li>
-                <li><a href="#">Merchandise</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
-        </div>
-        <div>
-            <audio controls class="play-btn">
-                <source src="https://cdn.discordapp.com/attachments/1043281062660415508/1043288246064533554/Amanaz_Zambia_-_Khala_My_Friend.mp3" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-            <div class="song-name">Khala My Friend - Amanaz Zambia</div>
-            <div class="time">0:00 / 5:24</div>
-        </div>
+<div class="overlay"></div>
+<div class="container">
+    <h1 style="color: #ec5f67">Zamrock</h1>
+    <span class="author">by DeathSmack</span>
+    <div class="toggle-menu" onclick="toggleMenu()">Menu</div>
+    <div class="menu" id="menu">
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Artists</a></li>
+            <li><a href="#">Events</a></li>
+            <li><a href="#">Merchandise</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
     </div>
-    <script>
-        var images = [
-            "https://wallpapercave.com/dwp1x/wp1933959.jpg",
-            "https://wallpapercave.com/dwp1x/wp1933958.jpg",
-            "https://wallpapercave.com/dwp1x/wp1933952.jpg"
-        ];
-
-        // Get a random image from the list
-        var randomIndex = Math.floor(Math.random() * images.length);
-        var backgroundImage = "url('" + images[randomIndex] + "')";
-        document.body.style.backgroundImage = backgroundImage;
-
-        function toggleMenu() {
-            document.getElementById('menu').classList.toggle('open');
-            document.querySelector('.container').classList.toggle('open');
-        }
-    </script>
+    <div>
+        <audio controls class="play-btn">
+            <source src="https://cdn.discordapp.com/attachments/1043281062660415508/1043288246064533554/Amanaz_Zambia_-_Khala_My_Friend.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <div class="song-name">Khala My Friend - Amanaz Zambia</div>
+        <div class="time">0:00 / 5:24</div>
+    </div>
+</div>
+<script>
+    function toggleMenu() {
+        document.getElementById('menu').classList.toggle('open');
+        document.querySelector('.container').classList.toggle('open');
+    }
+</script>
 </body>
 </html>
