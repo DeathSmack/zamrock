@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Simple Ghost Pixel Art</title>
+	<style>
+		body {
+			background-color: #333;
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.ghost {
+			width: 1rem;
+			height: 1rem;
+			box-shadow: -1rem -7rem #0e0909, 0 -7rem #0e0909, 1rem -7rem #0e0909,
+						2rem -7rem #0e0909, 3rem -7rem #0e0909, 4rem -7rem #0e0909,
+						-2rem -6rem #0e0909, 3rem -6rem #0e0909, -3rem -5rem #0e0909,
+						3rem -5rem #0e0909, -3rem -4rem #0e0909, -1rem -4rem #0e0909,
+						1rem -4rem #0e0909, 4rem -4rem #0e0909, -3rem -3rem #0e0909,
+						4rem -3rem #0e0909, -6rem -2rem #0e0909, -5rem -2rem #0e0909,
+						-4rem -2rem #0e0909, -1rem -2rem #0e0909, 0 -2rem #0e0909,
+						1rem -2rem #0e0909, 5rem -2rem #0e0909, 6rem -2rem #0e0909,
+						7rem -2rem #0e0909, -6rem -1rem #0e0909, 7rem -1rem #0e0909,
+						-5rem 0 #0e0909, 6rem 0 #0e0909, -4rem 1rem #0e0909,
+						5rem 1rem #0e0909, -4rem 2rem #0e0909, 4rem 2rem #0e0909,
+						-4rem 3rem #0e0909, 4rem 3rem #0e0909, -3rem 4rem #0e0909,
+						4rem 4rem #0e0909, -2rem 5rem #0e0909, 3rem 5rem #0e0909,
+						-1rem 6rem #0e0909, 0 6rem #0e0909, 3rem 6rem #0e0909,
+						1rem 7rem #0e0909, 2rem 7rem #0e0909, 3rem 7rem #0e0909,
+						4rem 7rem #0e0909;
+			animation: moveUpDown 2s infinite;
+			transform-origin: bottom;
+		}
+
+		@keyframes moveUpDown {
+			0% {
+				transform: translateY(0);
+			}
+			50% {
+				transform: translateY(-10px);
+			}
+			100% {
+				transform: translateY(0);
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="ghost"></div>
+</body>
+</html>
