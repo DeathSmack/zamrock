@@ -94,7 +94,7 @@
 <body>
   <div class='wrapper nes-container'>
     <div class='item1'>
-      <audio id="audio-player" controls>
+      <audio controls>
         <source src="your-audio-file.mp3" type="audio/mp3">
         <source src="https://stream.zeno.fm/nadxckdf4youv" type="audio/mp3">
         Your browser does not support the audio tag.
@@ -106,41 +106,29 @@
       </ul>
     </div>
     <div class='item2'>
-      <video id="gif" style="display:none;" alt="random gif" autoplay loop muted></video>
+      <video id="gif" src="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/bg_mp4/1m_out_door_night_0001.mp4" alt="random gif" autoplay loop muted></video>
     </div>
   </div>
   <script>
     const gifUrls = [
-      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/website/bg_img/ezgif-2-28e5b776ac.mp4",
-      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/website/bg_img/ezgif-2-c1d4ba3e32.mp4",
-      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/website/bg_img/ezgif-2-c7ad828168.mp4"
+      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/bg_mp4/1m_out_door_night_0001.mp4",
+      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/bg_mp4/bedroom_dark.mp4",
+      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/bg_mp4/out_door_night_0001.mp4"
     ];
-
-    const audioPlayer = document.getElementById("audio-player");
-    const gifElement = document.getElementById("gif");
 
     // get a random GIF URL from the array and update the video source
     function updateGif() {
       const randomGifUrl = gifUrls[Math.floor(Math.random() * gifUrls.length)];
-      gifElement.src = randomGifUrl;
-      gifElement.style.display = "block";
+      const videoElement = document.getElementById("gif");
+      videoElement.src = randomGifUrl;
     }
-    
-    // start playing GIFs when the audio player starts playing
-    audioPlayer.addEventListener("play", () => {
-      updateGif();
-    });
 
-    // stop playing GIFs when the audio player stops playing
-    audioPlayer.addEventListener("pause", () => {
-      gifElement.style.display = "none";
-    });
+    // initially load a random GIF when the page loads
+    updateGif();
 
     // update the GIF every 5 seconds
     setInterval(() => {
-      if (!audioPlayer.paused) {
-        updateGif();
-      }
+      updateGif();
     }, 5000);
   </script>
 </body>
