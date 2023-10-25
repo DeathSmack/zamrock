@@ -106,7 +106,10 @@
       </ul>
     </div>
     <div class='item2'>
-      <video id="gif" src="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/bg_mp4/1m_out_door_night_0001.mp4" alt="random gif" autoplay loop muted></video>
+      <div style="position: relative;">
+        <video id="gif" src="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/bg_mp4/1m_out_door_night_0001.mp4" alt="random gif" autoplay loop muted></video>
+        <button style="position: absolute; top: 10px; right: 10px;" onclick="toggleFullScreen()">Full Screen</button>
+      </div>
     </div>
   </div>
   <script>
@@ -130,6 +133,17 @@
     setInterval(() => {
       updateGif();
     }, 5000);
+
+    function toggleFullScreen() {
+      const video = document.getElementById("gif");
+      if (!document.fullscreenElement) {
+        video.requestFullscreen().catch(err => {
+          alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
   </script>
 </body>
 </html>
