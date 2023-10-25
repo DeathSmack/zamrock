@@ -72,54 +72,29 @@
       content: "►";
     }
 
-    .item1 ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-    }
-
-    .item1 li {
-      margin: 5px 0;
-    }
-
-    .item1 a {
-      text-decoration: none;
-      font-weight: bold;
-      color: #32a1ce;
-    }
-
-    .item1 a:hover {
-      color: #27819f;
-    }
-
-    .item3 {
-      grid-area: 6 / 17 / 14 / 27;
+    .item2 {
+      grid-area: 6 / 18 / 16 / 26;
       border: solid 8px #32a1ce;
       padding: 10px;
       text-align: center;
       font-size: 24px;
       height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
-    .item4 {
-      grid-area: 18 / 5 / 23 / 20;
-      border: solid 8px #32a1ce;
-      padding: 10px;
-      text-align: center;
-      font-size: 24px;
-      height: 200px;
+    .item2 video {
+      max-width: 100%;
+      max-height: 100%;
     }
   </style>
 </head>
 <body>
   <div class='wrapper nes-container'>
     <div class='item1'>
-      <audio controls>
+      <audio id="audio-player" controls>
         <source src="your-audio-file.mp3" type="audio/mp3">
         <source src="https://stream.zeno.fm/nadxckdf4youv" type="audio/mp3">
         Your browser does not support the audio tag.
@@ -130,8 +105,43 @@
         <li><a href="stream3-url">Stream 3</a></li>
       </ul>
     </div>
-    <div class='item3'>2</div>
-    <div class='item4'>3</div>
+    <div class='item2'>
+      <video id="gif" style="display:none;" alt="random gif" autoplay loop muted></video>
+    </div>
   </div>
+  <script>
+    const gifUrls = [
+      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/website/bg_img/ezgif-2-28e5b776ac.mp4",
+      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/website/bg_img/ezgif-2-c1d4ba3e32.mp4",
+      "https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/website/bg_img/ezgif-2-c7ad828168.mp4"
+    ];
+
+    const audioPlayer = document.getElementById("audio-player");
+    const gifElement = document.getElementById("gif");
+
+    // get a random GIF URL from the array and update the video source
+    function updateGif() {
+      const randomGifUrl = gifUrls[Math.floor(Math.random() * gifUrls.length)];
+      gifElement.src = randomGifUrl;
+      gifElement.style.display = "block";
+    }
+    
+    // start playing GIFs when the audio player starts playing
+    audioPlayer.addEventListener("play", () => {
+      updateGif();
+    });
+
+    // stop playing GIFs when the audio player stops playing
+    audioPlayer.addEventListener("pause", () => {
+      gifElement.style.display = "none";
+    });
+
+    // update the GIF every 5 seconds
+    setInterval(() => {
+      if (!audioPlayer.paused) {
+        updateGif();
+      }
+    }, 5000);
+  </script>
 </body>
 </html>
