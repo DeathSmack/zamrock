@@ -1,0 +1,1 @@
+nMNSC embeds
