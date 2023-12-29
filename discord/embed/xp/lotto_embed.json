@@ -41,7 +41,7 @@
           "id": 126184161,
           "type": 2,
           "style": 2,
-          "label": "Lotto ",
+          "label": "Lotto 30k XP",
           "action_set_id": "860137872"
         }
       ]
@@ -53,7 +53,7 @@
         {
           "type": 1,
           "id": 312832777,
-          "text": "- XP Lotto consists of two drawing types: regular drawings and guaranteed drawings. \n - Regular drawings take place whenever 30 or more XP Lottery tickets have been sold. \n - Guaranteed drawings take place on the last drawing day of the calendar month if no regular drawings have occurred in that month and tickets have been purchased in that month. \n - In short, guaranteed drawings ensure that there is at least one drawing per month as long as a ticket has been purchased that month. \n- The lottery in which the program participates is determined by the highest jackpot available as all other things like odds and price are the same.\n",
+          "text": "XP Lotto\n- XP Lotto consists of two drawing types: regular drawings and guaranteed drawings. \n - Regular drawings take place whenever 30 or more XP Lottery tickets have been sold. \n - Guaranteed drawings take place on the last drawing day of the calendar month if no regular drawings have occurred in that month and tickets have been purchased in that month. \n - In short, guaranteed drawings ensure that there is at least one drawing per month as long as a ticket has been purchased that month. \n- The lottery in which the program participates is determined by the highest jackpot available as all other things like odds and price are the same.\n\nXP Sweepstakes\nSweep consists of two drawings: regular and fauceteers. They operate on the same rules but have different participation costs. Winners are drawn every two weeks (alternating each week).\n\n",
           "public": false
         }
       ]
