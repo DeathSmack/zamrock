@@ -1,23 +1,26 @@
 {
-  "content": "content header",
+  "content": "An offer from our fiends at XP.",
   "tts": false,
   "embeds": [
     {
       "id": 652627557,
-      "title": "Welcome to XP Lotto",
+      "title": " Official XP Lotto & Sweepstakes",
       "description": "a syndicate lottery group dedicated to the success of the XP community.",
       "color": 7334691,
       "footer": {
-        "text": "Read all rules & instructions x2 before sending any coins. No refunds for coins sent in wrong amounts.",
-        "icon_url": "https://raw.githubusercontent.com/DeathSmack/zamrock/main/discord/embed/xp/xp_logo_0001.webp"
+        "text": "Read all rules & instructions x2 before sending any coins. No refunds for coins sent in wrong amounts and/or wrong address."
       },
       "author": {
-        "name": "1"
+        "name": "Welcome to",
+        "icon_url": "https://cdn.discordapp.com/emojis/749525533003612210.webp?size=128&quality=lossless"
       },
       "image": {
         "url": "https://github.com/DeathSmack/zamrock/blob/main/discord/embed/xp/xp_lotto_img.png?raw=true"
       },
-      "fields": []
+      "fields": [],
+      "thumbnail": {
+        "url": "https://github.com/DeathSmack/zamrock/blob/main/discord/embed/k4man1a/nmnsc/kamania_logo_0001_10split.gif?raw=true"
+      }
     }
   ],
   "components": [
@@ -31,9 +34,8 @@
           "style": 2,
           "label": "Overview",
           "emoji": {
-            "id": "1189818350164004895",
-            "name": "apeLove",
-            "animated": true
+            "name": "ℹ️",
+            "animated": false
           },
           "action_set_id": "848438313"
         },
@@ -43,17 +45,59 @@
           "style": 2,
           "label": "Lotto 30k XP",
           "action_set_id": "860137872"
+        },
+        {
+          "id": 432368196,
+          "type": 2,
+          "style": 2,
+          "label": "10k XP",
+          "action_set_id": "675894573"
+        },
+        {
+          "id": 877480429,
+          "type": 2,
+          "style": 2,
+          "label": "100 XP",
+          "action_set_id": "634707776"
+        },
+        {
+          "id": 164932461,
+          "type": 2,
+          "style": 2,
+          "label": "Join XP",
+          "action_set_id": "702927668",
+          "emoji": {
+            "id": "1106667174472466492",
+            "name": "KAMANIA",
+            "animated": false
+          }
         }
       ]
     }
   ],
   "actions": {
+    "634707776": {
+      "actions": []
+    },
+    "675894573": {
+      "actions": []
+    },
+    "702927668": {
+      "actions": [
+        {
+          "id": 818286144,
+          "type": 1,
+          "text": "https://discord.gg/Khd792jx",
+          "public": false
+        }
+      ]
+    },
     "848438313": {
       "actions": [
         {
           "type": 1,
           "id": 312832777,
-          "text": "XP Lotto\n- XP Lotto consists of two drawing types: regular drawings and guaranteed drawings. \n - Regular drawings take place whenever 30 or more XP Lottery tickets have been sold. \n - Guaranteed drawings take place on the last drawing day of the calendar month if no regular drawings have occurred in that month and tickets have been purchased in that month. \n - In short, guaranteed drawings ensure that there is at least one drawing per month as long as a ticket has been purchased that month. \n- The lottery in which the program participates is determined by the highest jackpot available as all other things like odds and price are the same.\n\nXP Sweepstakes\nSweep consists of two drawings: regular and fauceteers. They operate on the same rules but have different participation costs. Winners are drawn every two weeks (alternating each week).\n\n",
+          "text": "**XP Lotto:**\n- **30k XP** per ticket.\n- XP Lotto consists of two drawing types: regular drawings and guaranteed drawings. \n - Regular drawings take place whenever 30 or more XP Lottery tickets have been sold. \n - Guaranteed drawings take place on the last drawing day of the calendar month if no regular drawings have occurred in that month and tickets have been purchased in that month. \n - In short, guaranteed drawings ensure that there is at least one drawing per month as long as a ticket has been purchased that month. \n- The lottery in which the program participates is determined by the highest jackpot available as all other things like odds and price are the same.\n\n\n**XP Sweepstakes:**\n- Sweep consists of two drawings: regular and fauceteers.\n - **10k XP** per ticket for regular sweepstakes.\n - **100 XP** per ticket for Fauceteer sweepstakes. \n- They operate on the same rules but have different participation costs. \n- Winners are drawn every two weeks (alternating each week).\n\n",
           "public": false
         }
       ]
@@ -69,6 +113,6 @@
       ]
     }
   },
-  "username": "Official XP Lotto",
-  "avatar_url": "https://cdn.discordapp.com/emojis/749526193996562432.webp?size=128&quality=lossless"
+  "username": "Kamania's Faucet",
+  "avatar_url": "https://github.com/DeathSmack/zamrock/blob/main/discord/embed/k4man1a/nmnsc/kamania_logo_0001_Thick.gif?raw=true"
 }
