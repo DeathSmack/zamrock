@@ -260,6 +260,22 @@
             }
         }
     </style>
+    <script>
+        // Array of different titles to show as animation
+        var titles = ["24m20ck 24d10", "24m20ck 24d10", "Z4m20ck 24d10", "Z4m20ck R4d10", "Z4mR0ck R4d10", "Z4mR0ck R4di0", "ZamR0ck R4di0", "ZamR0ck R4dio", "ZamRock R4dio","ZamRock Radio","ZamRock Radio","ZamRock Radio"]
+        // Function to change the title periodically
+        function animateTitle() {
+            var currentIndex = 0;
+
+            setInterval(function() {
+                document.title = titles[currentIndex];
+                currentIndex = (currentIndex + 1) % titles.length;
+            }, 1000); // Change title every 1 second (adjust as needed)
+        }
+
+        // Call the function when the page loads
+        window.onload = animateTitle;
+    </script>
 </head>
 <body>
     <div class="overlay"></div>
