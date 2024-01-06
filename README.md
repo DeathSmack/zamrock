@@ -1,12 +1,1 @@
-# zamrock
-hello world!
-
-
-.
-
-
-.
-
-
-.
-Home of ZamRock Projects
+# Home of ZamRock Projects
