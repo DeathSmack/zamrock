@@ -8,7 +8,7 @@ intents.messages = True
 
 bot = commands.Bot(command_prefix='$', intents=intents)
 
-TOKEN = '~~~~'
+TOKEN = 'MTE5MzUzNTM5ODU4MDg1NDgyNQ.GOyBuM.P5F-B1QCLgMtJuiItsw3aG1M87x_UGgAjeIiS0'
 URL = "https://stream.zeno.fm/a10b9oqbgkevv"  # URL to play
 
 @bot.event
@@ -34,7 +34,7 @@ async def play(ctx):
         voice_client = bot.voice_clients[0]
         voice_client.stop()
         voice_client.play(discord.FFmpegPCMAudio(URL))
-        await ctx.send(f'Playing {URL}')
+        await ctx.send('Now playing Zamrock Radio')
     else:
         await ctx.send('Bot is currently playing a URL.')
 
@@ -50,4 +50,4 @@ async def stop(ctx):
 async def test(ctx):
     await ctx.send('Test command received and processed successfully.')
 
-bot.run('~~~')
+bot.run('MTE5MzUzNTM5ODU4MDg1NDgyNQ.GOyBuM.P5F-B1QCLgMtJuiItsw3aG1M87x_UGgAjeIiS0')
