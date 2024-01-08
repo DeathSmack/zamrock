@@ -8,7 +8,7 @@ intents.messages = True
 
 bot = commands.Bot(command_prefix='$', intents=intents)
 
-TOKEN = 'MTE5MzUzNTM5ODU4MDg1NDgyNQ.GOyBuM.P5F-B1QCLgMtJuiItsw3aG1M87x_UGgAjeIiS0'
+TOKEN = '~~~'
 URL = "https://stream.zeno.fm/a10b9oqbgkevv"  # URL to play
 
 @bot.event
@@ -50,4 +50,4 @@ async def stop(ctx):
 async def test(ctx):
     await ctx.send('Test command received and processed successfully.')
 
-bot.run('MTE5MzUzNTM5ODU4MDg1NDgyNQ.GOyBuM.P5F-B1QCLgMtJuiItsw3aG1M87x_UGgAjeIiS0')
+bot.run('~~~')
