@@ -1,5 +1,3 @@
-Certainly! Here are 10 additional commands for the nano text editor, ordered by most frequently used, along with the updated cheat sheet:
-
 - **Open a file for editing** [nano filename]
   - Opens the specified file for editing.
 
@@ -59,5 +57,3 @@ Certainly! Here are 10 additional commands for the nano text editor, ordered by 
 
 - **Replace a text string** [Alt + R]
   - Replaces a text string within the file.
-
-I hope this updated list is helpful!
