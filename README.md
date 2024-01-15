@@ -9,7 +9,7 @@
 
 ## Discover Rare ZamRock Music
 
-> Discover the unique fusion of traditional Zambian sounds with rock, psychedelic, and funk influences. ZamRock emerged in the late 1960s and gained popularity in Zambia during the 1970s. Pioneering bands such as WITCH (We Intend To Cause Havoc), Ngozi Family, and Musi-O-Tunya blended local rhythms, guitar-driven melodies, and politically charged lyrics. ZamRock represented an era of social and cultural change in Zambia, reflecting the spirit of independence and expressing disillusionment with post-colonial realities. Let ZamRock inspire and fascinate music enthusiasts worldwide.
+> Discover the unique fusion of traditional Zambian sounds with rock, psychedelic, and funk influences. ZamRock emerged in the late 1960s and gained popularity in Zambia during the 1970s. It is a unique fusion of rock music with traditional Zambian sounds and influences from Western psychedelic rock and funk. Bands like WITCH (We Intend To Cause Havoc), Ngozi Family, and Musi-O-Tunya were pioneers in this genre, blending local rhythms, guitar-driven melodies, and political lyrics. ZamRock represented an era of social and cultural change in Zambia, mirroring the spirit of independence and expressing disillusionment with post-colonial realities. Its sound continues to inspire and fascinate music enthusiasts worldwide.
 
 ## Join Our Community
 
