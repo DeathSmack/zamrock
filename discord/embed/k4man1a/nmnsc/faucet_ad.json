@@ -1,0 +1,26 @@
+{
+   "fields":[
+      {
+         "name":":Start Here :point_right:  Buy a promoter role from Gshop",
+         "value":"> * View and buy roles in <#1180472265180201050> with these commands. \n>  - View available roles; `/gshop rolelist `\n>  - Buy the **@promoter lvl1** you like most with;  `/gshop buyrole `\n>  - Then post invites in <#1196337397034647584> and they will be reposted to faucet ch.",
+         "inline":false
+      },
+      {
+         "name":"Rules",
+         "value":"> - Blacklisted Servers\n>  - Phishing\n>  - Pump/Dump\n>  - Fake Jobs\n>  - NSFW",
+         "inline":false
+      }
+   ],
+   "description":"# Promote Your Project!\n> :fire: Gshop is Now Open  :tada: \n> - Support Kamania's Faucet!\n> - Spam your invites and Twitter bs here..  :thinking: \n>  - Sale's profits are used directly by faucets.\n>  - Prices vary by demand, so check often for best price. :money_with_wings: \n",
+   "thumbnail":{
+      "url":"https://raw.githubusercontent.com/DeathSmack/zamrock/main/discord/embed/k4man1a/nmnsc/kamania_logo_0001_10split.gif"
+   },
+   "image":{
+      "url":"https://cdn.discordapp.com/attachments/1034394654029926400/1196830688574447706/Advertise_With_Us_GIF_for_Web.gif"
+   },
+   "author":{
+      "name":"#Ad Space now Available in Faucet channel.",
+      "icon_url":"https://i.pinimg.com/originals/d9/1f/b5/d91fb59edc2188d3dd019be4a533b3e6.gif"
+   },
+   "color":4289797
+}
