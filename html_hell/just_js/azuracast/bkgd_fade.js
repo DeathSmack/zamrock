@@ -15,9 +15,27 @@ body {
 
 const body = document.querySelector('body');
 const backgrounds = [
-  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_006.jpg?raw=true',
-  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_015.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_001.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_002.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_003.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_004.jpg?raw=true',
   'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_005.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_006.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_007.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_008.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_009.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_010.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_011.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_012.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_013.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_014.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_015.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_016.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_017.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_018.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_019.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_020.jpg?raw=true',
+  'https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_021.jpg?raw=true',
   // Add as many paths to images as you want
 ];
 
