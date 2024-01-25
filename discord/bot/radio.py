@@ -3,6 +3,7 @@ from discord.ext import commands
 import time
 import aiohttp
 import asyncio
+from config import BOT_TOKEN
 
 intents = discord.Intents.all()
 intents.guilds = True
@@ -11,7 +12,7 @@ intents.messages = True
 
 bot = commands.Bot(command_prefix='$', intents=intents)
 
-TOKEN = '`'
+bot_token = BOT_TOKEN
 URL = "https://stream.zeno.fm/a10b9oqbgkevv"
 
 bot.reboot_timer = None
@@ -49,14 +50,14 @@ async def play(ctx):
 
     # Get the voice channel of the user who invoked the command
     voice_channel = ctx.author.voice.channel
-    
+
     # Connect to the voice channel or move to if already connected to another channel
     voice_client = ctx.voice_client
     if voice_client is None:
         voice_client = await voice_channel.connect()
     elif voice_client.channel != voice_channel:
         await voice_client.move_to(voice_channel)
-    
+
     # Continue with playing the audio if URL is valid
     if URL is None:
         await ctx.send("The URL is not valid.")
@@ -75,7 +76,7 @@ async def rejoin(ctx):
     if ctx.author.voice is None or ctx.author.voice.channel is None:
         await ctx.send('You are not in a voice channel...')
         return
-    
+
     # Get the voice channel of the user who invoked the command
     voice_channel = ctx.author.voice.channel
 
@@ -116,4 +117,4 @@ async def test(ctx):
     await ctx.send('Test command received and processed successfully.')
 
 if __name__ == '__main__':
-    bot.run('`')
+     bot.run(bot_token)
