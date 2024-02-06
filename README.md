@@ -2,7 +2,7 @@
 <a href="https://deathsmack.com/" target="_blank"><img src="https://github.com/DeathSmack/zamrock/blob/main/graphics/website_ss_0001_120.png?raw=true" alt="GitHub Logo"></a>
 # Welcome to ZamRock
 
-> This is a search and rescue mission for Zamrock music, oppressed musicians. 
+> This is a search and rescue mission for Zamrock music, and all oppressed musicians. 
 > * Our mission at ZamRock is to discover and promote rare and yet to be found ZamRock music. 
 
 ## Discover Rare Music
