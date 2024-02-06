@@ -19,10 +19,11 @@
 > * Website support...
 
 ## Official Links
+> * Website - https://deathsmack.com
 > * Best UI player - https://zamrock.deathsmack.com/public/zamrock
 > * Radio link, [playable most places} - https://zamrock.deathsmack.com/listen/zamrock/radio.mp3
 > * Discord Server - https://discord.gg/E3wyMTP4
-> * Revolt Server - Not yet public, dm for invite if you suppose to be there...
+> * Revolt Server - Not yet public, dm for invite if you supposed to be there...
 
 
 Thanks for reading my md too!
