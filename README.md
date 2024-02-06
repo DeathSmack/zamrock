@@ -1,3 +1,5 @@
+# Home of ZamRock Projects
+<a href="https://deathsmack.com/" target="_blank"><img src="https://github.com/DeathSmack/zamrock/blob/main/graphics/website_ss_0001_120.png?raw=true" alt="GitHub Logo"></a>
 # Welcome to ZamRock
 
 > This is a search and rescue mission for Zamrock music, oppressed musicians. 
