@@ -18,6 +18,6 @@
 > * Find latest releases, news, and updates.
 > * Website support...
 
-Thanks for reading my md too!
+Thanks for reading my readme.md too!
 -DS
 
