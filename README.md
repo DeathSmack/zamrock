@@ -3,11 +3,12 @@
 > This is a search and rescue mission for Zamrock music, oppressed musicians. 
 > * Our mission at ZamRock is to discover and promote rare and yet to be found ZamRock music. 
 >> 
->> Zamrock is a musical genre that emerged and gained popularity in Zambia during the early 1970s.[1] It has been described as a fusion of traditional African music and psychedelic rock, garage rock, hard rock, blues and funk, taking influence from popular bands like Black Sabbath, Blue Cheer, the Rolling Stones, Deep Purple, and Cream.
+
 
 ## Discover Rare ZamRock Music
 
-> Discover the unique fusion of traditional Zambian sounds with rock, psychedelic, and funk influences. ZamRock emerged in the late 1960s and gained popularity in Zambia during the 1970s. It is a unique fusion of rock music with traditional Zambian sounds and influences from Western psychedelic rock and funk. Bands like WITCH (We Intend To Cause Havoc), Ngozi Family, and Musi-O-Tunya were pioneers in this genre, blending local rhythms, guitar-driven melodies, and political lyrics. ZamRock represented an era of social and cultural change in Zambia, mirroring the spirit of independence and expressing disillusionment with post-colonial realities. Its sound continues to inspire and fascinate music enthusiasts worldwide.
+> * Zamrock is a musical genre that emerged and gained popularity in Zambia during the early 1970s.[1] It has been described as a fusion of traditional African music and psychedelic rock, garage rock, hard rock, blues and funk, taking influence from popular bands like Black Sabbath, Blue Cheer, the Rolling Stones, Deep Purple, and Cream.
+> * Discover the unique fusion of traditional Zambian sounds with rock, psychedelic, and funk influences. ZamRock emerged in the late 1960s and gained popularity in Zambia during the 1970s. It is a unique fusion of rock music with traditional Zambian sounds and influences from Western psychedelic rock and funk. Bands like WITCH (We Intend To Cause Havoc), Ngozi Family, and Musi-O-Tunya were pioneers in this genre, blending local rhythms, guitar-driven melodies, and political lyrics. ZamRock represented an era of social and cultural change in Zambia, mirroring the spirit of independence and expressing disillusionment with post-colonial realities. Its sound continues to inspire and fascinate music enthusiasts worldwide.
 
 ## Join Our Community
 
