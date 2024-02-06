@@ -18,7 +18,7 @@
 > * Find latest releases, news, and updates.
 > * Website support...
 
-# Official Links
+## Official Links
 > * Best UI player - https://zamrock.deathsmack.com/public/zamrock
 > * Radio link, [playable most places} - https://zamrock.deathsmack.com/listen/zamrock/radio.mp3
 > * Discord Server - https://discord.gg/E3wyMTP4
