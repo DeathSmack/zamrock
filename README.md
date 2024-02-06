@@ -3,7 +3,7 @@
 # Welcome to ZamRock
 
 > This is a search and rescue mission for Zamrock music, and all oppressed musicians. 
-> * Our mission at ZamRock is to discover and promote rare and yet to be found ZamRock music. 
+> * We are currently looking for any Zamrock source material... all format's should apply.
 
 ## Discover Rare Music
 
