@@ -1,7 +1,8 @@
 # Welcome to ZamRock
 
-> Our mission at ZamRock is to discover and promote rare and yet to be found ZamRock music. 
->> This is a search and rescue mission for Zamrock music, oppressed musicians. 
+> This is a search and rescue mission for Zamrock music, oppressed musicians. 
+> * Our mission at ZamRock is to discover and promote rare and yet to be found ZamRock music. 
+>> 
 >> Zamrock is a musical genre that emerged and gained popularity in Zambia during the early 1970s.[1] It has been described as a fusion of traditional African music and psychedelic rock, garage rock, hard rock, blues and funk, taking influence from popular bands like Black Sabbath, Blue Cheer, the Rolling Stones, Deep Purple, and Cream.
 
 ## Discover Rare ZamRock Music
