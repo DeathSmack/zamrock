@@ -6,12 +6,7 @@
 # Welcome to ZamRock Projects
 
 > Our mission at ZamRock Projects is to discover and promote rare and yet to be found ZamRock music. This is a search and rescue mission for Zamrock music. 
->>
-
-
-
-
-As such, we provide radio services, including 24/7 internet radio, podcasts, videos, small but good cdn achives, website & Discord/Revolt server, with bridge!
+>> As such, we provide radio services, including 24/7 internet radio, podcasts, videos, small but good cdn achives, website & Discord/Revolt server, with bridge!
 
 ## Discover Rare ZamRock Music
 
