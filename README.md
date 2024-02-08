@@ -23,6 +23,7 @@
 > * Best UI player - https://zamrock.deathsmack.com/public/zamrock
 > * Radio link, [playable most places} - https://zamrock.deathsmack.com/listen/zamrock/radio.mp3
 > * Discord Server - https://discord.gg/E3wyMTP4
+> * BlueSky - https://bsky.app/profile/zamrock.bsky.social
 > * Revolt Server - Not yet public, dm for invite if you supposed to be there...
 
 
