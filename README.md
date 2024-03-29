@@ -25,7 +25,7 @@
 > * Odysee - https://odysee.com/@ZamRock:2
 > * Discord Server - https://discord.gg/E3wyMTP4
 > * BlueSky - https://bsky.app/profile/zamrock.bsky.social
-> * Revolt Server - Not yet public, dm for invite if you supposed to be there...
+> * Revolt Server - Not yet public, dm for invite if you supposed to be there....
 
 
 Thanks for reading my md too!
