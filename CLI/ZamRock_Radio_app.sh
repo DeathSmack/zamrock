@@ -122,7 +122,7 @@ ffplay -nodisp -autoexit "$AUDIO_URL" -loglevel info 2> "$TMP_LOG" &
 PID=$!
 
 # Print instructions
-echo -e "${YELLOW}Press 'p' to pause/unpause, 'r' to start/cancel the Ramen Noodle Timer, 'a' to archive the audio, 'h' for help, or 'q' to quit.${NC}"
+echo -e "${YELLOW}Press 'p' to pause/unpause, 'r' to start/cancel the Ramen Noodle Timer, 'a' to archive the audio, 'w' for the website link, 'h' for help, or 'q' to quit.${NC}"
 
 # Initialize variables
 LAST_STREAM_TITLE=""
@@ -181,9 +181,16 @@ show_help() {
     echo -e "${YELLOW}p${NC}  - Pause or unpause the audio stream"
     echo -e "${YELLOW}r${NC}  - Start or cancel the Ramen Noodle Timer"
     echo -e "${YELLOW}a${NC}  - Archive the audio stream (select duration)"
+    echo -e "${YELLOW}w${NC}  - Show ZamRock.net link"
     echo -e "${YELLOW}h${NC}  - Show this help menu"
     echo -e "${YELLOW}q${NC}  - Quit the script"
     echo -e "${YELLOW}---------------------------------${NC}"
+}
+
+# Function to display website link
+show_website_link() {
+    echo -e "${YELLOW}ZamRock.net${NC}"
+    echo -e "${YELLOW}Visit us at: https://zamrock.net/${NC}"
 }
 
 # Start the input loop for user commands
@@ -216,6 +223,8 @@ while kill -0 $PID 2>/dev/null; do
         prompt_record_duration
     elif [ "$key" == "h" ]; then
         show_help
+    elif [ "$key" == "w" ]; then
+        show_website_link
     elif [ "$key" == "q" ]; then
         echo
         break
