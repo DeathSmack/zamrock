@@ -28,6 +28,6 @@
 > * Revolt Server - Not yet public, dm for invite if you supposed to be there....
 
 
-Thanks for reading my md too!!
+Thanks for reading my md too!
 -DS
 
