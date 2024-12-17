@@ -20,7 +20,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: main
-          LINTER_RULES: "shellcheck"  # Set the linter rules to only use ShellCheck
+          LINTER_RULES: "shellcheck"
 
   build:
     runs-on: ubuntu-latest
@@ -32,19 +32,19 @@ jobs:
       - name: Set up FFmpeg
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg  # Install FFmpeg (ffplay is included)
+          sudo apt-get install -y ffmpeg
 
       - name: Run Tests
         run: |
-          chmod +x test_script.sh  # Make the test script executable
-          ./test_script.sh  # Execute the test script
+          chmod +x CLI/test_script.sh  # Update the path to indicate the 'CLI' directory
+          ./CLI/test_script.sh  # Execute the script from the 'CLI' directory
 
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag: ${{ github.ref }}  # Use the current tag from GitHub context
-          files: path/to/your_script.sh  # Adjust the path to your script
+          tag: ${{ github.ref }}
+          files: path/to/your_script.sh  # Adjust this path as needed
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
