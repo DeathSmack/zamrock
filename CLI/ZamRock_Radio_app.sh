@@ -44,7 +44,7 @@ create_recording_directory() {
 }
 
 # Function to prompt user to select recording duration
-prompt_record_duration() {
+select_record_duration() {
     echo -e "${CYAN}Select a recording duration:${NC}"
     echo -e "${YELLOW}a) 30 minutes (1800 seconds)${NC}"
     echo -e "${YELLOW}b) 1 hour (3600 seconds)${NC}"
@@ -61,10 +61,11 @@ prompt_record_duration() {
         *) echo -e "${RED}Invalid choice. Recording for 30 minutes by default.${NC}"; duration=1800 ;;
     esac
 
+    # Start the recording
     record_audio "$duration"
 }
 
-# Function to record specified seconds of audio with a countdown timer
+# Function to record specified seconds of audio
 record_audio() {
     local duration=$1
     local date
@@ -78,6 +79,9 @@ record_audio() {
     ffmpeg -t "${duration}" -i "$AUDIO_URL" -acodec copy "$file_path" -y -loglevel quiet &
     FFMPEG_PID=$!
 
+    # Update status to indicate recording is active
+    RECORDING_ACTIVE=true
+
     # Countdown timer while recording
     for ((i=duration; i>0; i--)); do
         echo -ne "${YELLOW}Recording... $i seconds remaining...${NC}\r"
@@ -88,6 +92,7 @@ record_audio() {
     # Wait for ffmpeg to finish
     wait $FFMPEG_PID
     echo -e "${YELLOW}Recording saved to: $file_path${NC}"
+    RECORDING_ACTIVE=false  # Set the recording status to inactive
 }
 
 # Function to start a timer for Ramen Noodle Timer
@@ -122,7 +127,7 @@ ffplay -nodisp -autoexit "$AUDIO_URL" -loglevel info 2> "$TMP_LOG" &
 PID=$!
 
 # Print instructions
-echo -e "${YELLOW}Press 'p' to pause/unpause, 'r' to start/cancel the Ramen Noodle Timer, 'a' to archive the audio, 'w' for the website link, 'h' for help, or 'q' to quit.${NC}"
+echo -e "${YELLOW}Press 'h' for help commands.${NC}"
 
 # Initialize variables
 LAST_STREAM_TITLE=""
@@ -130,6 +135,8 @@ LAST_GENRE=""
 PAUSED=false  # Track the paused state
 TIMER_CANCELLED=0  # Track if timer is cancelled
 TIMER_RUNNING=false  # Track if the timer is currently running
+RECORDING_ACTIVE=false  # Track if recording is active
+FFMPEG_PID=0  # Initialize FFmpeg PID
 
 # Create the recording directory
 create_recording_directory
@@ -180,17 +187,21 @@ show_help() {
     echo -e "${YELLOW}---------------------------------${NC}"
     echo -e "${YELLOW}p${NC}  - Pause or unpause the audio stream"
     echo -e "${YELLOW}r${NC}  - Start or cancel the Ramen Noodle Timer"
-    echo -e "${YELLOW}a${NC}  - Archive the audio stream (select duration)"
-    echo -e "${YELLOW}w${NC}  - Show ZamRock.net link"
+    echo -e "${YELLOW}a${NC}  - Archive the audio stream (select duration or cancel recording)"
+    echo -e "${YELLOW}i${NC}  - Information about ZamRock"
     echo -e "${YELLOW}h${NC}  - Show this help menu"
     echo -e "${YELLOW}q${NC}  - Quit the script"
     echo -e "${YELLOW}---------------------------------${NC}"
 }
 
-# Function to display website link
-show_website_link() {
-    echo -e "${YELLOW}ZamRock.net${NC}"
-    echo -e "${YELLOW}Visit us at: https://zamrock.net/${NC}"
+# Function to display information about ZamRock
+show_info() {
+    echo -e "${YELLOW}Learn more about ZamRock:${NC}"
+    echo -e "${CYAN}---------------------------------${NC}"
+    echo -e "${YELLOW}Apply for membership for the radio at:${NC} ${GREEN}https://zamrock.net/${NC}"
+    echo -e "${YELLOW}Chat with us on Discord at:${NC} ${GREEN}https://discord.gg/tHDfcWj9${NC}"
+    echo -e "${YELLOW}Follow us for news and updates at:${NC} ${GREEN}https://bsky.app/profile/zamrock.bsky.social${NC}"
+    echo -e "${CYAN}---------------------------------${NC}"
 }
 
 # Start the input loop for user commands
@@ -220,11 +231,26 @@ while kill -0 $PID 2>/dev/null; do
             echo -e "${YELLOW}Timer was canceled by user :(${NC}"
         fi
     elif [ "$key" == "a" ]; then
-        prompt_record_duration
+        if ! $RECORDING_ACTIVE; then
+            # Prompt for recording duration if not currently recording
+            select_record_duration
+        else
+            # Confirm cancellation of recording if already recording
+            read -n 1 -s -p "Recording is active. Do you want to cancel the recording? (y/n): " cancel_choice
+            echo
+            if [ "$cancel_choice" == "y" ]; then
+                echo -e "${YELLOW}Canceling recording...${NC}"
+                kill $FFMPEG_PID 2>/dev/null  # Kill the ffmpeg process
+                wait $FFMPEG_PID 2>/dev/null  # Wait for the process to clean up
+                RECORDING_ACTIVE=false  # Set recording status to inactive
+            else
+                echo -e "${YELLOW}Continuing the recording.${NC}"
+            fi
+        fi
+    elif [ "$key" == "i" ]; then
+        show_info
     elif [ "$key" == "h" ]; then
         show_help
-    elif [ "$key" == "w" ]; then
-        show_website_link
     elif [ "$key" == "q" ]; then
         echo
         break
