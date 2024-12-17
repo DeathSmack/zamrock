@@ -29,11 +29,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up FFmpeg and FFplay
+      - name: Set up FFmpeg
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          sudo apt-get install -y ffplay
+          sudo apt-get install -y ffmpeg  # Install FFmpeg (ffplay is included)
 
       - name: Run Tests
         run: |
@@ -45,7 +44,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag: ${{ github.ref }}  # Use the current tag from GitHub context
-          files: path/to/your_script.sh
+          files: path/to/your_script.sh  # Adjust the path to your script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
