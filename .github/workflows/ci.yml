@@ -1,0 +1,42 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*  # This triggers the workflow on any new tag that starts with 'v'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run Shellcheck
+        uses: ludovicchabant/action-shellcheck@v1
+        
+      - name: Set up FFmpeg and FFplay
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffplay
+
+      - name: Run Tests
+        run: |
+          chmod +x test_script.sh  # Make the test script executable
+          ./test_script.sh  # Execute the test script
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag: ${{ github.ref }}  # Use the current tag from GitHub context
+          files: path/to/your_script.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify on success
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Build completed successfully!"}' https://discord.com/api/webhooks/1318259406269317250/NQHI8wXWY1ZF4UQoB-Gox2X2mW7pxXELuXXPKGQCtE5wZn8TvRk730nf3y37ufU9dwGG
