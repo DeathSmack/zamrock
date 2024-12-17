@@ -15,8 +15,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run Shellcheck
-        uses: atc0005/action-shellcheck@v1  # Updated action
+      - name: Run ShellCheck
+        uses: rulingjason/shellcheck-action@v1  # Updated action
 
       - name: Set up FFmpeg and FFplay
         run: |
