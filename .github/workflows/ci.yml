@@ -5,18 +5,19 @@ on:
     branches:
       - main
     tags:
-      - v*  # This triggers the workflow on any new tag that starts with 'v'
+      - v*  # Triggers on tags starting with 'v'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Explicit version
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Run Shellcheck
-        uses: ludovicchabant/action-shellcheck@v1
-        
+        uses: atc0005/action-shellcheck@v1  # Updated action
+
       - name: Set up FFmpeg and FFplay
         run: |
           sudo apt-get update
