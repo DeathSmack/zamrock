@@ -9,18 +9,23 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Explicit version
-    
+    runs-on: ubuntu-22.04  # Specify the operating system
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
       - name: Run ShellCheck
-        uses: rulingjason/shellcheck-action@v1  # Updated action
+        run: |
+          shellcheck your-script.sh  # Replace this with the actual path to your script
 
       - name: Set up FFmpeg and FFplay
         run: |
-          sudo apt-get update
           sudo apt-get install -y ffmpeg
           sudo apt-get install -y ffplay
 
