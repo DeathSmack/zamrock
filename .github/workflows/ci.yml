@@ -8,24 +8,30 @@ on:
       - v*  # Triggers on tags starting with 'v'
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04  # Specify the operating system
+  lint:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install ShellCheck
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck
+      - name: Run GitHub Super Linter
+        uses: github/super-linter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BRANCH: main
+          LINTER_RULES: "shellcheck"  # Set the linter rules to only use ShellCheck
 
-      - name: Run ShellCheck
-        run: |
-          shellcheck your-script.sh  # Replace this with the actual path to your script
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Set up FFmpeg and FFplay
         run: |
+          sudo apt-get update
           sudo apt-get install -y ffmpeg
           sudo apt-get install -y ffplay
 
