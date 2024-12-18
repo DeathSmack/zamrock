@@ -3,11 +3,15 @@
 # Check for required command-line utilities
 command -v ffplay >/dev/null 2>&1 || { echo "ffplay is required but it's not installed. Aborting." >&2; exit 1; }
 command -v ffmpeg >/dev/null 2>&1 || { echo "ffmpeg is required but it's not installed. Aborting." >&2; exit 1; }
+command -v curl >/dev/null 2>&1 || { echo "curl is required but it's not installed. Aborting." >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "jq is required but it's not installed. Aborting." >&2; exit 1; }
 
 # Audio URL to play
 AUDIO_URL="https://zamrock.deathsmack.com/listen/zamrock/test_stream_7e335"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RECORD_DIR="$SCRIPT_DIR/ZamRock Archive"  # Directory to save recordings
+UPLOAD_URL="https://zamrock.net/wp-json/upload/v1/mp3/"  # WordPress upload endpoint
+UPLOAD_LOG="$SCRIPT_DIR/uploaded_files.log"  # Log of uploaded files
 
 # Define colors
 RED='\033[0;31m'    # Color for StreamTitle (when it changes)
@@ -46,41 +50,45 @@ create_recording_directory() {
 # Function to prompt user to select recording duration
 select_record_duration() {
     echo -e "${CYAN}Select a recording duration:${NC}"
-    echo -e "${YELLOW}a) 30 minutes (1800 seconds)${NC}"
-    echo -e "${YELLOW}b) 1 hour (3600 seconds)${NC}"
-    echo -e "${YELLOW}c) 2 hours (7200 seconds)${NC}"
-    echo -e "${YELLOW}d) 4 hours (14400 seconds)${NC}"
-    read -n 1 -s -p "Please choose (a/b/c/d): " choice
+    echo -e "${YELLOW}a) 10 seconds (10 seconds) for testing${NC}"
+    echo -e "${YELLOW}b) 30 minutes (1800 seconds)${NC}"
+    echo -e "${YELLOW}c) 1 hour (3600 seconds)${NC}"
+    echo -e "${YELLOW}d) 2 hours (7200 seconds)${NC}"
+    echo -e "${YELLOW}e) 4 hours (14400 seconds)${NC}"
+
+    read -n 1 -s -p "Please choose (a/b/c/d/e): " choice
     echo  # Move to the next line after user's input
 
     case $choice in
-        a) duration=1800 ;;  # 30 minutes
-        b) duration=3600 ;;  # 1 hour
-        c) duration=7200 ;;  # 2 hours
-        d) duration=14400 ;; # 4 hours
-        *) echo -e "${RED}Invalid choice. Recording for 30 minutes by default.${NC}"; duration=1800 ;;
+        a) duration=10 ;;  # 10 seconds
+        b) duration=1800 ;;  # 30 minutes
+        c) duration=3600 ;;  # 1 hour
+        d) duration=7200 ;;  # 2 hours
+        e) duration=14400 ;; # 4 hours
+        *) echo -e "${RED}Invalid choice. Recording for 10 seconds by default.${NC}"; duration=10 ;;
     esac
 
+    # Ask user if they want to upload after recording
+    read -n 1 -s -p "Would you like to upload the recording after it's done? (y/n): " upload_choice
+    echo  # Move to the next line after user's input
+
     # Start the recording
-    record_audio "$duration"
+    record_audio "$duration" "$upload_choice"
 }
 
 # Function to record specified seconds of audio
 record_audio() {
     local duration=$1
-    local date
-    date=$(date +"%Y-%m-%d")  # Format: YYYY-MM-DD
-    local file_path
-    file_path="$RECORD_DIR/ZamRock_${duration}s_${date}.mp3"  # Update file naming to include duration and date
+    local upload_choice=$2
+    local date=$(date +"%Y-%m-%d")  # Format: YYYY-MM-DD
+    local timestamp=$(date +"%H-%M-%S")  # Format: HH-MM-SS
+    local file_path="$RECORD_DIR/ZamRock_${duration}s_${date}_${timestamp}.mp3"  # Update the file naming to include duration, date, and timestamp
 
     echo -e "${YELLOW}Archiving audio for ${duration} seconds...${NC}"
 
     # Run ffmpeg in the background
     ffmpeg -t "${duration}" -i "$AUDIO_URL" -acodec copy "$file_path" -y -loglevel quiet &
     FFMPEG_PID=$!
-
-    # Update status to indicate recording is active
-    RECORDING_ACTIVE=true
 
     # Countdown timer while recording
     for ((i=duration; i>0; i--)); do
@@ -92,7 +100,38 @@ record_audio() {
     # Wait for ffmpeg to finish
     wait $FFMPEG_PID
     echo -e "${YELLOW}Recording saved to: $file_path${NC}"
-    RECORDING_ACTIVE=false  # Set the recording status to inactive
+
+    # Prompt user for upload after recording if they opted for it
+    if [ "$upload_choice" == "y" ]; then
+        upload_recording "$file_path"
+    else
+        echo -e "${YELLOW}You can upload the file later if you want.${NC}"
+    fi
+}
+
+# Function to upload the recorded audio to the server
+upload_recording() {
+    local file_path="$1"
+
+    # Check if the file exists
+    if [[ -f "$file_path" ]]; then
+        echo -e "${YELLOW}Uploading the recorded audio to the server...${NC}"
+
+        # Using curl to upload the file in binary mode
+        response=$(curl -s -X POST "$UPLOAD_URL" -F "file=@$file_path" -H "Content-Type: multipart/form-data")
+
+        # Check the response for success or error
+        if [[ $(echo "$response" | jq -r '.success // false') == "true" ]]; then
+            local filename=$(basename "$file_path")
+            echo -e "${GREEN}File ${filename} successfully added to ZamRock radio archives!${NC}"
+            echo -e "${GREEN}Thank you for your contribution!${NC}"
+            echo "$(basename "$file_path")" >> "$UPLOAD_LOG"  # Log the uploaded file
+        else
+            echo -e "${RED}Upload failed: $(echo "$response" | jq -r '.message // "No message available"')${NC}"
+        fi
+    else
+        echo -e "${RED}File not found for uploading: $file_path${NC}"
+    fi
 }
 
 # Function to start a timer for Ramen Noodle Timer
@@ -104,12 +143,6 @@ start_noodle_timer() {
         echo -ne "${YELLOW}Timer: $duration seconds remaining...${NC}\r"
         sleep 1
         ((duration--))
-
-        # Check if the timer was cancelled
-        if [ $TIMER_CANCELLED -eq 1 ]; then
-            echo -e "\n${YELLOW}Timer was canceled by user :(${NC}"
-            return
-        fi
     done
 
     echo -e "\n${YELLOW}Timer completed! Ready to eat noodles!${NC}"
@@ -135,8 +168,6 @@ LAST_GENRE=""
 PAUSED=false  # Track the paused state
 TIMER_CANCELLED=0  # Track if timer is cancelled
 TIMER_RUNNING=false  # Track if the timer is currently running
-RECORDING_ACTIVE=false  # Track if recording is active
-FFMPEG_PID=0  # Initialize FFmpeg PID
 
 # Create the recording directory
 create_recording_directory
@@ -231,22 +262,7 @@ while kill -0 $PID 2>/dev/null; do
             echo -e "${YELLOW}Timer was canceled by user :(${NC}"
         fi
     elif [ "$key" == "a" ]; then
-        if ! $RECORDING_ACTIVE; then
-            # Prompt for recording duration if not currently recording
-            select_record_duration
-        else
-            # Confirm cancellation of recording if already recording
-            read -n 1 -s -p "Recording is active. Do you want to cancel the recording? (y/n): " cancel_choice
-            echo
-            if [ "$cancel_choice" == "y" ]; then
-                echo -e "${YELLOW}Canceling recording...${NC}"
-                kill $FFMPEG_PID 2>/dev/null  # Kill the ffmpeg process
-                wait $FFMPEG_PID 2>/dev/null  # Wait for the process to clean up
-                RECORDING_ACTIVE=false  # Set recording status to inactive
-            else
-                echo -e "${YELLOW}Continuing the recording.${NC}"
-            fi
-        fi
+        select_record_duration  # Prompt for recording duration
     elif [ "$key" == "i" ]; then
         show_info
     elif [ "$key" == "h" ]; then
@@ -258,11 +274,7 @@ while kill -0 $PID 2>/dev/null; do
 done
 
 # Handle graceful exit
-if [[ -n "$STREAM_NAME" ]]; then
-    echo -e "${YELLOW}Thank you for listening to ${STREAM_NAME}!${NC}"
-else
-    echo -e "${YELLOW}Thank you for listening!${NC}"
-fi
+echo -e "${YELLOW}Thank you for listening!${NC}"
 
 # Clean up
 kill $PID 2>/dev/null
