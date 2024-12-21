@@ -1,4 +1,4 @@
-#Breakdown of Functionality
+Breakdown of Functionality
 Live-Aware Crossfading:
 
 CopyReplit
