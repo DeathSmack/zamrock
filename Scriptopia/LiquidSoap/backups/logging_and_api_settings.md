@@ -86,29 +86,30 @@ azuracast_api_url = "http://127.0.0.1:6010/api/internal/1/liquidsoap"
 azuracast_api_key = "api key here"
 ```
 The script defines the base URL for the AzuraCast API which Liquidsoap will use to communicate with the AzuraCast server. An API key is also defined for authorization. This key should be kept secure, as it provides access to the API.
-Function to Call AzuraCast API:
+### Function to Call AzuraCast API:
 
-CopyReplit
+``` bash
 def azuracast_api_call(~timeout=2.0, url, payload) =
-    ...
+```
 This function constructs a POST request to the AzuraCast API.
-full_url: Combines the base URL and a specific endpoint.
-log(): Logs the API request details.
-http.post(): Sends the request with headers indicating the content type, user agent, and API key.
-Error Handling: Catches any errors during the request process and logs them, returning "false" on failure.
-Media Protocol Definition
+- full_url: Combines the base URL and a specific endpoint.
+- log(): Logs the API request details.
+- http.post(): Sends the request with headers indicating the content type, user agent, and API key.
+- Error Handling: Catches any errors during the request process and logs them, returning "false" on failure.
+### Media Protocol Definition
 Media Protocol for Liquidsoap:
-CopyReplit
+``` bash
 station_media_dir = "/var/azuracast/stations/zamrock/media"
 def azuracast_media_protocol(~rlog=_,~maxtime=_,arg) =
     ["#{station_media_dir}/#{arg}"]
+```
 This part defines how Liquidsoap will access media files stored in the AzuraCast media directory:
-azuracast_media_protocol: A custom protocol function that generates a file path based on the provided arg.
-protocol.add(...): Registers this protocol with Liquidsoap, allowing users to refer to media files using a media:uri syntax.
-Summary
+- azuracast_media_protocol: A custom protocol function that generates a file path based on the provided arg.
+- protocol.add(...): Registers this protocol with Liquidsoap, allowing users to refer to media files using a media:uri syntax.
+## Summary
 In summary, this script segment:
 
-Configures Liquidsoap settings and logging parameters.
-Initializes relevant parameters that track the state of the system and interactions with the API.
-Defines a method for communicating with the AzuraCast API for dynamic media-serving and track management.
-Customizes how Liquidsoap interacts with audio files from the AzuraCast media directory.
+- Configures Liquidsoap settings and logging parameters.
+- Initializes relevant parameters that track the state of the system and interactions with the API.
+- Defines a method for communicating with the AzuraCast API for dynamic media-serving and track management.
+- Customizes how Liquidsoap interacts with audio files from the AzuraCast media directory.
