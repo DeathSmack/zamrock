@@ -1,1 +1,1 @@
-Original Scipts.
+Backup Liquidsoap configuration for Zamrock station.
