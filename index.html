@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Icecast Stream Player</title>
+  <!-- Link to external CSS file -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Hidden audio element that plays the stream -->
+  <audio id="streamPlayer" controls autoplay style="display:none;">
+    <source src="https://zamrock.deathsmack.com/listen/zamrock/remix.mp3" type="audio/mpeg" />
+    Your browser does not support the audio element.
+  </audio>
+  
+  <!-- Your existing controls -->
+  <div class="media-controls">
+    <div class="media-buttons">
+      <button class="back-button media-button" label="back">
+        <i class="fas fa-step-backward button-icons"></i>
+        <span class="button-text milli">Back</span>
+      </button>
+      <button class="rewind-button media-button" label="rewind">
+        <i class="fas fa-backward button-icons"></i>
+        <span class="button-text milli">Rewind</span>
+      </button>
+      <button class="play-button media-button" label="play">
+        <i class="fas fa-play button-icons delta"></i>
+        <span class="button-text milli">Play</span>
+      </button>
+      <button class="fast-forward-button media-button" label="fast forward">
+        <i class="fas fa-forward button-icons"></i>
+        <span class="button-text milli">Forward</span>
+      </button>
+      <button class="skip-button media-button" label="skip">
+        <i class="fas fa-step-forward button-icons"></i>
+        <span class="button-text milli">Skip</span>
+      </button>
+    </div>
+    <div class="media-progress">
+      <div class="progress-bar-wrapper progress">
+        <div class="progress-bar"></div>
+      </div>
+      <!-- Time display elements -->
+      <div class="progress-time-current milli" id="currentTime">00:00</div>
+      <div class="progress-time-total milli" id="totalTime">Loading...</div>
+    </div>
+  </div>
+
+<script>
+  const audio = document.getElementById('streamPlayer');
+  const currentTimeElem = document.getElementById('currentTime');
+  const totalTimeElem = document.getElementById('totalTime');
+
+  // When metadata is loaded, set total duration
+  audio.addEventListener('loadedmetadata', () => {
+    totalTimeElem.textContent = formatTime(audio.duration);
+  });
+
+  // Update current time as the stream plays
+  audio.addEventListener('timeupdate', () => {
+    currentTimeElem.textContent = formatTime(audio.currentTime);
+  });
+
+  // Function to format seconds into MM:SS
+  function formatTime(seconds) {
+    if (isNaN(seconds) || !isFinite(seconds)) return "00:00"; // handle live streams
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return (
+      String(minutes).padStart(2, '0') + ':' + String(secs).padStart(2, '0')
+    );
+  }
+</script>
+</body>
+</html>
