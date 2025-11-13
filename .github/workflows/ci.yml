@@ -10,7 +10,9 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
+      statuses: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -24,7 +26,6 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
