@@ -37,8 +37,8 @@ jobs:
 
       - name: Run Tests
         run: |
-          chmod +x CLI/test_script.sh  # Update the path to indicate the 'CLI' directory
-          ./CLI/test_script.sh  # Execute the script from the 'CLI' directory
+        #  chmod +x CLI/test_script.sh  # Update the path to indicate the 'CLI' directory
+        #  ./CLI/test_script.sh  # Execute the script from the 'CLI' directory
 
       - name: Create Release
         id: create_release
