@@ -1,40 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="icon" href="https://github.com/DeathSmack/zamrock/blob/main/graphics/favicon.gif?raw=true" type="image/gif" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZamRock Radio</title>
+    <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif">
     <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="overlay"></div>
     <div class="container">
-        <h1 style="color: #ec5f67; margin-bottom: 1px;margin-top: 5px; margin-left: 7px;margin-right: 5px;">ZamRock</h1>
-        <span class="author" style="font-size: 15px; margin-bottom: 15px; margin-top: 1px;">by deathsmack</span>
-        <div class="toggle-menu" style="margin-bottom: 10px; margin-top: 15px;" onclick="toggleMenu()">Menu</div>
+        <h1>ZamRock Radio</h1>
+        <div class="toggle-menu" onclick="toggleMenu()">Menu</div>
         <div class="menu" id="menu">
             <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about/">About</a></li>
-                <li><a href="#" onclick="toggleSubMenu(this)">Partners ▼</a>
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="about/index.html">About</a></li>
+                <li>
+                    <a href="#" onclick="toggleSubMenu(this)">Partners ▼</a>
                     <ul class="submenu">
                         <li><a href="https://kamania.com/" target="_blank">Kamania</a></li>
                     </ul>
                 </li>
-                <li><a href="#" onclick="toggleSubMenu(this)">Contact ▼</a>
-                    <ul class="submenu">
-                        <li><a href="https://discord.gg/bge4Cxte" target="_blank">Discord</a></li>
-                        <li><a href="https://top.gg/servers/1029282531339665418" target="_blank">Top.gg</a></li>
-                    </ul>
-                </li>
+                <li><a href="contact/index.html">Contact</a></li>
             </ul>
         </div>
-        <div>
-            <audio controls class="play-btn" style="margin-top: 15px;" >
-                <source src="https://zamrock.deathsmack.com/listen/zamrock/radio.mp3">
-                Your browser does not support the audio element.
-            </audio>
-        </div>
+        <audio id="radioStream" preload="none">
+            <source src="https://stream.zeno.fm/4q9w8tqu1khvv" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <button id="playButton" class="play-btn">Play</button>
     </div>
     <script src="js/main.js"></script>
 </body>

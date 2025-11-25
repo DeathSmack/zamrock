@@ -1,104 +1,99 @@
-// Array of different titles to show as animation
-var titles = ["24m20ck 24d10", "Z4m20ck 24d10", "Z4m20ck R4d10", "Z4mR0ck R4d10", "Z4mR0ck R4di0", "ZamR0ck R4di0", "ZamR0ck R4dio", "ZamRock R4dio","ZamRock Radio","ZamRock Radio.","ZamRock Radio..","ZamRock Radio...","ZamRock Radio..!","ZamRock Radio.!","ZamRock Radio!","ZamRock Radio;!","ZamRock Radio ;!","ZamRock Radio ;P","ZamRock Radio", "ZamRock Radio", "ZamRock R4dio", "ZamR0ck R4dio", "ZamR0ck R4di0", "Z4mR0ck R4di0", "Z4mR0ck R4d10", "Z4m20ck R4d10", "Z4m20ck 24d10", "24m20ck 24d10"];
-
-// Function to change the title periodically with random interval
-function animateTitle() {
-    var currentIndex = 0;
-
-    function changeTitle() {
-        document.title = titles[currentIndex];
-        currentIndex = (currentIndex + 1) % titles.length;
-
-        var interval = Math.floor(Math.random() * 2000) + 500; // Generate random interval between 500 and 2000 milliseconds
-        setTimeout(changeTitle, interval);
-    }
-
-    changeTitle();
-}
-
-// Set random background image from the array
-var images = [
-    "https://wallpapercave.com/dwp1x/wp1933959.jpg",
-    "https://wallpapercave.com/dwp1x/wp1933958.jpg",
-    "https://wallpapercave.com/dwp1x/wp1933952.jpg",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_001.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_002.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_003.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_004.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_005.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_006.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_007.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_008.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_009.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_010.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_011.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_012.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_013.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_014.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_015.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_016.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_017.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_018.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_019.jpg?raw=true",
-    "https://github.com/DeathSmack/zamrock/blob/main/graphics/website_bg/website_bg_020.jpg?raw=true",
+// Title animation
+const titleElement = document.querySelector('h1');
+const originalTitle = document.title;
+let titleIndex = 0;
+const titleFrames = [
+    'ZamRock Radio',
+    'ZamRock Radio.',
+    'ZamRock Radio..',
+    'ZamRock Radio...',
+    'ZamRock Radio....'
 ];
 
-// Set initial random background
-var randomIndex = Math.floor(Math.random() * images.length);
-var backgroundImage = "url('" + images[randomIndex] + "')";
-document.body.style.backgroundImage = backgroundImage;
+function animateTitle() {
+    titleIndex = (titleIndex + 1) % titleFrames.length;
+    const newTitle = titleFrames[titleIndex];
+    if (titleElement) titleElement.textContent = newTitle;
+    document.title = newTitle;
+    setTimeout(animateTitle, 500);
+}
 
-// Change background every 30 seconds
-setInterval(function() {
-    randomIndex = Math.floor(Math.random() * images.length);
-    backgroundImage = "url('" + images[randomIndex] + "')";
-    document.body.style.backgroundImage = backgroundImage;
-}, 30000);
+// Initialize title animation
+setTimeout(animateTitle, 500);
 
-// Toggle menu function
+// Background images array with direct URLs
+const backgroundImages = [
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/1.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/2.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/3.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/4.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/5.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/6.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/7.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/8.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/9.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/10.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/11.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/img/website_bg/12.jpg'
+];
+
+// Function to set background image
+function setRandomBackground() {
+    if (backgroundImages.length === 0) return;
+    const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+    document.body.style.backgroundImage = `url('${randomImage}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
+}
+
+// Set initial background and start rotating every 20 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    setRandomBackground();
+    setInterval(setRandomBackground, 20000); // Change every 20 seconds
+});
+
+// Menu toggle functionality
 function toggleMenu() {
-    document.getElementById('menu').classList.toggle('open');
-    document.querySelector('.container').classList.toggle('open');
-    // Close all active submenus when menu is closed
-    var activeSubmenus = document.querySelectorAll('.submenu.active');
-    for (var i = 0; i < activeSubmenus.length; i++) {
-        activeSubmenus[i].classList.remove('active');
+    const menu = document.getElementById('menu');
+    if (menu) menu.classList.toggle('open');
+}
+
+// Submenu toggle functionality
+function toggleSubMenu(element) {
+    if (!element) return;
+    event.preventDefault();
+    const submenu = element.nextElementSibling;
+    if (submenu && submenu.classList.contains('submenu')) {
+        submenu.classList.toggle('active');
     }
 }
 
-// Toggle submenu function
-function toggleSubMenu(link) {
-    var submenu = link.nextElementSibling;
-    var isActive = submenu.classList.contains('active');
-    // Close all active submenus
-    var activeSubmenus = document.querySelectorAll('.submenu.active');
-    for (var i = 0; i < activeSubmenus.length; i++) {
-        var activeSubmenu = activeSubmenus[i];
-        if (activeSubmenu !== submenu) {
-            activeSubmenu.classList.remove('active');
-        }
-    }
-    if (isActive) {
-        submenu.classList.remove('active');
-    } else {
-        submenu.classList.add('active');
-    }
-}
-
-// Close menu when clicking outside
+// Close submenus when clicking outside
 document.addEventListener('click', function(event) {
-    var menu = document.getElementById('menu');
-    var toggleBtn = document.querySelector('.toggle-menu');
-    if (!menu.contains(event.target) && event.target !== toggleBtn) {
-        menu.classList.remove('open');
-        document.querySelector('.container').classList.remove('open');
-        // Close all active submenus
-        var activeSubmenus = document.querySelectorAll('.submenu.active');
-        for (var i = 0; i < activeSubmenus.length; i++) {
-            activeSubmenus[i].classList.remove('active');
-        }
+    if (!event.target.matches('.menu a')) {
+        const submenus = document.querySelectorAll('.submenu');
+        submenus.forEach(submenu => {
+            submenu.classList.remove('active');
+        });
     }
 });
 
-// Start title animation when the page loads
-window.onload = animateTitle;
+// Initialize audio player
+document.addEventListener('DOMContentLoaded', function() {
+    const audio = document.getElementById('radioStream');
+    const playButton = document.getElementById('playButton');
+    
+    if (audio && playButton) {
+        playButton.addEventListener('click', function() {
+            if (audio.paused) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+                playButton.textContent = 'Stop';
+            } else {
+                audio.pause();
+                playButton.textContent = 'Play';
+            }
+        });
+    }
+});
