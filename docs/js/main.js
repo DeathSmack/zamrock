@@ -1,27 +1,51 @@
-// Title animation
+// Original title animation
 const titleElement = document.querySelector('h1');
-const originalTitle = document.title;
+const originalTitle = "ZamRock Radio";
 let titleIndex = 0;
 const titleFrames = [
-    'ZamRock Radio',
-    'ZamRock Radio.',
-    'ZamRock Radio..',
-    'ZamRock Radio...',
-    'ZamRock Radio....'
+    "24m20ck 24d10",
+    "Z4m20ck 24d10",
+    "Z4m20ck R4d10",
+    "Z4mR0ck R4d10",
+    "Z4mR0ck R4di0",
+    "ZamR0ck R4di0",
+    "ZamR0ck R4dio",
+    "ZamRock R4dio",
+    "ZamRock Radio",
+    "ZamRock Radio.",
+    "ZamRock Radio..",
+    "ZamRock Radio...",
+    "ZamRock Radio..!",
+    "ZamRock Radio.!",
+    "ZamRock Radio!",
+    "ZamRock Radio;!",
+    "ZamRock Radio ;!",
+    "ZamRock Radio ;P",
+    "ZamRock Radio",
+    "ZamRock Radio",
+    "ZamRock R4dio",
+    "ZamR0ck R4dio",
+    "ZamR0ck R4di0",
+    "Z4mR0ck R4di0",
+    "Z4mR0ck R4d10",
+    "Z4m20ck R4d10",
+    "Z4m20ck 24d10",
+    "24m20ck 24d10"
 ];
 
 function animateTitle() {
     titleIndex = (titleIndex + 1) % titleFrames.length;
     const newTitle = titleFrames[titleIndex];
     if (titleElement) titleElement.textContent = newTitle;
-    document.title = newTitle;
-    setTimeout(animateTitle, 500);
+    document.title = originalTitle; // Keep the tab title consistent
+    const delay = Math.floor(Math.random() * 500) + 200; // Random delay between 200-700ms
+    setTimeout(animateTitle, delay);
 }
 
 // Initialize title animation
-setTimeout(animateTitle, 500);
+setTimeout(animateTitle, 1000);
 
-// Background images array with direct URLs
+// Rest of the code remains the same...
 const backgroundImages = [
     'https://raw.githubusercontent.com/DeathSmack/zamrock/main/graphics/website_bg/1.jpg',
     'https://raw.githubusercontent.com/DeathSmack/zamrock/main/graphics/website_bg/2.jpg',
