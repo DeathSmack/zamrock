@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - ZamRock Radio</title>
+    <link rel="icon" href="https://github.com/DeathSmack/zamrock/blob/main/graphics/favicon.gif?raw=true" type="image/gif">
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .about-content {
+            background-color: rgba(46, 52, 64, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+            line-height: 1.8;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .team-member {
+            background-color: rgba(59, 66, 82, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .team-member:hover {
+            transform: translateY(-5px);
+        }
+        
+        .team-member img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #81a1c1;
+        }
+        
+        .team-member h3 {
+            color: #81a1c1;
+            margin: 10px 0 5px;
+        }
+        
+        .team-role {
+            color: #d8dee9;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body class="about-page">
+    <div class="overlay"></div>
+    
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title">About ZamRock</h1>
+            <button class="mobile-menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="index.html" class="active">About</a></li>
+                    <li><a href="../contact/index.html">Contact</a></li>
+                    <li><a href="../index.html#partners">Partners</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="section">
+            <div class="container">
+                <div class="about-content">
+                    <h2>Our Story</h2>
+                    <p>ZamRock Radio was born from a passion for underground music and a desire to create a platform where unique sounds and creative expression could thrive. Founded in 2023, we've grown from a small community project to a vibrant hub for music lovers and creators alike.</p>
+                    
+                    <h2>Our Mission</h2>
+                    <p>We're dedicated to showcasing the best in underground music, supporting independent artists, and building a community where creativity knows no bounds. Our goal is to provide a space where both established and emerging artists can share their work with the world.</p>
+                    
+                    <h2>Meet the Team</h2>
+                    <div class="team-grid">
+                        <div class="team-member">
+                            <img src="https://via.placeholder.com/150" alt="Team Member">
+                            <h3>DeathSmack</h3>
+                            <div class="team-role">Founder & Lead Developer</div>
+                            <p>Passionate about music and technology, bringing the vision of ZamRock to life.</p>
+                        </div>
+                        <!-- Add more team members as needed -->
+                    </div>
+                    
+                    <h2>Join Our Community</h2>
+                    <p>We're always looking for passionate individuals to join our team or contribute to our community. Whether you're an artist, developer, or just someone who loves music, there's a place for you at ZamRock Radio.</p>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <a href="../contact/" class="btn btn-primary">Get in Touch</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ZamRock Radio</h3>
+                    <p>Underground sounds and community since 2023</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="index.html">About</a></li>
+                        <li><a href="../contact/">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Discord</a>
+                        <a href="#" class="social-link">Twitter</a>
+                        <a href="#" class="social-link">Instagram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ZamRock Radio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+</body>
+</html>

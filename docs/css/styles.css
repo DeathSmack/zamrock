@@ -1,0 +1,156 @@
+/* Base Styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: 'Press Start 2P', sans-serif;
+}
+
+body {
+    background: url('../assets/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    transition: background-image 1s ease-in-out;
+    position: relative;
+    color: #d8dee9;
+}
+
+/* Overlay */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 0;
+}
+
+/* Container */
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(46, 52, 64, 0.85);
+    padding: 30px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 15px solid #d8dee9;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    max-width: 800px;
+    width: 80%;
+}
+
+/* Navigation */
+.nav-menu {
+    margin: 20px 0;
+    z-index: 2;
+}
+
+.nav-menu ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.nav-menu a {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #81a1c1;
+    color: #2e3440;
+    text-decoration: none;
+    border: 2px solid #2e3440;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.nav-menu a:hover {
+    background-color: #5e81ac;
+    color: #eceff4;
+    transform: translateY(-2px);
+}
+
+/* Content Sections */
+.section {
+    margin: 30px 0;
+    width: 100%;
+}
+
+.section h2 {
+    color: #81a1c1;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #81a1c1;
+    color: #2e3440;
+    text-decoration: none;
+    border: 2px solid #2e3440;
+    border-radius: 5px;
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 10px;
+}
+
+.btn:hover {
+    background-color: #5e81ac;
+    color: #eceff4;
+    transform: translateY(-2px);
+}
+
+/* Typography */
+h1 {
+    font-size: 3em;
+    color: #81a1c1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+}
+
+p {
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+    
+    .nav-menu ul {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 1s ease-in;
+}

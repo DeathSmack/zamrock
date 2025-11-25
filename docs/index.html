@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="icon" href="https://github.com/DeathSmack/zamrock/blob/main/graphics/favicon.gif?raw=true" type="image/gif" />
-    
-    <title>Zamrock by DeathSmack</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZamRock Radio - Home</title>
+    <link rel="icon" href="https://github.com/DeathSmack/zamrock/blob/main/graphics/favicon.gif?raw=true" type="image/gif">
     <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <style>
+    <link rel="stylesheet" href="css/styles.css">
         body, html {
             margin: 0;
             padding: 0;
@@ -285,7 +286,101 @@
         window.onload = animateTitle;
 </script>
 </head>
-<body>
+<body class="home-page">
+    <div class="overlay"></div>
+    
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title">ZamRock Radio</h1>
+            <button class="mobile-menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="about/index.html">About</a></li>
+                    <li><a href="contact/index.html">Contact</a></li>
+                    <li><a href="#partners">Partners</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="hero">
+            <div class="container">
+                <h2>Welcome to ZamRock Radio</h2>
+                <p>Your ultimate destination for the best in underground music and community.</p>
+                <div class="cta-buttons">
+                    <a href="#listen" class="btn btn-primary">Listen Now</a>
+                    <a href="about/" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="listen" class="section">
+            <div class="container">
+                <h2>Listen Live</h2>
+                <div class="player-container">
+                    <audio id="radio-player" controls>
+                        <source src="#" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div class="now-playing">
+                        <h3>Now Playing:</h3>
+                        <p id="current-track">Loading track information...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="partners" class="section">
+            <div class="container">
+                <h2>Our Partners</h2>
+                <div class="partners-grid">
+                    <div class="partner-card">
+                        <h3>Partner 1</h3>
+                        <p>Description of partner and their contribution to the community.</p>
+                    </div>
+                    <div class="partner-card">
+                        <h3>Partner 2</h3>
+                        <p>Description of partner and their contribution to the community.</p>
+                    </div>
+                    <!-- Add more partner cards as needed -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ZamRock Radio</h3>
+                    <p>Underground sounds and community since 2023</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about/">About</a></li>
+                        <li><a href="contact/">Contact</a></a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Discord</a>
+                        <a href="#" class="social-link">Twitter</a>
+                        <a href="#" class="social-link">Instagram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ZamRock Radio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
     <div class="overlay"></div>
     <div class="container">
         <h1 style="color: #ec5f67; margin-bottom: 1px;margin-top: 5px; margin-left: 7px;margin-right: 5px;">ZamRock</h1>
