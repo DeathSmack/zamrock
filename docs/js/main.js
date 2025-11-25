@@ -41,7 +41,6 @@ function animateTabTitle() {
     document.title = titles[currentTitleIndex];
     currentTitleIndex = (currentTitleIndex + 1) % titles.length;
 
-    // Random interval between 500ms and 2500ms
     const interval = Math.floor(Math.random() * 2000) + 500;
     setTimeout(animateTabTitle, interval);
 }
@@ -54,7 +53,7 @@ if (headerElement) {
     headerElement.textContent = headerText;
 }
 
-// Background images array (relative paths from docs/index.html)
+// Background images array
 const backgroundImages = [
     'img/website_bg/website_bg_001.jpg?raw=true',
     'img/website_bg/website_bg_002.jpg?raw=true',
@@ -88,67 +87,35 @@ function setRandomBackground() {
     document.body.style.backgroundRepeat = 'no-repeat';
 }
 
-// Initialize background rotation
-document.addEventListener('DOMContentLoaded', () =&gt; {
+document.addEventListener('DOMContentLoaded', () => {
     setRandomBackground();
     setInterval(setRandomBackground, 20000);
-});
 
-// Menu toggle
-function toggleMenu(event) {
-    if (event) event.stopPropagation();
-    const menu = document.getElementById('menu');
-    if (menu) {
-        menu.classList.toggle('open');
-        if (!menu.classList.contains('open')) {
-            document.querySelectorAll('.submenu').forEach(s =&gt; s.classList.remove('active'));
-        }
-    }
-}
-
-// Submenu toggle
-function toggleSubMenu(element) {
-    if (!element) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const submenu = element.nextElementSibling;
-    if (submenu && submenu.classList.contains('submenu')) {
-        submenu.classList.toggle('active');
-    }
-}
-
-// Close submenus when clicking outside
-document.addEventListener('click', (event) =&gt; {
-    const menu = document.getElementById('menu');
-    const toggleBtn = document.querySelector('.toggle-menu');
-    if (!menu.contains(event.target) && event.target !== toggleBtn) {
-        menu.classList.remove('open');
-        document.querySelectorAll('.submenu').forEach(s =&gt; s.classList.remove('active'));
-    }
-});
-
-// Audio player controls
-document.addEventListener('DOMContentLoaded', () =&gt; {
     const audio = document.getElementById('radioStream');
     const playButton = document.getElementById('playButton');
+    const volumeSlider = document.getElementById('volumeSlider');
 
-    if (audio && playButton) {
-        // Try to auto-play muted
-        audio.play().catch(() =&gt; { /* ignore errors */ });
+    if (audio && playButton && volumeSlider) {
+        // Initialize volume
+        audio.volume = volumeSlider.value / 100;
 
-        // Toggle play/stop
-        playButton.addEventListener('click', () =&gt; {
+        // Play/pause toggle
+        playButton.addEventListener('click', () => {
             if (audio.paused) {
-                audio.muted = false;
-                audio.play().then(() =&gt; {
+                audio.play().then(() => {
                     playButton.textContent = 'Stop';
-                }).catch(() =&gt; {
-                    // fallback if needed
+                }).catch(() => {
+                    // handle errors if needed
                 });
             } else {
                 audio.pause();
                 playButton.textContent = 'Play';
             }
+        });
+
+        // Adjust volume
+        volumeSlider.addEventListener('input', () => {
+            audio.volume = volumeSlider.value / 100;
         });
     }
 });

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>ZamRock Radio</title>
-    <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif">
-    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif"/>
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
     <div class="overlay"></div>
@@ -21,9 +21,11 @@
             </ul>
         </div>
         <div class="player-container">
+            <!-- Audio element for streaming -->
+            <audio id="radioStream" src="https://yourstreamurl.com/stream.mp3" crossorigin="anonymous"></audio>
             <button id="playButton" class="play-btn">Play</button>
             <div class="volume-container">
-                <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+                <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider" />
             </div>
         </div>
     </div>
