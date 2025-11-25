@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - ZamRock Radio</title>
+    <link rel="icon" href="https://github.com/DeathSmack/zamrock/blob/main/graphics/favicon.gif?raw=true" type="image/gif">
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+        
+        .contact-info, .contact-form {
+            background-color: rgba(46, 52, 64, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+        }
+        
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #4c566a;
+            border-radius: 5px;
+            background-color: #3b4252;
+            color: #d8dee9;
+            font-family: 'Press Start 2P', sans-serif;
+            font-size: 12px;
+        }
+        
+        .contact-form textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        
+        .contact-form button {
+            background-color: #81a1c1;
+            color: #2e3440;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', sans-serif;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .contact-form button:hover {
+            background-color: #5e81ac;
+        }
+        
+        .contact-method {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .contact-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            color: #81a1c1;
+        }
+        
+        .contact-details h3 {
+            margin: 0 0 5px 0;
+            color: #81a1c1;
+        }
+        
+        .contact-details p, .contact-details a {
+            margin: 0;
+            color: #d8dee9;
+            text-decoration: none;
+        }
+        
+        .contact-details a:hover {
+            color: #81a1c1;
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="contact-page">
+    <div class="overlay"></div>
+    
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title">Contact Us</h1>
+            <button class="mobile-menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../about/index.html">About</a></li>
+                    <li><a href="index.html" class="active">Contact</a></li>
+                    <li><a href="../index.html#partners">Partners</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="section">
+            <div class="container">
+                <h2>Get In Touch</h2>
+                <p>Have questions, suggestions, or just want to say hello? We'd love to hear from you!</p>
+                
+                <div class="contact-container">
+                    <div class="contact-info">
+                        <h2>Contact Information</h2>
+                        <p>Feel free to reach out to us through any of the following channels:</p>
+                        
+                        <div class="contact-method">
+                            <div class="contact-icon">✉️</div>
+                            <div class="contact-details">
+                                <h3>Email</h3>
+                                <a href="mailto:contact@zamrock.radio">contact@zamrock.radio</a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="contact-icon">💬</div>
+                            <div class="contact-details">
+                                <h3>Discord</h3>
+                                <a href="https://discord.gg/zamrock" target="_blank">Join our server</a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="contact-icon">🐦</div>
+                            <div class="contact-details">
+                                <h3>Twitter</h3>
+                                <a href="https://twitter.com/zamrockradio" target="_blank">@zamrockradio</a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="contact-icon">📱</div>
+                            <div class="contact-details">
+                                <h3>Instagram</h3>
+                                <a href="https://instagram.com/zamrockradio" target="_blank">@zamrockradio</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-form">
+                        <h2>Send Us a Message</h2>
+                        <form id="contactForm" onsubmit="event.preventDefault(); submitContactForm();">
+                            <div class="form-group">
+                                <input type="text" id="name" name="name" placeholder="Your Name" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="email" name="email" placeholder="Your Email" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="subject" name="subject" placeholder="Subject" required>
+                            </div>
+                            <div class="form-group">
+                                <textarea id="message" name="message" placeholder="Your Message" required></textarea>
+                            </div>
+                            <button type="submit">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="map-container" style="margin-top: 40px;">
+                    <h2>Find Us</h2>
+                    <div style="height: 300px; background-color: #3b4252; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #d8dee9;">
+                        Interactive Map Coming Soon
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ZamRock Radio</h3>
+                    <p>Underground sounds and community since 2023</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="../about/">About</a></li>
+                        <li><a href="index.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Discord</a>
+                        <a href="#" class="social-link">Twitter</a>
+                        <a href="#" class="social-link">Instagram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ZamRock Radio. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script>
+        function submitContactForm() {
+            // In a real implementation, you would send the form data to a server
+            const name = document.getElementById('name').value;
+            alert(`Thank you, ${name}! Your message has been sent. We'll get back to you soon.`);
+            document.getElementById('contactForm').reset();
+        }
+    </script>
+</body>
+</html>
