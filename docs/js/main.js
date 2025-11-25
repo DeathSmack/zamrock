@@ -39,11 +39,14 @@ function animateTitle() {
     if (titleElement) {
         titleElement.textContent = titleFrames[titleIndex];
     }
-    document.title = originalTitle; // Keep tab title consistent
+    // Update the browser tab title to match the animated title
+    document.title = titleFrames[titleIndex];
+
     const delay = Math.floor(Math.random() * 500) + 200; // 200-700ms
     setTimeout(animateTitle, delay);
 }
-// Start the title animation after a delay
+
+// Start the title animation after 1 second
 setTimeout(animateTitle, 1000);
 
 // Background images array (relative paths from docs/index.html)
