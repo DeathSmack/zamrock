@@ -19,13 +19,18 @@
 > * Website support...
 
 ## Official Links
-> * Website - https://deathsmack.com
+> * Website - https://zamrock.net
+> * Matrix - https://matrix.to/#/#zamrock:unredacted.org
+> * Mastodon - https://musicworld.social/@ZamRock
+> * SimpleX - Limited acesss please request a link for alhpa
+> * BlueSky - https://bsky.app/profile/zamrock.bsky.social
+> * Discord Server - https://discord.gg/TGNSc9kTjR
+> * Revolt Server - https://rvlt.gg/93GKeS0d
+
 > * Best UI player - https://zamrock.deathsmack.com/public/zamrock
 > * Radio link, [playable most places} - https://zamrock.deathsmack.com/listen/zamrock/radio.mp3
-> * Odysee - https://odysee.com/@ZamRock:2
-> * Discord Server - https://discord.gg/E3wyMTP4
-> * BlueSky - https://bsky.app/profile/zamrock.bsky.social
-> * Revolt Server - Not yet public, dm for invite if you supposed to be there....
+> * Odysee - https://odysee.com/@ZamRock:2 
+
 
 
 Thanks for reading my md too!!
