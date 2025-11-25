@@ -20,25 +20,15 @@
                 <li><a href="contact/index.html">Contact</a></li>
             </ul>
         </div>
-        <audio id="radioStream" preload="auto" autoplay muted loop>
-            <source src="https://zamrock.deathsmack.com/listen/zamrock/radio.mp3" type="audio/mpeg" />
-            Your browser does not support the audio element.
-        </audio>
-        <button id="playButton" class="play-btn">Play</button>
-    </div>
-    <script src="js/main.js"></script>
-</body>
-</html>        <button id="playButton" class="play-btn">Play</button>
-        <div id="volumeContainer" class="volume-container">
-            <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
-        </div>
-    </div>
-    <script src="js/main.js"></script>
-</body>
-</html>
-        <button id="playButton" class="play-btn">Play</button>
-        <div id="volumeContainer" class="volume-container">
-            <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+        <div class="player-container">
+            <audio id="radioStream" preload="none">
+                <source src="https://zamrock.deathsmack.com/listen/zamrock/radio.mp3" type="audio/mpeg" />
+                Your browser does not support the audio element.
+            </audio>
+            <button id="playButton" class="play-btn">Play</button>
+            <div id="volumeContainer" class="volume-container">
+                <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+            </div>
         </div>
     </div>
     <script src="js/main.js"></script>
