@@ -24,6 +24,11 @@ body, html {
     overflow-x: hidden;
     color: var(--text-color);
     background-color: #000;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    transition: background-image 1s ease-in-out;
 }
 
 /* Overlay */
@@ -53,6 +58,7 @@ body, html {
 /* Menu Styles */
 .menu {
     margin: 20px 0;
+    transition: all 0.3s ease;
 }
 
 .menu ul {
@@ -124,7 +130,6 @@ body, html {
     font-size: 12px;
     margin-bottom: 15px;
     border: 2px solid var(--border-color);
-    text-shadow: 1px 1px black;
 }
 
 /* Play Button */
@@ -147,7 +152,7 @@ body, html {
     background-color: var(--accent-color);
 }
 
-/* Responsive Styles */
+/* Mobile styles */
 @media (max-width: 768px) {
     .container {
         width: 95%;
@@ -156,31 +161,39 @@ body, html {
     }
     
     .menu ul {
-        flex-direction: column;
         display: none;
+        flex-direction: column;
+        width: 100%;
     }
     
     .menu.open ul {
         display: flex;
-        flex-direction: column;
         animation: fadein 0.3s ease-in-out;
     }
     
     .toggle-menu {
         display: block;
+        width: 100%;
+    }
+    
+    .menu li {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .menu a {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .submenu {
         position: static;
-        background-color: transparent;
-        border: none;
-        padding: 5px 0 0 15px;
-        margin-top: 5px;
+        width: 100%;
         box-shadow: none;
-    }
-    
-    .submenu a {
-        background-color: var(--bg-color);
+        border: none;
+        padding: 10px 0 0 0;
+        margin: 0;
     }
 }
 
