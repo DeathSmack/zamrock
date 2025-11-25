@@ -1,6 +1,6 @@
 // Static header text
-const headerElement = document.querySelector('h1');
-const headerText = "ZamRock Radio";
+// const headerElement = document.querySelector('h1');
+// const headerText = "ZamRock Radio";
 
 // Array of titles for tab animation
 const titles = [
