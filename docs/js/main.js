@@ -53,6 +53,37 @@ if (headerElement) {
     headerElement.textContent = headerText;
 }
 
+// Mobile menu toggle function
+function toggleMenu(event) {
+    if (event) event.preventDefault();
+    const menu = document.querySelector('.nav-menu');
+    if (menu) {
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+}
+
+// Close menu when clicking outside
+window.addEventListener('click', (event) => {
+    const menu = document.querySelector('.nav-menu');
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    
+    if (menu && menuToggle && !menu.contains(event.target) && !menuToggle.contains(event.target)) {
+        menu.style.display = 'none';
+    }
+});
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    const menu = document.querySelector('.nav-menu');
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    
+    if (window.innerWidth > 768) {
+        if (menu) menu.style.display = '';
+    } else if (menuToggle && menu) {
+        menu.style.display = 'none';
+    }
+});
+
 // Background images array
 const backgroundImages = [
     'img/website_bg/website_bg_001.jpg?raw=true',
