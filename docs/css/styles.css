@@ -1,4 +1,4 @@
-/* Base Styles */
+/* Base Colors and Variables */
 :root {
     --primary-color: #81a1c1;
     --bg-color: #2e3440;
@@ -9,26 +9,26 @@
     --container-bg: rgba(46, 52, 64, 0.85);
 }
 
+/* Reset and Box Sizing */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+/* Body Styles */
 body, html {
-    margin: 0;
-    padding: 0;
     height: 100%;
     width: 100%;
     font-family: 'Press Start 2P', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
     color: var(--text-color);
-    background-color: #000;
+    background-color: #000; /* Default background, overridden by JS for images */
+    transition: background-image 1s ease-in-out;
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
-    transition: background-image 1s ease-in-out;
 }
 
 /* Overlay */
@@ -52,13 +52,16 @@ body, html {
     background-color: var(--container-bg);
     border: 4px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 /* Menu Styles */
 .menu {
     margin: 20px 0;
     transition: all 0.3s ease;
+    background-color: rgba(46, 52, 64, 0.7);
+    padding: 10px;
+    border-radius: 8px;
 }
 
 .menu ul {
@@ -88,9 +91,10 @@ body, html {
     transition: all 0.2s ease;
 }
 
-.menu a:hover, .menu a.active {
+.menu a:hover,
+.menu a.active {
     background-color: var(--primary-color);
-    color: white;
+    color: #fff;
 }
 
 /* Submenu Styles */
@@ -132,7 +136,7 @@ body, html {
     border: 2px solid var(--border-color);
 }
 
-/* Play Button */
+/* Play Button Styles */
 .play-btn {
     font-size: 16px;
     background-color: var(--primary-color);
@@ -152,41 +156,35 @@ body, html {
     background-color: var(--accent-color);
 }
 
-/* Mobile styles */
+/* Responsive Styles for Mobile */
 @media (max-width: 768px) {
     .container {
         width: 95%;
         padding: 15px;
         margin: 10px auto;
     }
-    
     .menu ul {
         display: none;
         flex-direction: column;
         width: 100%;
     }
-    
     .menu.open ul {
         display: flex;
         animation: fadein 0.3s ease-in-out;
     }
-    
     .toggle-menu {
         display: block;
         width: 100%;
     }
-    
     .menu li {
         width: 100%;
         text-align: center;
     }
-    
     .menu a {
         display: block;
         width: 100%;
         box-sizing: border-box;
     }
-    
     .submenu {
         position: static;
         width: 100%;
@@ -197,7 +195,7 @@ body, html {
     }
 }
 
-/* Animations */
+/* Fade-in animation */
 @keyframes fadein {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }

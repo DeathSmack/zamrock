@@ -1,7 +1,6 @@
-// Original title animation
+// Title animation
 const titleElement = document.querySelector('h1');
 const originalTitle = "ZamRock Radio";
-let titleIndex = 0;
 const titleFrames = [
     "24m20ck 24d10",
     "Z4m20ck 24d10",
@@ -33,19 +32,22 @@ const titleFrames = [
     "24m20ck 24d10"
 ];
 
+let titleIndex = 0;
+
 function animateTitle() {
     titleIndex = (titleIndex + 1) % titleFrames.length;
-    const newTitle = titleFrames[titleIndex];
-    if (titleElement) titleElement.textContent = newTitle;
-    document.title = originalTitle; // Keep the tab title consistent
-    const delay = Math.floor(Math.random() * 500) + 200; // Random delay between 200-700ms
+    if (titleElement) {
+        titleElement.textContent = titleFrames[titleIndex];
+    }
+    document.title = originalTitle; // Keep tab title consistent
+    const delay = Math.floor(Math.random() * 500) + 200; // 200-700ms
     setTimeout(animateTitle, delay);
 }
 
-// Initialize title animation
+// Start the title animation after a delay
 setTimeout(animateTitle, 1000);
 
-// Rest of the code remains the same...
+// Background images array
 const backgroundImages = [
     'https://raw.githubusercontent.com/DeathSmack/zamrock/main/graphics/website_bg/1.jpg',
     'https://raw.githubusercontent.com/DeathSmack/zamrock/main/graphics/website_bg/2.jpg',
@@ -59,42 +61,35 @@ const backgroundImages = [
     'https://raw.githubusercontent.com/DeathSmack/zamrock/main/graphics/website_bg/10.jpg'
 ];
 
-// Function to set background image
 function setRandomBackground() {
     if (backgroundImages.length === 0) return;
     const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
-    const img = new Image();
-    img.onload = function() {
-        document.body.style.backgroundImage = `url('${randomImage}')`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center';
-        document.body.style.backgroundAttachment = 'fixed';
-        document.body.style.backgroundRepeat = 'no-repeat';
-    };
-    img.src = randomImage;
+    document.body.style.backgroundImage = `url('${randomImage}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+    document.body.style.backgroundRepeat = 'no-repeat';
 }
 
-// Set initial background and start rotating every 20 seconds
-document.addEventListener('DOMContentLoaded', function() {
+// Set initial background and rotate every 20 seconds
+document.addEventListener('DOMContentLoaded', () => {
     setRandomBackground();
-    setInterval(setRandomBackground, 20000); // Change every 20 seconds
+    setInterval(setRandomBackground, 20000);
 });
 
-// Menu toggle functionality
+// Menu toggle
 function toggleMenu(event) {
     if (event) event.stopPropagation();
     const menu = document.getElementById('menu');
     if (menu) {
         menu.classList.toggle('open');
-        // Close any open submenus when toggling main menu
         if (!menu.classList.contains('open')) {
-            const submenus = document.querySelectorAll('.submenu');
-            submenus.forEach(submenu => submenu.classList.remove('active'));
+            document.querySelectorAll('.submenu').forEach(s => s.classList.remove('active'));
         }
     }
 }
 
-// Submenu toggle functionality
+// Submenu toggle
 function toggleSubMenu(element) {
     if (!element) return;
     event.preventDefault();
@@ -106,48 +101,32 @@ function toggleSubMenu(element) {
 }
 
 // Close submenus when clicking outside
-document.addEventListener('click', function(event) {
+document.addEventListener('click', (event) => {
     const menu = document.getElementById('menu');
     const toggleBtn = document.querySelector('.toggle-menu');
-    
-    // If click is outside menu and not on toggle button
     if (!menu.contains(event.target) && event.target !== toggleBtn) {
         menu.classList.remove('open');
-        const submenus = document.querySelectorAll('.submenu');
-        submenus.forEach(submenu => submenu.classList.remove('active'));
+        document.querySelectorAll('.submenu').forEach(s => s.classList.remove('active'));
     }
 });
 
-// Audio player functionality
-document.addEventListener('DOMContentLoaded', function() {
+// Audio player controls
+document.addEventListener('DOMContentLoaded', () => {
     const audio = document.getElementById('radioStream');
     const playButton = document.getElementById('playButton');
-    
+
     if (audio && playButton) {
-        // Try to start audio on first user interaction
-        const startAudio = () => {
-            audio.play().then(() => {
-                playButton.textContent = 'Stop';
-                // Remove the event listener after first interaction
-                document.removeEventListener('click', startAudio);
-                document.removeEventListener('keydown', startAudio);
-            }).catch(e => {
-                console.log('Audio play failed:', e);
-            });
-        };
+        // Try to auto-play muted
+        audio.play().catch(() => { /* ignore errors */ });
 
-        // Add event listeners for first interaction
-        document.addEventListener('click', startAudio, { once: true });
-        document.addEventListener('keydown', startAudio, { once: true });
-
-        // Toggle play/pause on button click
-        playButton.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent event from bubbling to document
+        // Toggle play/stop
+        playButton.addEventListener('click', () => {
             if (audio.paused) {
+                audio.muted = false;
                 audio.play().then(() => {
                     playButton.textContent = 'Stop';
-                }).catch(e => {
-                    console.log('Audio play failed:', e);
+                }).catch(() => {
+                    // fallback if needed
                 });
             } else {
                 audio.pause();
