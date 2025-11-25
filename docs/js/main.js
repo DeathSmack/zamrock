@@ -1,7 +1,9 @@
-// Title animation
-const titleElement = document.querySelector('h1');
-const originalTitle = "ZamRock Radio";
-const titleFrames = [
+// Static header text
+const headerElement = document.querySelector('h1');
+const headerText = "ZamRock Radio";
+
+// Array of titles for tab animation
+const titles = [
     "24m20ck 24d10",
     "Z4m20ck 24d10",
     "Z4m20ck R4d10",
@@ -32,22 +34,25 @@ const titleFrames = [
     "24m20ck 24d10"
 ];
 
-let titleIndex = 0;
+let currentTitleIndex = 0;
 
-function animateTitle() {
-    titleIndex = (titleIndex + 1) % titleFrames.length;
-    if (titleElement) {
-        titleElement.textContent = titleFrames[titleIndex];
-    }
-    // Update the browser tab title to match the animated title
-    document.title = titleFrames[titleIndex];
+// Function to animate tab title with random intervals
+function animateTabTitle() {
+    document.title = titles[currentTitleIndex];
+    currentTitleIndex = (currentTitleIndex + 1) % titles.length;
 
-    const delay = Math.floor(Math.random() * 500) + 200; // 200-700ms
-    setTimeout(animateTitle, delay);
+    // Random interval between 500ms and 2500ms
+    const interval = Math.floor(Math.random() * 2000) + 500;
+    setTimeout(animateTabTitle, interval);
 }
 
-// Start the title animation after 1 second
-setTimeout(animateTitle, 1000);
+// Start the tab title animation
+setTimeout(animateTabTitle, 1000);
+
+// Keep header static
+if (headerElement) {
+    headerElement.textContent = headerText;
+}
 
 // Background images array (relative paths from docs/index.html)
 const backgroundImages = [
@@ -83,7 +88,7 @@ function setRandomBackground() {
     document.body.style.backgroundRepeat = 'no-repeat';
 }
 
-// Set initial background and rotate every 20 seconds
+// Initialize background rotation
 document.addEventListener('DOMContentLoaded', () => {
     setRandomBackground();
     setInterval(setRandomBackground, 20000);
@@ -128,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const playButton = document.getElementById('playButton');
 
     if (audio && playButton) {
-        // Attempt to auto-play muted
+        // Try to auto-play muted
         audio.play().catch(() => { /* ignore errors */ });
 
         // Toggle play/stop
