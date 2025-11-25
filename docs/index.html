@@ -31,15 +31,15 @@
 <body>
   <div class="overlay"></div>
   <div class="container">
-    <h1>ZamRock Radio</h1>
-    <div class="toggle-menu" onclick="toggleMenu(event)">Menu</div>
-    <div class="menu" id="menu">
+    <h1 class="site-title">ZamRock Radio</h1>
+    <button class="mobile-menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <nav class="nav-menu">
       <ul>
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="about/index.html">About</a></li>
         <li><a href="contact/index.html">Contact</a></li>
       </ul>
-    </div>
+    </nav>
     <div class="player-container">
       <!-- Updated the stream URL here -->
       <audio id="radioStream" src="https://zamrock.deathsmack.com/listen/zamrock/radio.mp3" crossorigin="anonymous"></audio>
