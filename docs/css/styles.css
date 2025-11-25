@@ -6,7 +6,7 @@
     --accent-color: #5e81ac;
     --border-color: #d8dee9;
     --overlay-color: rgba(0, 0, 0, 0.7);
-    --container-bg: rgba(46, 52, 64, 0.9);
+    --container-bg: rgba(46, 52, 64, 0.75);
 }
 
 * {
@@ -36,15 +36,217 @@ body {
 
 /* Overlay */
 .overlay {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--overlay-color);
-    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
+/* Container */
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--container-bg);
+    padding: 30px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 15px solid #d8dee9;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0px 0px 10px 0px rgba(255, 255, 255, 0.2);
+    z-index: 1;
+    margin: 50px auto;
+    max-width: 800px;
+    transition: all 0.3s ease;
+}
+
+/* Menu Styles */
+.menu {
+    margin: 20px 0;
+}
+
+.menu ul {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu li {
+    margin: 10px 0;
+    position: relative;
+}
+
+.menu a {
+    display: inline-block;
+    padding: 8px 15px;
+    background-color: #d8dee9;
+    color: #2e3440;
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: 12px;
+    text-decoration: none;
+    border: 2px solid black;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+}
+
+.menu a:hover {
+    background-color: var(--primary-color);
+    color: white;
+    text-shadow: 1px 1px #2e3440;
+}
+
+/* Submenu Styles */
+.submenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #2e3440;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 5px;
+    z-index: 10;
+    min-width: 150px;
+}
+
+.submenu.active {
+    display: block;
+    animation: fadein 0.3s ease-in-out;
+}
+
+.submenu li {
+    margin: 5px 0;
+}
+
+/* Toggle Menu Button */
+.toggle-menu {
+    display: block;
+    text-align: center;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: 12px;
+    margin-bottom: 15px;
+    border: 2px solid black;
+    text-shadow: 1px 1px black;
+    transition: all 0.2s ease;
+}
+
+.toggle-menu:hover {
+    background-color: #5e81ac;
+    text-shadow: 1px 1px #2e3440;
+}
+
+/* Play Button */
+.play-btn {
+    font-size: 16px;
+    background-color: var(--primary-color);
+    color: white;
+    border: 2px solid black;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 15px 0;
+    text-align: center;
+    width: 200px;
+    font-family: 'Press Start 2P', sans-serif;
+    font-weight: bold;
+    text-shadow: 1px 1px #2e3440;
+    transition: all 0.2s ease;
+}
+
+.play-btn:hover {
+    background-color: #5e81ac;
+}
+
+/* Author Text */
+.author {
+    font-size: 15px;
+    color: #d8dee9;
+    margin: 5px 0 15px;
+    text-shadow: 1px 1px black;
+}
+
+/* Animations */
+@keyframes fadein {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Styles */
+@media only screen and (max-width: 768px) {
+    .container {
+        width: 90%;
+        padding: 20px;
+        margin: 20px auto;
+    }
+    
+    .menu ul {
+        flex-direction: column;
+    }
+    
+    .menu li {
+        margin: 5px 0;
+    }
+    
+    .play-btn {
+        width: 100%;
+    }
+}
+
+/* Hide menu by default on mobile */
+@media (max-width: 768px) {
+    .menu ul {
+        display: none;
+    }
+    
+    .menu.open ul {
+        display: flex;
+        flex-direction: column;
+        animation: fadein 0.3s ease-in-out;
+    }
+}
+
+/* Ensure submenus are visible on mobile */
+@media (max-width: 768px) {
+    .submenu {
+        position: static;
+        background-color: transparent;
+        padding: 5px 0 0 15px;
+        margin-top: 5px;
+        box-shadow: none;
+    }
+    
+    .submenu li {
+        margin: 5px 0;
+    }
+    
+    .submenu a {
+        background-color: #a3be8c;
+    }
+}
+
+/* Ensure container doesn't get too tall on small screens */
+@media (max-height: 600px) {
+    .container {
+        position: relative;
+        top: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 20px auto;
+    }
+}
 /* Container */
 .container {
     position: relative;
