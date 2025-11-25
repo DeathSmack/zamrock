@@ -8,68 +8,35 @@
     <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
     <style>
-        .contact-acontainer {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin: 30px 0;
-        }
-        
-        .contact-info, .contact-form {
-            background-color: rgba(46, 52, 64, 0.9);
+        .contact-container {
+            max-width: 800px;
+            margin: 30px auto;
             padding: 30px;
+            background-color: rgba(46, 52, 64, 0.9);
             border-radius: 10px;
-        }
-        
-        .contact-form input,
-        .contact-form textarea {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 2px solid #4c566a;
-            border-radius: 5px;
-            background-color: #3b4252;
-            color: #d8dee9;
-            font-family: 'Press Start 2P', sans-serif;
-            font-size: 12px;
-        }
-        
-        .contact-form textarea {
-            height: 150px;
-            resize: vertical;
-        }
-        
-        .contact-form button {
-            background-color: #81a1c1;
-            color: #2e3440;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Press Start 2P', sans-serif;
-            font-size: 12px;
-            transition: background-color 0.3s;
-        }> * Matrix - https://matrix.to/#/#zamrock:unredacted.org
-> * Mastodon - https://musicworld.social/@ZamRock
-> * SimpleX - Limited acesss please request a link for alhpa
-> * BlueSky - https://bsky.app/profile/zamrock.bsky.social
-> * Discord Server - https://discord.gg/TGNSc9kTjR
-> * Revolt Server - https://rvlt.gg/93GKeS0d
-        
-        .contact-form button:hover {
-            background-color: #5e81ac;
         }
         
         .contact-method {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(59, 66, 82, 0.7);
+            border-radius: 5px;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        
+        .contact-method:hover {
+            transform: translateX(10px);
+            background-color: rgba(76, 86, 106, 0.8);
         }
         
         .contact-icon {
             font-size: 24px;
             margin-right: 15px;
             color: #81a1c1;
+            min-width: 30px;
+            text-align: center;
         }
         
         .contact-details h3 {
@@ -77,10 +44,11 @@
             color: #81a1c1;
         }
         
-        .contact-details p, .contact-details a {
+        .contact-details p, .contact-details a, .contact-details span {
             margin: 0;
             color: #d8dee9;
             text-decoration: none;
+            word-break: break-all;
         }
         
         .contact-details a:hover {
@@ -90,7 +58,17 @@
         
         @media (max-width: 768px) {
             .contact-container {
-                grid-template-columns: 1fr;
+                margin: 15px;
+                padding: 20px;
+            }
+            
+            .contact-method {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .contact-icon {
+                margin: 0 0 10px 0;
             }
         }
     </style>
@@ -114,93 +92,63 @@
     </header>
 
     <main class="main-content">
-        <section class="section">
-            <div class="container">
-                <h2>Get In Touch</h2>
-                <p>Have questions, suggestions, or just want to say hello? We'd love to hear from you!</p>
+        <div class="container">
+            <h2>Get In Touch</h2>
+            <p>Have questions, suggestions, or just want to say hello? We'd love to hear from you!</p>
+            
+            <div class="contact-container">
+                <h2>Contact Information</h2>
+                <p>Feel free to reach out to us through any of the following channels:</p>
                 
-                <div class="contact-container">
-                    <div class="contact-info">
-                        <h2>Contact Information</h2>
-                        <p>Feel free to reach out to us through any of the following channels:</p>
-                        
-                        <div class="contact-method">
-                            <div class="contact-icon">🔷</div>
-                            <div class="contact-details">
-                                <h3>Matrix</h3>
-                                <a href="https://matrix.to/#/#zamrock:unredacted.org" target="_blank">#zamrock:unredacted.org</a>
-                            </div>
-                        </div>
-                        
-                        <div class="contact-method">
-                            <div class="contact-icon">�</div>
-                            <div class="contact-details">
-                                <h3>Mastodon</h3>
-                                <a href="https://musicworld.social/@ZamRock" target="_blank">@ZamRock@musicworld.social</a>
-                            </div>
-                        </div>
-                        
-                        <div class="contact-method">
-                            <div class="contact-icon">🔒</div>
-                            <div class="contact-details">
-                                <h3>SimpleX</h3>
-                                <span>Limited access - please request a link for alpha</span>
-                            </div>
-                        </div>
-                        
-                        <div class="contact-method">
-                            <div class="contact-icon">☁️</div>
-                            <div class="contact-details">
-                                <h3>BlueSky</h3>
-                                <a href="https://bsky.app/profile/zamrock.net" target="_blank">@zamrock.net</a>
-                            </div>
-                        </div>
-                        
-                        <div class="contact-method">
-                            <div class="contact-icon">�</div>
-                            <div class="contact-details">
-                                <h3>Discord</h3>
-                                <a href="https://discord.gg/TGNSc9kTjR" target="_blank">Join our server</a>
-                            </div>
-                        </div>
-                        
-                        <div class="contact-method">
-                            <div class="contact-icon">⚡</div>
-                            <div class="contact-details">
-                                <h3>Revolt</h3>
-                                <a href="https://stt.gg/CsjKzYWm" target="_blank">Join our server</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="contact-form">
-                        <h2>Send Us a Message</h2>
-                        <form id="contactForm" onsubmit="event.preventDefault(); submitContactForm();">
-                            <div class="form-group">
-                                <input type="text" id="name" name="name" placeholder="Your Name" required>
-                            </div>
-                            <div class="form-group">
-                                <input type="email" id="email" name="email" placeholder="Your Email" required>
-                            </div>
-                            <div class="form-group">
-                                <input type="text" id="subject" name="subject" placeholder="Subject" required>
-                            </div>
-                            <div class="form-group">
-                                <textarea id="message" name="message" placeholder="Your Message" required></textarea>
-                            </div>
-                            <button type="submit">Send Message</button>
-                        </form>
+                <div class="contact-method">
+                    <div class="contact-icon">🔷</div>
+                    <div class="contact-details">
+                        <h3>Matrix</h3>
+                        <a href="https://matrix.to/#/#zamrock:unredacted.org" target="_blank">#zamrock:unredacted.org</a>
                     </div>
                 </div>
                 
-                <div class="map-container" style="margin-top: 40px;">
-                    <h2>Find Us</h2>
-                    <div style="height: 300px; background-color: #3b4252; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #d8dee9;">
-                        Interactive Map Coming Soon
+                <div class="contact-method">
+                    <div class="contact-icon">🐘</div>
+                    <div class="contact-details">
+                        <h3>Mastodon</h3>
+                        <a href="https://musicworld.social/@ZamRock" target="_blank">@ZamRock@musicworld.social</a>
+                    </div>
+                </div>
+                
+                <div class="contact-method">
+                    <div class="contact-icon">🔒</div>
+                    <div class="contact-details">
+                        <h3>SimpleX</h3>
+                        <span>Limited access - please request a link for alpha</span>
+                    </div>
+                </div>
+                
+                <div class="contact-method">
+                    <div class="contact-icon">☁️</div>
+                    <div class="contact-details">
+                        <h3>BlueSky</h3>
+                        <a href="https://bsky.app/profile/zamrock.net" target="_blank">@zamrock.net</a>
+                    </div>
+                </div>
+                
+                <div class="contact-method">
+                    <div class="contact-icon">💬</div>
+                    <div class="contact-details">
+                        <h3>Discord</h3>
+                        <a href="https://discord.gg/TGNSc9kTjR" target="_blank">Join our server</a>
+                    </div>
+                </div>
+                
+                <div class="contact-method">
+                    <div class="contact-icon">⚡</div>
+                    <div class="contact-details">
+                        <h3>Revolt</h3>
+                        <a href="https://stt.gg/CsjKzYWm" target="_blank">Join our server</a>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
     <footer class="site-footer">
@@ -236,13 +184,5 @@
     </footer>a
 
     <script src="../js/main.js"></script>
-    <script>
-        function submitContactForm() {
-            // In a real implementation, you would send the form data to a server
-            const name = document.getElementById('name').value;
-            alert(`Thank you, ${name}! Your message has been sent. We'll get back to you soon.`);
-            document.getElementById('contactForm').reset();
-        }
-    </script>
 </body>
 </html>
