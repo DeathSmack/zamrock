@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="description" content="ZamRock Radio - Your source for the best music" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZamRock Radio</title>
-    <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif" />
-    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif">
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="overlay"></div>
@@ -23,17 +21,12 @@
             </ul>
         </div>
         <div class="player-container">
-            <audio id="radioStream" preload="none" crossorigin="anonymous">
-                <source src="https://zamrock.deathsmack.com/listen/zamrock/radio.mp3" type="audio/mpeg" />
-                Your browser does not support the audio element.
-            </audio>
-            <button id="playButton" class="play-btn" aria-label="Play/Pause">Play</button>
-            <div id="volumeContainer" class="volume-container">
-                <input type="range" id="volumeSlider" min="0" max="100" value="50" 
-                       class="volume-slider" aria-label="Volume control">
+            <button id="playButton" class="play-btn">Play</button>
+            <div class="volume-container">
+                <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
             </div>
         </div>
     </div>
-    <script src="js/main.js" defer></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
