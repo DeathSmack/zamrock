@@ -23,9 +23,9 @@
 > * Matrix - https://matrix.to/#/#zamrock:unredacted.org
 > * Mastodon - https://musicworld.social/@ZamRock
 > * SimpleX - Limited acesss please request a link for alhpa
-> * BlueSky - https://bsky.app/profile/zamrock.bsky.social
+> * BlueSky - https://bsky.app/profile/zamrock.net
 > * Discord Server - https://discord.gg/TGNSc9kTjR
-> * Revolt Server - https://rvlt.gg/93GKeS0d
+> * Revolt Server - https://stt.gg/CsjKzYWm
 
 > * Best UI player - https://zamrock.deathsmack.com/public/zamrock
 > * Radio link, [playable most places} - https://zamrock.deathsmack.com/listen/zamrock/radio.mp3
