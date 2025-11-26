@@ -27,10 +27,6 @@
 > * Discord Server - https://discord.gg/TGNSc9kTjR
 > * Revolt Server - https://stt.gg/CsjKzYWm
 
-> * Best UI player - https://zamrock.deathsmack.com/public/zamrock
-> * Radio link, [playable most places} - https://zamrock.deathsmack.com/listen/zamrock/radio.mp3
-> * Odysee - https://odysee.com/@ZamRock:2 
-
 
 
 Thanks for reading my md too!!
