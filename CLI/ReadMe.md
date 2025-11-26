@@ -2,7 +2,7 @@
 
 A feature‑rich terminal‑based radio player for ZamRock Radio with recording capabilities, timer, and more.
 
-![ZamRock CLI Screenshot](graphics/cli-pics/screenshot-2025-11-26_07-16-29.png)
+![ZamRock CLI Screenshot](https://raw.githubusercontent.com/DeathSmack/zamrock/main/graphics/cli-pics/screenshot-2025-11-26_07-16-29.png)
 
 ## Features
 
