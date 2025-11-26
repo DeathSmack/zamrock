@@ -1,13 +1,13 @@
 # ZamRock CLI Radio Player
 
-A feature-rich terminal-based radio player for ZamRock Radio with recording capabilities, timer, and more.
+A feature‑rich terminal‑based radio player for ZamRock Radio with recording capabilities, timer, and more.
 
-![ZamRock CLI Screenshot]([screenshot.png](https://github.com/DeathSmack/zamrock/blob/main/graphics/cli-pics/screenshot-2025-11-26_07-16-29.png?raw=true))
+![ZamRock CLI Screenshot](graphics/cli-pics/screenshot-2025-11-26_07-16-29.png)
 
 ## Features
 
 - 🎵 Stream ZamRock Radio directly in your terminal
-- ⏱️ Built-in Ramen Noodle Timer
+- ⏱️ Built‑in Ramen Noodle Timer
 - 🎙️ Record streams with various options
 - 🎨 Colorful ASCII art display
 - 📝 Track information display
@@ -19,10 +19,10 @@ A feature-rich terminal-based radio player for ZamRock Radio with recording capa
 
 ### Dependencies
 
-- `ffmpeg` - For audio playback and recording
-- `ffplay` - For audio playback
-- `curl` - For API requests
-- `jq` - For JSON parsing
+- `ffmpeg` – For audio playback and recording
+- `ffplay` – For audio playback
+- `curl` – For API requests
+- `jq` – For JSON parsing
 
 #### Debian/Ubuntu
 ```bash
