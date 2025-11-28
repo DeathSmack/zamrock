@@ -77,8 +77,8 @@ jobs:
             exit 1
           fi
           
-          # Extract version number from filename
-          version=$(basename "$latest_script" .sh | cut -d'_' -f3- | tr '_' '.')
+          # Extract version number from filename (e.g., zamrock_v-1_5_1.sh -> 1.5.1)
+          version=$(basename "$latest_script" .sh | sed 's/^zamrock_v-\([0-9]\+_\([0-9]\+_\)*[0-9]\+\).*/\1/' | tr '_' '.')
           
           # Set outputs
           echo "script_name=$(basename "$latest_script")" >> "$GITHUB_OUTPUT"
