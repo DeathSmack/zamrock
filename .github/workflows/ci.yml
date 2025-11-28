@@ -44,7 +44,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
           files: ./CLI/zamrock_v-1_5_1.sh  # Adjust this path as needed
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
