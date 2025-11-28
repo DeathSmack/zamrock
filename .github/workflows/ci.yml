@@ -14,6 +14,10 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -34,6 +38,8 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -51,7 +57,7 @@ jobs:
 
   release:
     needs: test
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.ref == 'refs/heads/main'  # Run on push to main
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -59,12 +65,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Find latest script
+        id: find-script
+        run: |
+          # Find the latest version of the script using find and sort
+          latest_script=$(find CLI/ -name "zamrock_v-*.sh" -type f -print0 | \
+                         sort -Vrz | head -zn1 | tr -d '\0')
+          
+          if [ -z "$latest_script" ]; then
+            echo "Error: No script found matching pattern zamrock_v-*.sh" >&2
+            exit 1
+          fi
+          
+          # Extract version number from filename
+          version=$(basename "$latest_script" .sh | cut -d'_' -f3- | tr '_' '.')
+          
+          # Set outputs
+          echo "script_name=$(basename "$latest_script")" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Found script: $latest_script with version $version"
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body: "Release ${{ github.ref_name }}"
-          files: ./CLI/zamrock_v-1_5_1.sh
+          tag_name: "v${{ steps.find-script.outputs.version }}"
+          name: "Zamrock ${{ steps.find-script.outputs.version }}"
+          body: |
+            ## Changes in ${{ steps.find-script.outputs.version }}
+            
+            - Update to version ${{ steps.find-script.outputs.version }}
+            
+            ## Installation
+            ```bash
+            # Download the script
+            wget -q \
+              "https://github.com/yourusername/zamrock/releases/download/\
+              v${{ steps.find-script.outputs.version }}/zamrock_v-\
+              ${{ steps.find-script.outputs.version }}.sh"
+            chmod +x zamrock_v-${{ steps.find-script.outputs.version }}.sh
+            ```
+          files: "CLI/${{ steps.find-script.outputs.script_name }}"
+          generate_release_notes: true
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

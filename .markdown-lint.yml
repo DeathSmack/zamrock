@@ -1,0 +1,33 @@
+---
+# Default state for all rules
+default: true
+
+# Line length
+MD013: false  # Line length
+
+# Unordered list indentation
+MD007:
+  indent: 2  # Spaces for list indentation
+
+# Ordered list item prefix
+MD029:
+  style: one_or_ordered  # Ordered list item prefix
+
+# Multiple headers with the same content
+MD024:
+  siblings_only: true
+
+# Multiple top-level headers in the same document
+MD025: false
+
+# Trailing spaces
+MD009: false
+
+# Multiple consecutive blank lines
+MD012: false
+
+# Inline HTML
+MD033: false
+
+# Bare URLs
+MD034: false
