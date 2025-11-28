@@ -23,10 +23,12 @@ PURPLE='\033[0;35m' # Color for timer
 NC='\033[0m'        # No Color
 
 # Display settings
-ASCII_DISPLAY_INTERVAL=300  # Show ASCII art every 5 minutes (300 seconds)
-TRACK_UPDATE_INTERVAL=2     # Update track info every 2 seconds
+ASCII_DISPLAY_INTERVAL=600   # Show ASCII art every 10 minutes
+TRACK_UPDATE_INTERVAL=2      # Update track info every 2 seconds
+READ_TIMEOUT=0.2             # Polling interval for user input (seconds)
 ascii_counter=0
 LAST_ASCII_TIME=0
+LAST_TRACK_REFRESH=0
 
 # Global variables for timer and recording
 TIMER_RUNNING=false
@@ -35,6 +37,138 @@ TIMER_DURATION=0
 TIMER_START=0
 RECORDING_PID=0
 RECORDING_ACTIVE=false
+INTERACTIVE_MODE=false
+SHOULD_EXIT=false
+CLEANED_UP=false
+TYPEWRITER_MODE=false
+TYPEWRITER_DELAY=0.05  # Adjust this value to change typewriter speed (seconds per line)
+FFMPEG_PID=0
+
+strip_ansi() {
+    printf '%s' "$1" | sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g'
+}
+
+clear_status_line() {
+    printf "\r\033[K"
+}
+
+flush_input() {
+    while read -n 1 -s -t 0 2>/dev/null; do :; done || true
+}
+
+type_print() {
+    local text="$1"
+    local newline="${2:-true}"
+    local parsed
+    printf -v parsed "%b" "$text"
+    if $TYPEWRITER_MODE; then
+        local i=0
+        local len=${#parsed}
+        while [ $i -lt $len ]; do
+            local char="${parsed:i:1}"
+            if [[ "$char" == $'\033' ]]; then
+                local seq="$char"
+                i=$((i+1))
+                while [ $i -lt $len ]; do
+                    local next="${parsed:i:1}"
+                    seq+="$next"
+                    i=$((i+1))
+                    if [[ "$next" =~ [A-Za-z] ]]; then
+                        break
+                    fi
+                done
+                printf "%s" "$seq"
+                continue
+            fi
+            printf "%s" "$char"
+            sleep "$TYPEWRITER_DELAY"
+            i=$((i+1))
+        done
+        if [ "$newline" = "true" ]; then
+            printf "\n"
+        fi
+    else
+        if [ "$newline" = "true" ]; then
+            printf "%s\n" "$parsed"
+        else
+            printf "%s" "$parsed"
+        fi
+    fi
+}
+
+repeat_char() {
+    local char="$1"
+    local count="$2"
+    local result=""
+    local i
+    for ((i=0; i<count; i++)); do
+        result+="$char"
+    done
+    printf "%s" "$result"
+}
+
+render_box_line() {
+    local text="$1"
+    local max_len=$2
+    local plain=$(strip_ansi "$text")
+    local padding=$((max_len - ${#plain}))
+    [ $padding -lt 0 ] && padding=0
+    local spaces=$(repeat_char " " $padding)
+    printf "%b\n" "${CYAN}║ ${NC}${text}${spaces}${CYAN} ║${NC}"
+}
+
+render_box() {
+    local title="$1"
+    shift
+    local content=("$@")
+    local lines=("$title" "${content[@]}")
+    local max_len=0
+    local plain_line
+    for line in "${lines[@]}"; do
+        plain_line=$(strip_ansi "$line")
+        if [ ${#plain_line} -gt $max_len ]; then
+            max_len=${#plain_line}
+        fi
+    done
+    local inner_width=$((max_len + 2))
+    local border=$(repeat_char "═" $inner_width)
+    printf "%b\n" "${CYAN}╔${border}╗${NC}"
+    render_box_line "$title" "$max_len"
+    printf "%b\n" "${CYAN}╠${border}╣${NC}"
+    for line in "${content[@]}"; do
+        render_box_line "$line" "$max_len"
+    done
+    printf "%b\n" "${CYAN}╚${border}╝${NC}"
+}
+
+toggle_typewriter_mode() {
+    if $TYPEWRITER_MODE; then
+        TYPEWRITER_MODE=false
+        type_print "${YELLOW}Typewriter mode disabled.${NC}"
+    else
+        TYPEWRITER_MODE=true
+        type_print "${YELLOW}Typewriter mode enabled.${NC}"
+    fi
+}
+
+parse_size_to_bytes() {
+    local input="${1,,}"
+    if [[ "$input" =~ ^([0-9]+)([kmg]?b?)$ ]]; then
+        local value=${BASH_REMATCH[1]}
+        local unit=${BASH_REMATCH[2]}
+        case "$unit" in
+            ""|"b") echo "$value" ;;
+            "k"|"kb") echo $((value * 1024)) ;;
+            "m"|"mb") echo $((value * 1024 * 1024)) ;;
+            "g"|"gb") echo $((value * 1024 * 1024 * 1024)) ;;
+            *)
+                return 1
+                ;;
+        esac
+    else
+        return 1
+    fi
+}
 
 # Function to print ASCII Art with color
 print_ascii_art() {
@@ -64,24 +198,120 @@ ZamZam for life...
 EOF
     printf "\033[1;${colors[7]}mVisit us at: https://zamrock.net\n"
     printf "${NC}"  # Reset color
-    cat << "EOF"
-__________             __________               __
-\____    /____    _____\______   \ ____   ____ |  | __
-  /     /\__  \  /     \|       _//  _ \_/ ___\|  |/ /
- /     /_ / __ \|  Y Y  \    |   (  <_> )  \___|    <
-/_______ (____  /__|_|  /____|_  /\____/ \___  >__|_ \
-        \/    \/      \/       \/            \/     \/
-       __________             .___.__
-       \______   \_____     __| _/|__| ____
-        |       _/\__  \   / __ | |  |/  _ \
-        |    |   \ / __ \_/ /_/ | |  (  <_> )
-        |____|_  /(____  /\____ | |__|\____/
-               \/      \/      \/
-ZamZam for life...
-Visit us at: https://zamrock.net
-EOF
-    printf "${NC}"  # Reset color
     echo -e "${YELLOW}ZamRock Radio - The Home of Zambian Rock Music${NC}\n"
+}
+
+print_now_playing_card() {
+    local song_title="${1:-$LAST_STREAM_TITLE}"
+    local artist="${2:-$LAST_ARTIST}"
+    local album="${3:-$LAST_ALBUM}"
+    local playlist="${4:-$LAST_PLAYLIST}"
+    local duration="${5:-$LAST_DURATION}"
+
+    if [ -z "$song_title" ]; then
+        type_print "${CYAN}Loading track information...${NC}"
+        return
+    fi
+
+    local title="${YELLOW}ZamRock Radio - Now Playing${NC}"
+    local lines=()
+    lines+=("${YELLOW}🎵  Title:${NC}  ${song_title}")
+    lines+=("${YELLOW}🎤  Artist:${NC} ${artist}")
+    if [ "$album" != "Unknown Album" ]; then
+        lines+=("${YELLOW}💿  Album:${NC}  ${album}")
+    fi
+    if [ "$playlist" != "Unknown Collection" ]; then
+        lines+=("${YELLOW}📋  Playlist:${NC} ${playlist}")
+    fi
+    if [[ "$duration" =~ ^[0-9]+$ ]] && [ "$duration" -gt 0 ]; then
+        lines+=("${YELLOW}⏱️   Duration:${NC} $(format_duration $duration)")
+    else
+        lines+=("${YELLOW}⏱️   Duration:${NC} Unknown")
+    fi
+    render_box "$title" "${lines[@]}"
+}
+
+show_logo_and_now_playing() {
+    print_ascii_art
+    print_now_playing_card
+    LAST_ASCII_TIME=$(date +%s)
+}
+
+enter_interactive_mode() {
+    if ! $INTERACTIVE_MODE; then
+        INTERACTIVE_MODE=true
+        clear_status_line
+        flush_input
+    fi
+}
+
+exit_interactive_mode() {
+    if $INTERACTIVE_MODE; then
+        INTERACTIVE_MODE=false
+        clear_status_line
+        flush_input
+    fi
+}
+
+prompt_wait_for_next_track() {
+    echo -e "${YELLOW}Do you want to wait for the next track before recording?${NC}"
+    read -n 1 -s -p "(y/n): " wait_choice
+    echo
+    if [[ "$wait_choice" =~ ^[Yy]$ ]]; then
+        wait_for_next_track_start
+        return $?
+    fi
+    echo -e "${YELLOW}Starting recording immediately.${NC}"
+    return 0
+}
+
+wait_for_next_track_start() {
+    local current_title="$LAST_STREAM_TITLE"
+    local key=""
+    if [ -z "$current_title" ]; then
+        echo -e "${YELLOW}Track information unavailable, starting immediately.${NC}"
+        return 0
+    fi
+
+    echo -e "${YELLOW}Waiting for the next track to begin... (press 'c' to cancel, 'q' to quit)${NC}"
+    local wait_start=$(date +%s)
+
+    while true; do
+        for _ in {1..10}; do
+            if read -t 0.1 -n 1 -s key; then
+                case "$key" in
+                    "c"|"a")
+                        echo -e "${YELLOW}Cancelled waiting for next track.${NC}"
+                        return 1
+                        ;;
+                    "q")
+                        echo -e "${YELLOW}Quit requested. Stopping playback...${NC}"
+                        SHOULD_EXIT=true
+                        return 2
+                        ;;
+                esac
+            fi
+        done
+        local metadata=$(fetch_metadata)
+        if [ -n "$metadata" ]; then
+            IFS='|' read -r song_title artist album playlist duration elapsed remaining <<< "$metadata"
+            if [ "$song_title" != "$current_title" ] && [ "$song_title" != "Unknown Track" ]; then
+                LAST_STREAM_TITLE="$song_title"
+                LAST_ARTIST="$artist"
+                LAST_ALBUM="$album"
+                LAST_PLAYLIST="$playlist"
+                LAST_DURATION=$duration
+                echo -e "${GREEN}New track detected: ${song_title} by ${artist}${NC}"
+                break
+            fi
+        fi
+
+        if [ $(( $(date +%s) - wait_start )) -ge 600 ]; then
+            echo -e "${YELLOW}No new track detected after 10 minutes. Recording will start now.${NC}"
+            break
+        fi
+    done
+    return 0
 }
 
 # Function to create a directory for recordings if it doesn't exist
@@ -228,18 +458,13 @@ select_record_duration() {
         *) echo -e "${RED}Invalid choice. Recording for 10 seconds by default.${NC}"; duration=10 ;;
     esac
 
-    # Ask user if they want to upload after recording
-    read -n 1 -s -p "Would you like to upload the recording after it's done? (y/n): " upload_choice
-    echo  # Move to the next line after user's input
-
     # Start the recording
-    record_audio "$duration" "$upload_choice"
+    record_audio "$duration"
 }
 
 # Function to record specified seconds of audio with progress bar
 record_audio() {
     local duration=$1
-    local upload_choice=$2
     local date=$(date +"%Y-%m-%d")
     local timestamp=$(date +"%H-%M-%S")
     local file_path="$RECORD_DIR/ZamRock_${duration}s_${date}_${timestamp}.mp3"
@@ -266,58 +491,7 @@ record_audio() {
     wait $FFMPEG_PID
     echo -e "${YELLOW}Recording saved to: $file_path${NC}"
 
-    # Prompt user for upload after recording if they opted for it
-    if [ "$upload_choice" == "y" ]; then
-        upload_recording "$file_path"
-    else
-        echo -e "${YELLOW}You can upload the file later if you want.${NC}"
-    fi
-}
-
-# Function to upload the recorded audio to the server with progress bar
-upload_recording() {
-    local file_path="$1"
-
-    # Check if the file exists
-    if [[ -f "$file_path" ]]; then
-        echo -e "${YELLOW}Uploading the recorded audio to the server...${NC}"
-        echo -e "${YELLOW}Commands are disabled until upload is finished. Please do not close the terminal.${NC}"
-
-        # Get file size for progress calculation
-        local file_size=$(stat -c%s "$file_path" 2>/dev/null || echo "0")
-        
-        if [ "$file_size" -eq 0 ]; then
-            # Fallback for systems without stat -c
-            file_size=$(wc -c < "$file_path" 2>/dev/null || echo "0")
-        fi
-        
-        # Start upload with progress monitoring
-        local uploaded_bytes=0
-        local last_progress_time=0
-        
-        # Use curl with progress bar and monitor the output
-        response=$(curl -w "%{http_code}" -o /dev/null -X POST "$UPLOAD_URL" \
-            -F "file=@$file_path" \
-            -H "Content-Type: multipart/form-data" \
-            --progress-bar 2>&1)
-        
-        # Extract HTTP status code
-        local http_code="${response##*$'\n'}"
-        local response_body="${response%$'\n'*}"
-        
-        # Process the response
-        if [ "$http_code" = "200" ]; then
-            local filename=$(basename "$file_path")
-            echo -e "${GREEN}File ${filename} successfully added to ZamRock radio archives!${NC}"
-            echo -e "${GREEN}Thank you for your contribution!${NC}"
-            echo "$(basename "$file_path")" >> "$UPLOAD_LOG"
-        else
-            echo -e "${RED}Upload failed with HTTP code: ${http_code}${NC}"
-            echo -e "${RED}Please check the server status or your file size.${NC}"
-        fi
-    else
-        echo -e "${RED}File not found for uploading: $file_path${NC}"
-    fi
+    echo -e "${YELLOW}Recording complete. File stored locally.${NC}"
 }
 
 # Function to start a timer for Ramen Noodle Timer
@@ -374,6 +548,7 @@ start_noodle_timer() {
 
 # Function to record the stream
 record_stream() {
+    clear_status_line
     echo -e "\n${CYAN}🎙️  Recording Options:${NC}"
     echo "1. 10 second test clip"
     echo "2. Custom duration (e.g., 30s, 2m, 1h)"
@@ -381,25 +556,62 @@ record_stream() {
     echo -n "Select an option (1-3): "
     read -r choice
     
+    local action=""
+    local duration_value=""
+    local duration_label=""
+    local size_value=""
+    
     case $choice in
         1)
-            record_duration 10 "10s_test"
+            action="duration"
+            duration_value=10
+            duration_label="10s_test"
             ;;
         2)
             echo -n "Enter duration (e.g., 30s, 2m, 1h): "
-            read -r duration
-            record_duration $duration "custom_${duration}"
+            read -r duration_value
+            if [ -z "$duration_value" ]; then
+                echo -e "${YELLOW}No duration entered. Returning to menu.${NC}"
+                return
+            fi
+            action="duration"
+            duration_label="custom_${duration_value}"
             ;;
         3)
             echo -n "Enter file size (e.g., 5mb, 1gb): "
-            read -r size
-            record_until_size $size
+            read -r size_value
+            if [ -z "$size_value" ]; then
+                echo -e "${YELLOW}No file size entered. Returning to menu.${NC}"
+                return
+            fi
+            action="size"
             ;;
         *)
             echo -e "${YELLOW}Invalid option. Returning to main menu.${NC}"
             return
             ;;
     esac
+    
+    prompt_wait_for_next_track
+    local wait_status=$?
+    case $wait_status in
+        0)
+            ;;
+        1)
+            echo -e "${YELLOW}Recording cancelled before it started.${NC}"
+            return
+            ;;
+        2)
+            SHOULD_EXIT=true
+            return
+            ;;
+    esac
+    
+    if [ "$action" = "duration" ]; then
+        record_duration "$duration_value" "$duration_label"
+    else
+        record_until_size "$size_value"
+    fi
 }
 
 # Record for a specific duration
@@ -410,14 +622,6 @@ record_duration() {
     local filepath="$RECORD_DIR/$filename"
     
     mkdir -p "$RECORD_DIR"
-    
-    # Pause any active playback
-    local was_playing=true
-    if $PAUSED; then
-        was_playing=false
-    else
-        kill -STOP $PID 2>/dev/null
-    fi
     
     # Clear any existing trap
     trap - INT
@@ -466,11 +670,6 @@ record_duration() {
         echo -e "\n${YELLOW}⚠️  Recording was cancelled or failed${NC}"
     fi
     
-    # Resume playback if it was playing
-    if $was_playing; then
-        kill -CONT $PID 2>/dev/null
-    fi
-    
     # Reset trap
     trap - INT
 }
@@ -478,6 +677,11 @@ record_duration() {
 # Record until specific file size is reached
 record_until_size() {
     local target_size=$1
+    local bytes
+    bytes=$(parse_size_to_bytes "$target_size") || {
+        echo -e "${RED}Invalid size format. Use values like 5mb, 500kb, 1gb.${NC}"
+        return
+    }
     local filename="size_${target_size}_$(date +%Y%m%d_%H%M%S).mp3"
     local filepath="$RECORD_DIR/$filename"
     
@@ -485,14 +689,21 @@ record_until_size() {
     
     echo -e "\n${YELLOW}🎙️  Recording until file reaches $target_size ...${NC}"
     
-    ffmpeg -y -i "$AUDIO_URL" -c copy -fs $target_size "$filepath" >/dev/null 2>&1 &
-    local ffmpeg_pid=$!
+    ffmpeg -y -i "$AUDIO_URL" -c copy -fs $bytes "$filepath" >/dev/null 2>&1 &
+    RECORDING_PID=$!
+    RECORDING_ACTIVE=true
     
     echo -e "${CYAN}Recording in progress... Press Ctrl+C to stop early${NC}"
     
-    trap 'kill $ffmpeg_pid 2>/dev/null; echo -e "\n${YELLOW}Recording stopped.${NC}"; return' INT
+    trap 'kill $RECORDING_PID 2>/dev/null; RECORDING_ACTIVE=false; echo -e "\n${YELLOW}Recording stopped.${NC}"; return' INT
     
-    while kill -0 $ffmpeg_pid 2>/dev/null; do
+    while kill -0 $RECORDING_PID 2>/dev/null; do
+        if read -t 0.1 -n 1 -s key && [[ "$key" == "a" ]]; then
+            kill $RECORDING_PID 2>/dev/null
+            echo -e "\n${YELLOW}Recording cancelled by user.${NC}"
+            RECORDING_ACTIVE=false
+            break
+        fi
         if [ -f "$filepath" ]; then
             local current_size=$(du -h "$filepath" | cut -f1)
             printf "\rCurrent size: %-8s" "$current_size"
@@ -506,6 +717,8 @@ record_until_size() {
     else
         echo -e "\n${RED}❌ Failed to record audio${NC}"
     fi
+    RECORDING_ACTIVE=false
+    trap - INT
 }
 
 # Start playing audio in the background
@@ -513,6 +726,7 @@ echo "Playing audio stream..."
 
 # Print ASCII Art just before starting the audio
 print_ascii_art
+LAST_ASCII_TIME=$(date +%s)
 
 # Redirect ffplay output to a temporary file
 TMP_LOG=$(mktemp)
@@ -560,6 +774,10 @@ get_lyrics() {
 
 # Function to display current track information with progress
 display_track_info() {
+    if $INTERACTIVE_MODE; then
+        return
+    fi
+
     local metadata=$(fetch_metadata)
     
     if [ -n "$metadata" ]; then
@@ -568,20 +786,7 @@ display_track_info() {
         # Check if track has changed
         if [ "$song_title" != "$LAST_STREAM_TITLE" ] || [ "$artist" != "$LAST_ARTIST" ]; then
             echo ""  # New line when track changes
-            print_ascii_art
-            echo -e "${CYAN}╔════════════════════════════════════════════╗"
-            echo -e "║           ${YELLOW}🎵  Now Playing  🎵${CYAN}              ║"
-            echo -e "╠════════════════════════════════════════════╣"
-            echo -e "║ ${YELLOW}🎵  Title:${NC}  $song_title"
-            echo -e "║ ${YELLOW}🎤  Artist:${NC} $artist"
-            if [ "$album" != "Unknown Album" ]; then
-                echo -e "║ ${YELLOW}💿  Album:${NC}  $album"
-            fi
-            if [ "$playlist" != "Unknown Collection" ]; then
-                echo -e "║ ${YELLOW}📋  Playlist:${NC} $playlist"
-            fi
-            echo -e "║ ${YELLOW}⏱️   Duration:${NC} $(format_duration $duration)"
-            echo -e "╚════════════════════════════════════════════╝${NC}"
+            print_now_playing_card "$song_title" "$artist" "$album" "$playlist" "$duration"
             
             LAST_STREAM_TITLE="$song_title"
             LAST_ARTIST="$artist"
@@ -591,7 +796,7 @@ display_track_info() {
         fi
         
         # Always update the progress display
-        if [ $duration -gt 0 ]; then
+        if [[ "$duration" =~ ^[0-9]+$ ]] && [ "$duration" -gt 0 ]; then
             # Show progress on the same line
             printf "\r\033[K"  # Clear current line
             draw_progress_bar $elapsed $duration "Now Playing" "GREEN"
@@ -599,77 +804,81 @@ display_track_info() {
     fi
 }
 
-# Start a background job to monitor track information
-(
-    # Initial display
-    echo -e "${CYAN}Loading track information...${NC}"
-    
-    while kill -0 $PID 2>/dev/null; do
-        current_time=$(date +%s)
-        # Show ASCII art every 5 minutes or when forced
-        if [ $((current_time - LAST_ASCII_TIME)) -ge 300 ]; then
-            print_ascii_art
-            LAST_ASCII_TIME=$current_time
-        fi
-        
-        # Only show track info if timer isn't running
-        if ! $TIMER_RUNNING; then
-            display_track_info
-        fi
-        
-        sleep $TRACK_UPDATE_INTERVAL
-    done
-) &
-
+# Initial display
+echo -e "${CYAN}Loading track information...${NC}"
 # Command help function
 show_help() {
+    # Clear input buffer before reading
+    flush_input
     clear
-    print_ascii_art
-    echo -e "${CYAN}╔════════════════════════════════════════════╗"
-    echo -e "║           ${YELLOW}ZamRock CLI - Help Menu${CYAN}              ║"
-    echo -e "╠════════════════════════════════════════════╣"
-    echo -e "║ ${YELLOW}${GREEN}p${NC}  - Pause or unpause the audio stream"
-    echo -e "║ ${YELLOW}${GREEN}r${NC}  - Start or cancel the Ramen Noodle Timer"
-    echo -e "║ ${YELLOW}${GREEN}a${NC}  - Archive the audio stream (select duration)"
-    echo -e "║ ${YELLOW}${GREEN}i${NC}  - Show ZamRock information and social links"
-    echo -e "║ ${YELLOW}${GREEN}l${NC}  - Search for lyrics of current track"
-    echo -e "║ ${YELLOW}${GREEN}h${NC}  - Show this help menu"
-    echo -e "║ ${YELLOW}${GREEN}q${NC}  - Quit the script"
-    echo -e "╠════════════════════════════════════════════╣"
-    echo -e "║ ${YELLOW}🔊 Now Playing:${NC} ${LAST_STREAM_TITLE:-Unknown Track}"
-    echo -e "║ ${YELLOW}🎤 Artist:${NC} ${LAST_ARTIST:-Unknown Artist}"
-    echo -e "║ ${YELLOW}⏱️  Timer:${NC} ${TIMER_RUNNING:+${PURPLE}Running - $((TIMER_DURATION - ($(date +%s) - TIMER_START)))s left${NC}}${TIMER_RUNNING:+}${TIMER_RUNNING:-Not running}"
-    echo -e "╚════════════════════════════════════════════╝${NC}"
-    echo -e "${YELLOW}Press any key to return to the player...${NC}"
+    local timer_status
+    if $TIMER_RUNNING; then
+        local remaining=$((TIMER_DURATION - ($(date +%s) - TIMER_START)))
+        [ $remaining -lt 0 ] && remaining=0
+        timer_status="${PURPLE}Running - $(format_duration $remaining) left${NC}"
+    else
+        timer_status="Not running"
+    fi
+    local typewriter_label
+    if $TYPEWRITER_MODE; then
+        typewriter_label="${GREEN}ON${NC}"
+    else
+        typewriter_label="${RED}OFF${NC}"
+    fi
+    local lines=(
+        "${YELLOW}${GREEN}p${NC}  - Pause or unpause the audio stream"
+        "${YELLOW}${GREEN}r${NC}  - Start or cancel the Ramen Noodle Timer"
+        "${YELLOW}${GREEN}a${NC}  - Archive the audio stream (select duration)"
+        "${YELLOW}${GREEN}i${NC}  - Show ZamRock information and social links"
+        "${YELLOW}${GREEN}l${NC}  - Search for lyrics of current track"
+        "${YELLOW}${GREEN}n${NC}  - Show the logo and now playing info"
+        "${YELLOW}${GREEN}t${NC}  - Toggle typewriter effect (${typewriter_label})"
+        "${YELLOW}${GREEN}h${NC}  - Show this help menu"
+        "${YELLOW}${GREEN}q${NC}  - Quit the script"
+        ""
+        "${YELLOW}🔊 Now Playing:${NC} ${LAST_STREAM_TITLE:-Unknown Track}"
+        "${YELLOW}🎤 Artist:${NC} ${LAST_ARTIST:-Unknown Artist}"
+        "${YELLOW}⏱️  Timer:${NC} ${timer_status}"
+    )
+    render_box "${YELLOW}ZamRock CLI - Help Menu${NC}" "${lines[@]}"
+    type_print "${YELLOW}Press any key to return to the player...${NC}"
     read -n 1 -s
     NO_CLEAR=true
+    flush_input
 }
 
 # Function to display information about ZamRock
 show_info() {
+    # Clear input buffer before reading
+    flush_input
     clear
-    print_ascii_art
-    echo -e "${CYAN}╔════════════════════════════════════════════╗"
-    echo -e "║           ${YELLOW}ZamRock Radio - Connect With Us${CYAN}          ║"
-    echo -e "╠════════════════════════════════════════════╣"
-    echo -e "║ ${YELLOW}🌐 Website:${NC}  ${GREEN}https://zamrock.net${NC}"
-    echo -e "║ ${YELLOW}💬 Matrix:${NC}  ${GREEN}https://matrix.to/#/#zamrock:unredacted.org${NC}"
-    echo -e "║ ${YELLOW}🐘 Mastodon:${NC} ${GREEN}https://musicworld.social/@ZamRock${NC}"
-    echo -e "║ ${YELLOW}🔵 BlueSky:${NC}  ${GREEN}https://bsky.app/profile/zamrock.net${NC}"
-    echo -e "║ ${YELLOW}🎮 Discord:${NC}  ${GREEN}https://discord.gg/TGNSc9kTjR${NC}"
-    echo -e "║ ${YELLOW}💬 Revolt:${NC}   ${GREEN}https://stt.gg/CsjKzYWm${NC}"
-    echo -e "║"
-    echo -e "║ ${YELLOW}🔊 Now Playing:${NC} ${LAST_STREAM_TITLE:-Unknown Track}"
-    echo -e "║ ${YELLOW}🎤 Artist:${NC} ${LAST_ARTIST:-Unknown Artist}"
-    echo -e "║ ${YELLOW}💿 Album:${NC} ${LAST_ALBUM:-Unknown Album}"
-    echo -e "╚════════════════════════════════════════════╝${NC}"
-    echo -e "${YELLOW}Press any key to return to the player...${NC}"
+    local lines=(
+        "${YELLOW}🌐 Website:${NC}  ${GREEN}https://zamrock.net${NC}"
+        "${YELLOW}💬 Matrix:${NC}  ${GREEN}https://matrix.to/#/#zamrock:unredacted.org${NC}"
+        "${YELLOW}🐘 Mastodon:${NC} ${GREEN}https://musicworld.social/@ZamRock${NC}"
+        "${YELLOW}🔵 BlueSky:${NC}  ${GREEN}https://bsky.app/profile/zamrock.net${NC}"
+        "${YELLOW}🎮 Discord:${NC}  ${GREEN}https://discord.gg/TGNSc9kTjR${NC}"
+        "${YELLOW}💬 Revolt:${NC}   ${GREEN}https://stt.gg/CsjKzYWm${NC}"
+        ""
+        "${YELLOW}🔊 Now Playing:${NC} ${LAST_STREAM_TITLE:-Unknown Track}"
+        "${YELLOW}🎤 Artist:${NC} ${LAST_ARTIST:-Unknown Artist}"
+        "${YELLOW}💿 Album:${NC} ${LAST_ALBUM:-Unknown Album}"
+    )
+    render_box "${YELLOW}ZamRock Radio - Connect With Us${NC}" "${lines[@]}"
+    type_print "${YELLOW}Press any key to return to the player...${NC}"
     read -n 1 -s
+    flush_input
 }
 
 cleanup() {
+    if $CLEANED_UP; then
+        return
+    fi
+    CLEANED_UP=true
     kill $PID 2>/dev/null
     [ -n "$TIMER_PID" ] && kill $TIMER_PID 2>/dev/null
+    [ -n "$RECORDING_PID" ] && kill $RECORDING_PID 2>/dev/null
+    [ -n "$FFMPEG_PID" ] && kill $FFMPEG_PID 2>/dev/null
     rm -f "$TMP_LOG"
     echo -e "${YELLOW}Playback finished.${NC}"
 }
@@ -699,96 +908,111 @@ update_timer_display() {
 
 # Start the input loop for user commands
 while kill -0 $PID 2>/dev/null; do
-    # Check for timer updates if not recording
-    if $TIMER_RUNNING && ! $RECORDING_ACTIVE; then
+    if $SHOULD_EXIT; then
+        break
+    fi
+    current_time=$(date +%s)
+
+    if ! $INTERACTIVE_MODE; then
+        if [ $((current_time - LAST_TRACK_REFRESH)) -ge $TRACK_UPDATE_INTERVAL ]; then
+            display_track_info
+            LAST_TRACK_REFRESH=$current_time
+        fi
+
+        if [ $((current_time - LAST_ASCII_TIME)) -ge $ASCII_DISPLAY_INTERVAL ]; then
+            show_logo_and_now_playing
+        fi
+    fi
+    
+    # Update timer display only when not recording or in menus
+    if $TIMER_RUNNING && ! $RECORDING_ACTIVE && ! $INTERACTIVE_MODE; then
         update_timer_display
     fi
     
-    read -n 1 -s -t 1 key  # Wait 1 second for keypress, then continue
-    
-    # Clear any remaining input
-    while read -r -t 0; do read -r; done
-    
-    # Store last command
-    LAST_CMD="$key"
-    
-    # Show song info after any command
-    if [ -n "$key" ]; then
-        # Don't show art if timer is running
-        if ! $TIMER_RUNNING; then
-            print_ascii_art
-            display_track_info
-        fi
-        # Reset ASCII timer after showing art
-        LAST_ASCII_TIME=$(date +%s)
+    read -n 1 -s -t $READ_TIMEOUT key
+    if [ -z "$key" ]; then
+        continue
     fi
 
-    if [ "$key" == "p" ]; then
-        if $PAUSED; then
-            echo -e "\n${GREEN}▶️  Resuming playback...${NC}"
-            kill -CONT $PID  # Send CONT signal to resume
-            PAUSED=false
-        else
-            echo -e "\n${YELLOW}⏸️  Pausing playback...${NC}"
-            kill -STOP $PID  # Send STOP signal to pause
-            PAUSED=true
-        fi
-    elif [ "$key" == "r" ]; then
-        if $TIMER_RUNNING; then
-            # Cancel the timer
-            touch "/tmp/timer_cancel_$TIMER_PID"
-            TIMER_RUNNING=false
-            echo -e "\n${YELLOW}⏹️  Timer cancelled${NC}"
-        else
-            start_noodle_timer
-        fi
-    elif [ "$key" == "a" ]; then
-        if $RECORDING_ACTIVE; then
-            echo -e "\n${YELLOW}Stopping recording...${NC}"
-            kill $RECORDING_PID 2>/dev/null
-            RECORDING_ACTIVE=false
-        else
-            # Pause timer updates while in recording menu
-            local was_timer_running=$TIMER_RUNNING
-            $TIMER_RUNNING && touch "/tmp/timer_cancel_$TIMER_PID"
-            
-            # Show recording menu
-            record_stream
-            
-            # Restore timer if it was running
-            if $was_timer_running; then
-                TIMER_RUNNING=true
+    LAST_CMD="$key"
+
+    case "$key" in
+        "p")
+            show_logo_and_now_playing
+            if $PAUSED; then
+                echo -e "\n${GREEN}▶️  Resuming playback...${NC}"
+                kill -CONT $PID
+                PAUSED=false
+            else
+                echo -e "\n${YELLOW}⏸️  Pausing playback...${NC}"
+                kill -STOP $PID
+                PAUSED=true
+            fi
+            ;;
+        "r")
+            show_logo_and_now_playing
+            if $TIMER_RUNNING; then
+                touch "/tmp/timer_cancel_$TIMER_PID"
+                TIMER_RUNNING=false
+                echo -e "\n${YELLOW}⏹️  Timer cancelled${NC}"
+            else
                 start_noodle_timer
             fi
-        fi
-    elif [ "$key" == "i" ]; then
-        show_info
-    elif [ "$key" == "h" ]; then
-        show_help
-        # Show website link after help
-        echo -e "\n${CYAN}Visit our website: $WEBSITE_LINK${NC}"
-        echo -e "${YELLOW}Press any key to continue...${NC}"
-        read -n 1 -s
-    elif [ "$key" == "l" ]; then
-        if [ -n "$LAST_STREAM_TITLE" ] && [ -n "$LAST_ARTIST" ]; then
-            get_lyrics "$LAST_ARTIST" "$LAST_STREAM_TITLE"
-            NO_CLEAR=true
-            echo -e "\n${YELLOW}Press any key to continue...${NC}"
-            read -n 1 -s
-        else
-            echo -e "\n${YELLOW}No track information available to search for lyrics.${NC}"
-            sleep 2
-        fi
-    elif [ "$key" == "q" ]; then
-        echo
+            ;;
+        "a")
+            show_logo_and_now_playing
+            if $RECORDING_ACTIVE; then
+                echo -e "\n${YELLOW}Stopping recording...${NC}"
+                kill $RECORDING_PID 2>/dev/null
+                RECORDING_ACTIVE=false
+            else
+                enter_interactive_mode
+                record_stream
+                exit_interactive_mode
+            fi
+            ;;
+        "i")
+            show_logo_and_now_playing
+            enter_interactive_mode
+            show_info
+            exit_interactive_mode
+            ;;
+        "h")
+            enter_interactive_mode
+            show_help
+            exit_interactive_mode
+            ;;
+        "l")
+            show_logo_and_now_playing
+            enter_interactive_mode
+            if [ -n "$LAST_STREAM_TITLE" ] && [ -n "$LAST_ARTIST" ]; then
+                get_lyrics "$LAST_ARTIST" "$LAST_STREAM_TITLE"
+                echo -e "\n${YELLOW}Press any key to continue...${NC}"
+                read -n 1 -s
+            else
+                echo -e "\n${YELLOW}No track information available to search for lyrics.${NC}"
+                sleep 2
+            fi
+            exit_interactive_mode
+            ;;
+        "t")
+            enter_interactive_mode
+            toggle_typewriter_mode
+            exit_interactive_mode
+            ;;
+        "n")
+            show_logo_and_now_playing
+            ;;
+        "q")
+            echo
+            break
+            ;;
+    esac
+    
+    if $SHOULD_EXIT; then
         break
     fi
 done
 
 # Handle graceful exit
 echo -e "${YELLOW}Thank you for listening!${NC}"
-
-# Clean up
-kill $PID 2>/dev/null
-rm "$TMP_LOG"
-echo "Playback finished."
