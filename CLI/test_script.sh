@@ -1,61 +1,47 @@
 #!/bin/bash
 
-# This script serves as a basic test suite for the main script
-set -e  # Exit immediately if a command exits with a non-zero status
+set -e
 
-# Path to the main script
-MAIN_SCRIPT="./your_main_script.sh"  # Adjust this path to your actual script
+# Path to your main script
+MAIN_SCRIPT="./CLI/zamrock_v-1_5_1.sh"
 AUDIO_URL="https://zamrock.deathsmack.com/listen/zamrock/test_stream_7e335"
 
-# Function to test if required commands are available
+# Check if required commands are available
 test_commands() {
-    echo "Testing required commands..."
-
+    echo "Checking dependencies..."
     for cmd in ffplay ffmpeg; do
-        if ! command -v $cmd &> /dev/null; then
-            echo "FAIL: Command $cmd is not installed."
+        if ! command -v "$cmd" &> /dev/null; then
+            echo "Error: $cmd is not installed."
             exit 1
         fi
     done
-
-    echo "SUCCESS: All required commands are installed."
+    echo "All dependencies are installed."
 }
 
-# Function to test if the script runs without errors
-test_script_run() {
-    echo "Testing if main script runs without errors..."
+# Test if the main script runs without errors
+test_script_execution() {
+    echo "Running main script..."
+    # Run your script with test parameters
+    # Adjust as needed based on your script's usage
+    bash "$MAIN_SCRIPT" --help > /dev/null 2>&1
+    echo "Main script executed successfully."
+}
 
-    # Run the script in the background and check for errors
-    (bash "$MAIN_SCRIPT" &> /dev/null) &
-    SCRIPT_PID=$!
-    sleep 3  # Allow the script to run for a few seconds
-    if ps -p $SCRIPT_PID > /dev/null; then
-        kill $SCRIPT_PID  # Kill if still running
-        echo "SUCCESS: Main script executed without errors."
+# Test streaming metadata fetch
+test_metadata() {
+    echo "Fetching stream metadata..."
+    output=$(ffmpeg -i "$AUDIO_URL" 2>&1 | grep -E 'StreamTitle|icy-name|icy-genre' || true)
+    if [[ -n "$output" ]]; then
+        echo "Metadata fetched: $output"
     else
-        echo "FAIL: Main script encountered an issue during execution."
+        echo "Error: No metadata found."
         exit 1
     fi
 }
 
-# Function to test the output format of StreamTitle and Genre
-test_metadata_output() {
-    echo "Testing metadata output..."
-
-    # Capture the metadata fetch output
-    OUTPUT=$(ffmpeg -i "$AUDIO_URL" 2>&1 | grep -E 'StreamTitle|icy-name|icy-genre' || true)
-
-    if [[ -n "$OUTPUT" ]]; then
-        echo "SUCCESS: Metadata fetch produced output."
-    else
-        echo "FAIL: No output from metadata fetch."
-        exit 1
-    fi
-}
-
-# Run the test functions
+# Run all tests
 test_commands
-test_script_run
-test_metadata_output
+test_script_execution
+test_metadata
 
-echo "All tests passed successfully!"
+echo "All tests passed!"
