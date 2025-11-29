@@ -1,4 +1,4 @@
-```markdown
+
 # ZamRock CLI: Your Immersive Terminal Audio Experience
 
 ZamRock CLI is a command-line masterpiece designed to elevate your listening experience of ZamRock radio directly within your terminal.  It's more than just playback; it's an interactive, dynamic hub blending real-time audio, community features, and personalized controls.
@@ -34,6 +34,3 @@ ZamRock CLI is a command-line masterpiece designed to elevate your listening exp
 3. **Run the CLI:**  `./zamrock_cli`  and dive into the interactive world of ZamRock in your terminal!
 
 **Join the Community:** Connect with fellow ZamRock enthusiasts on our various platforms (links provided in the repository's `INFO.md`). We thrive on feedback and collaboration!
-
-
-```
