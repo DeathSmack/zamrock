@@ -22,11 +22,10 @@
 > * Website - https://zamrock.net
 > * Matrix - https://matrix.to/#/#zamrock:unredacted.org
 > * Mastodon - https://musicworld.social/@ZamRock
-> * SimpleX - Limited acesss please request a link for alhpa
 > * BlueSky - https://bsky.app/profile/zamrock.net
 > * Discord Server - https://discord.gg/TGNSc9kTjR
 > * Revolt Server - https://stt.gg/CsjKzYWm
-
+> * SimpleX - Limited acesss please request a link for alhpa
 
 
 Thanks for reading my md too!!
