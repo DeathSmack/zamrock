@@ -24,9 +24,13 @@ We are your **go-to source** for all things Zamrock, featuring a **vibrant music
 
 ### 📱 **Social Media & Community**
 
+- Website - https://zamrock.net
+- Matrix - https://matrix.to/#/#zamrock:unredacted.org
+- Mastodon - https://musicworld.social/@ZamRock
 - 🔵 [**@ZamRock** on Bluesky](https://bsky.app/profile/zamrock.net) — Follow us for **updates** and **community interactions**! 🤝
+- 💬 [**Discord Server**](https://discord.gg/TGNSc9kTjR) — Join our **Discord community** for **discussions**, **events**, and more! 🎉
+- Revolt Server - https://stt.gg/CsjKzYWm
 - 🟣 **SimpleX** Invite only  💌
-- 💬 [**Discord Server**](https://discord.gg/E84ahbXxvu) — Join our **Discord community** for **discussions**, **events**, and more! 🎉
 
 ---
 
