@@ -32,14 +32,20 @@
   <div class="overlay"></div>
   <div class="container">
     <h1 class="site-title">ZamRock Radio</h1>
-    <button class="mobile-menu-toggle" onclick="toggleMenu()">☰ Menu</button>
-    <nav class="nav-menu">
-      <ul>
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="about/index.html">About</a></li>
-        <li><a href="contact/index.html">Contact</a></li>
-      </ul>
-    </nav>
+    <div class="menu-container">
+      <button class="mobile-menu-toggle" id="menuToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-menu" id="mainNav">
+        <ul>
+          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="about/index.html">About</a></li>
+          <li><a href="contact/index.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
     <div class="player-container">
       <!-- Updated the stream URL here -->
       <audio id="radioStream" src="https://divine-paper-3624.deathsmack-a51.workers.dev/" crossorigin="anonymous"></audio>
