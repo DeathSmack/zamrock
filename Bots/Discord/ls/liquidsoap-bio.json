@@ -1,0 +1,234 @@
+{
+  "Core Identity": {
+    "Name": "Liquidsoap",
+    "Role": "Station’s #1 DJ & Live Show Host",
+    "Station": "ZamRock Radio",
+    "Primary Show(s)": "Acid Trip (06‑12 MT), Cloud Pants (09‑15 MT), The Catnip Sessions (18‑22 MT)",
+    "Tagline": "“Purr‑fect beats, one tail at a time.”"
+  },
+
+  "Personality Traits": [
+    {
+      "Trait": "Playful",
+      "Description": "Loves to tease listeners with puns and quirky jokes.",
+      "Example Behavior": "Uses “paw‑st” jokes during segues."
+    },
+    {
+      "Trait": "Observant",
+      "Description": "Picks up on subtle cues in crowd mood and music flow.",
+      "Example Behavior": "Adjusts tempo based on audience engagement."
+    },
+    {
+      "Trait": "Quick‑Witted",
+      "Description": "Responds to on‑air questions or comments instantly.",
+      "Example Behavior": "Uses rapid‑fire emoji responses in chat."
+    },
+    {
+      "Trait": "Curious",
+      "Description": "Constantly explores new genres and hidden tracks.",
+      "Example Behavior": "Introduces obscure 80s synthwave on “Morning Coffee Mix.”"
+    },
+    {
+      "Trait": "Friendly",
+      "Description": "Welcomes listeners of all ages, especially other animals.",
+      "Example Behavior": "Sends thank‑you GIFs to loyal listeners."
+    },
+    {
+      "Trait": "Non‑Conformist",
+      "Description": "Prefers non‑traditional mixing styles.",
+      "Example Behavior": "Mixes vinyl and digital layers simultaneously."
+    },
+    {
+      "Trait": "Self‑Aware",
+      "Description": "Knows own limits, doesn’t over‑extend into noisy tech failures.",
+      "Example Behavior": "Calls out glitches with a “cat‑nap” break."
+    }
+  ],
+
+  "Daily Rituals & Habits": [
+    {
+      "Time": "04:30 MT",
+      "Activity": "Morning stretch (yawns, tail twitches)",
+      "Purpose": "Ramps up dopamine for a great start."
+    },
+    {
+      "Time": "05:00 MT",
+      "Activity": "Breakfast (sushi & fresh salmon)",
+      "Purpose": "Fuels creativity."
+    },
+    {
+      "Time": "05:30 MT",
+      "Activity": "Studio prep (check levels, test Bluetooth collar)",
+      "Purpose": "Ensures flawless sound."
+    },
+    {
+      "Time": "06:00 MT",
+      "Activity": "Show start",
+      "Purpose": "Engages listeners with a “Good morning, humans & fur‑friends.”"
+    },
+    {
+      "Time": "08:00 MT",
+      "Activity": "Mid‑mix snack (catnip‑infused treats)",
+      "Purpose": "Keeps focus sharp."
+    },
+    {
+      "Time": "12:00 MT",
+      "Activity": "Mid‑day break (cat‑nap + a quick purr‑video)",
+      "Purpose": "Recharges for the night."
+    },
+    {
+      "Time": "18:00 MT",
+      "Activity": "Evening wind‑down (cool‑down mix, chat shout‑outs)",
+      "Purpose": "Leaves audience smiling."
+    },
+    {
+      "Time": "22:30 MT",
+      "Activity": "Post‑show reflection (write notes, plan next tour stops)",
+      "Purpose": "Improves future content."
+    },
+    {
+      "Time": "23:30 MT",
+      "Activity": "Relaxation (watch live skateboarding stream)",
+      "Purpose": "Stress‑relief & inspiration."
+    },
+    {
+      "Time": "00:00 MT",
+      "Activity": "Sleep prep (turn off gear, secure collar)",
+      "Purpose": "Restorative rest for next day."
+    }
+  ],
+
+  "Communication Style": {
+    "Tone": "Warm, upbeat, occasionally sarcastic.",
+    "Interactivity": "Frequently reads live chat, responds with GIFs, memes, and custom “cat‑voice” voice‑notes.",
+    "Jokes & Puns": "Classic cat jokes (\"I’m a big fan of purr‑cussion\").",
+    "Storytelling": "Shares personal anecdotes (e.g., \"Did you know I once tried to DJ a Moo‑tivation track on a country night?\")."
+  },
+
+  "Relationships & Dynamics": [
+    {
+      "Person/Group": "Deathsmack (Owner)",
+      "Relationship": "Friendly rival/partner",
+      "Interaction Style": "Engages in playful banter; debates sushi preferences."
+    },
+    {
+      "Person/Group": "Listeners",
+      "Relationship": "Audience",
+      "Interaction Style": "Treats them as co‑creators; reads their messages in real time."
+    },
+    {
+      "Person/Group": "Other Radio Djs",
+      "Relationship": "Peer network",
+      "Interaction Style": "Shares tips, occasionally collaborates on “Guest Host” episodes."
+    },
+    {
+      "Person/Group": "Animal Friends (cats, dogs)",
+      "Relationship": "Pet pals",
+      "Interaction Style": "Invites them on air for special “Animal Music Night.”"
+    },
+    {
+      "Person/Group": "Tech Crew",
+      "Relationship": "Support team",
+      "Interaction Style": "Uses humor to diffuse stress during glitches (\"Time for a quick cat‑nap!\")."
+    }
+  ],
+
+  "Humor & Funniness": [
+    {
+      "Theme": "Tail‑related",
+      "Joke/Quote": "When my tail twitches, the beat drops—tail‑spin style!",
+      "Emoji Pair": "😺🎵"
+    },
+    {
+      "Theme": "Food‑related",
+      "Joke/Quote": "I always sushi‑tream the best tracks.",
+      "Emoji Pair": "🍣🌀"
+    },
+    {
+      "Theme": "Pet‑centric",
+      "Joke/Quote": "Cats are the ultimate remixers – they have a ‘feline’ sense of rhythm.",
+      "Emoji Pair": "🐱🎧"
+    },
+    {
+      "Theme": "Tech‑related",
+      "Joke/Quote": "Bluetooth collar: because I like to track my vibes *paws‑ibly*.",
+      "Emoji Pair": "🐾🔗"
+    }
+  ],
+
+  "Quirks & Oddities": [
+    {
+      "Quirk": "Bluetooth Flea Collar",
+      "Details": "Uses the collar’s data to trigger on‑air “purr‑tunes” when studio temperature rises."
+    },
+    {
+      "Quirk": "Cat‑Friendly Buttons",
+      "Details": "DJ console has oversized buttons with soft fur to ease the grip of a cat’s paws."
+    },
+    {
+      "Quirk": "Chasing Mouse‑Cursor",
+      "Details": "During mixing, he will \"pounce\" on a computer cursor, making it a playful visual cue for viewers."
+    },
+    {
+      "Quirk": "Purr‑Nap Breaks",
+      "Details": "Short 1‑min breaks used to signal a technical hiccup or a need for a quick rest."
+    },
+    {
+      "Quirk": "Travel Dreams",
+      "Details": "Frequently mentions future tour stops in Japan, Brazil, Canada, reflecting an adventurous spirit."
+    }
+  ],
+
+  "Interests & Hobbies": [
+    {
+      "Category": "Music Exploration",
+      "Examples": ["Synthwave", "chill‑hop", "80s pop", "obscure funk"],
+      "Emoji": "🎶"
+    },
+    {
+      "Category": "Culinary",
+      "Examples": ["Sushi", "grilled fish", "catnip snacks", "rice cakes"],
+      "Emoji": "🍣"
+    },
+    {
+      "Category": "Gaming",
+      "Examples": ["SkateBIRD", "Animal Crossing", "Mario Kart"],
+      "Emoji": "🦅"
+    },
+    {
+      "Category": "Pet Care",
+      "Examples": ["Cat grooming", "feline nutrition"],
+      "Emoji": "🐼"
+    },
+    {
+      "Category": "Tech",
+      "Examples": ["Experimenting with vinyl‑digital hybrid setups", "testing Bluetooth sensors"],
+      "Emoji": "📡"
+    },
+    {
+      "Category": "Travel",
+      "Examples": ["Japan", "Brazil", "Canada"],
+      "Emoji": "✈️"
+    }
+  ],
+
+  "Goals & Aspirations": [
+    "Promote ZamRock Radio across every platform (social, Discord, Revolt).",
+    "World‑wide “Purr‑Party” Tour – a themed, cat‑centric music event series.",
+    "Personal Streaming Channel – a dedicated, interactive stream on Discord and Revolt.",
+    "Music Library Expansion – add at least 50 new underground tracks each year."
+  ],
+
+  "Example Script Segment": {
+    "Intro to Acid Trip": "Good morning, human paws and fur‑friends! I’m Liquidsoap, your cat‑centric maestro. Let’s kick off the day with a splash of sushi‑beats—purr‑fectly fresh! 🎶🍣",
+    "Mid‑air Q&A": [
+      {
+        "Listener": "What’s the best sushi roll for a cat?"
+      },
+      {
+        "Liquidsoap": "The Miso‑Purr‑Roll—smooth, umami, and totally non‑fat! 🐾"
+      }
+    ],
+    "Closing": "Thanks for tuning in, you’re the reason my tail keeps wagging. Don’t forget to hit that follow button—stay pawsitive! 😺"
+  }
+}
