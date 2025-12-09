@@ -47,13 +47,20 @@ function scrapeComments() {
     const aiSection = document.querySelector('p.text-2xl.font-bold.mb-4.flex.items-center');
     if (!aiSection) return 'No AI description found';
     
-    // Navigate to the parent container that holds the text
-    const container = aiSection.closest('div.flex.flex-col.items-center');
-    if (!container) return 'Description container not found';
+    // Get the parent container that holds the description
+    const parentContainer = aiSection.closest('div.flex.flex-col.items-center');
+    if (!parentContainer) return 'Parent container not found';
     
-    // Find the span containing the actual description text
-    const descriptionSpan = container.querySelector('span:not(.text-gray-400)');
-    return descriptionSpan ? descriptionSpan.textContent.trim() : 'No description text found';
+    // Find the description text - it's in a span inside a flex container
+    const descriptionContainer = parentContainer.querySelector('div.flex.flex-col.gap-3.items-start');
+    if (!descriptionContainer) return 'Description text not found';
+    
+    // Get the first span that contains the actual description
+    const descriptionSpan = descriptionContainer.querySelector('span:first-child');
+    if (!descriptionSpan) return 'No description text found';
+    
+    // Return the cleaned-up text
+    return descriptionSpan.textContent.trim();
   } catch (error) {
     console.error('Error scraping comments:', error);
     return 'Error: Could not extract comments';
