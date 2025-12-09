@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Copy Genre",
+  "version": "1.0",
+  "description": "Copy first main genre + 5 sub-genres from audioaidynamics.com/genre-finder",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://audioaidynamics.com/genre-finder/*"
+  ],
+  "commands": {
+    "copy-genre": {
+      "suggested_key": {
+        "default": "Alt+Shift+L"
+      },
+      "description": "Copy genre string"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://audioaidynamics.com/genre-finder/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_end"
+    }
+  ]
+}
