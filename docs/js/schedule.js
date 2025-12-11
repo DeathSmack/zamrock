@@ -2,9 +2,20 @@
 let scheduleData = [];
 let currentShows = [];
 let upcomingShows = [];
-let userTimezone = 'America/Denver'; // Default to MT
+let userTimezone = 'auto'; // Start with auto-detect
 let currentTime = new Date();
 let scheduleInterval;
+
+// Timezone mapping for display
+const timezoneMap = {
+    'auto': 'Auto (Browser Time)',
+    'America/Denver': 'Mountain Time (MT)',
+    'America/New_York': 'Eastern Time (ET)',
+    'America/Chicago': 'Central Time (CT)',
+    'America/Los_Angeles': 'Pacific Time (PT)',
+    'UTC': 'UTC/GMT',
+    'Europe/London': 'London (GMT)'
+};
 
 // DOM Elements
 const timezoneSelect = document.getElementById('timezone');
@@ -20,25 +31,28 @@ const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Fri
 
 // Initialize the schedule
 async function initSchedule() {
-    // Set up mobile menu toggle
+    // Set up mobile menu
     setupMobileMenu();
+    
+    // Populate timezone dropdown
+    populateTimezoneSelect();
     
     // Try to get timezone from cookie or use browser's timezone
     const timezoneCookie = getCookie('user_timezone');
-    if (timezoneCookie) {
+    if (timezoneCookie && timezoneMap[timezoneCookie]) {
         userTimezone = timezoneCookie;
-        timezoneSelect.value = userTimezone;
     } else {
         try {
             const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
             if (detectedTz) {
                 userTimezone = detectedTz;
-                timezoneSelect.value = userTimezone;
             }
         } catch (e) {
             console.error('Error detecting timezone:', e);
+            userTimezone = 'America/Denver'; // Fallback to MT
         }
     }
+    timezoneSelect.value = userTimezone;
     
     // Load schedule data
     try {
@@ -114,15 +128,69 @@ function updateCurrentTime() {
     updateSchedule();
 }
 
+// Convert local time to specified timezone
+function getTimeInZone(date, timeZone) {
+    if (timeZone === 'auto') return date;
+    
+    const options = {
+        timeZone,
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'short'
+    };
+    
+    const formatter = new Intl.DateTimeFormat('en-US', options);
+    const parts = formatter.formatToParts(date);
+    const timeString = parts.find(part => part.type === 'time').value;
+    
+    // Parse the time string back to hours and minutes
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        hours,
+        minutes,
+        date.getSeconds()
+    );
+}
+
+// Populate timezone select dropdown
+function populateTimezoneSelect() {
+    timezoneSelect.innerHTML = '';
+    
+    for (const [value, label] of Object.entries(timezoneMap)) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        timezoneSelect.appendChild(option);
+    }
+}
+
+// Calculate time in minutes since midnight
+function getTimeInMinutes(date) {
+    return date.getHours() * 60 + date.getMinutes();
+}
+
+// Format time with AM/PM
+function formatTime(hours, minutes) {
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    return `${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+}
+
 // Update the schedule display
 function updateSchedule() {
     if (!scheduleData.length) return;
     
-    const now = currentTime;
+    // Get current time in user's timezone
+    const now = userTimezone === 'auto' ? new Date() : new Date(new Date().toLocaleString('en-US', { timeZone: userTimezone }));
+    currentTime = now;
+    
     const currentDay = daysOfWeek[now.getDay()];
-    const currentHours = now.getHours();
-    const currentMinutes = now.getMinutes();
-    const currentTimeInMinutes = currentHours * 60 + currentMinutes;
+    const currentTimeInMinutes = getTimeInMinutes(now);
     
     // Reset current and upcoming shows
     currentShows = [];
@@ -136,37 +204,29 @@ function updateSchedule() {
         const startTimeInMinutes = startHour * 60 + startMinute;
         const endTimeInMinutes = endHour * 60 + endMinute;
         
-        // Check if show is currently playing
-        if (currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes < endTimeInMinutes) {
+        // Check all possible cases where a show could be current
+        const isStandardShow = currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes < endTimeInMinutes;
+        const isOvernightShow = (endTimeInMinutes < startTimeInMinutes) && 
+                              (currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes < endTimeInMinutes);
+        
+        if (isStandardShow || isOvernightShow) {
             currentShows.push({
                 ...show,
                 isCurrent: true,
-                timeString: `${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}`
+                timeString: isOvernightShow 
+                    ? `Overnight until ${formatTime(endHour, endMinute)}`
+                    : `${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}`
             });
-        }
+        } 
         // Check if show is upcoming today
         else if (currentTimeInMinutes < startTimeInMinutes) {
+            const minutesUntil = startTimeInMinutes - currentTimeInMinutes;
             upcomingShows.push({
                 ...show,
                 isCurrent: false,
                 timeString: `${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}`,
-                minutesUntil: startTimeInMinutes - currentTimeInMinutes
-            });
-        }
-        // Handle shows that started yesterday and end today
-        else if (endTimeInMinutes < startTimeInMinutes && currentTimeInMinutes < endTimeInMinutes) {
-            currentShows.push({
-                ...show,
-                isCurrent: true,
-                timeString: `Overnight until ${formatTime(endHour, endMinute)}`
-            });
-        }
-        // Handle shows that start late and end the next day
-        else if (startTimeInMinutes > endTimeInMinutes && currentTimeInMinutes >= startTimeInMinutes) {
-            currentShows.push({
-                ...show,
-                isCurrent: true,
-                timeString: `Overnight until ${formatTime(endHour, endMinute)}`
+                minutesUntil: minutesUntil,
+                startsIn: minutesUntil <= 60 ? `in ${minutesUntil} min` : null
             });
         }
     });
