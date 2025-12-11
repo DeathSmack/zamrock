@@ -27,6 +27,7 @@
   <!-- Fonts and styles -->
   <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="stylesheet" href="css/news.css"/>
 </head>
 <body>
   <div class="overlay"></div>
@@ -49,7 +50,23 @@
         <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider" />
       </div>
     </div>
+
+    <!-- News Section -->
+    <section class="news-section">
+      <h2>Latest Updates</h2>
+      <div id="newsContainer"></div>
+      <div class="view-more">
+        <a href="news/" class="btn">View All Updates</a>
+      </div>
+    </section>
   </div>
   <script src="js/main.js"></script>
+  <script src="js/news.js"></script>
+  <script>
+    // Load news when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      loadNews(3, 'newsContainer');
+    });
+  </script>
 </body>
 </html>
