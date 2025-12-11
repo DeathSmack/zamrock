@@ -102,17 +102,29 @@
     position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
+    background: rgba(59, 66, 82, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
 }
 
 .show-card .show-description {
-    display: none;
-    margin-top: 10px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    margin-top: 0;
+    padding: 0;
     font-size: 0.9em;
-    opacity: 0.9;
+    color: #d8dee9;
 }
 
 .show-card.show-description-visible .show-description {
-    display: block;
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(136, 192, 208, 0.3);
 }
 
 /* For non-touch devices */
@@ -122,12 +134,16 @@
         top: 100%;
         left: 0;
         right: 0;
-        background: rgba(59, 66, 82, 0.95);
+        background: rgba(46, 52, 64, 0.95);
         padding: 10px;
         border-radius: 5px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         z-index: 10;
         display: none;
+        max-height: none;
+        opacity: 1;
+        margin-top: 10px;
+        border: none;
     }
     
     .show-card:hover .show-description {
@@ -148,15 +164,9 @@
     margin-top: 20px;
 }
 
-.show-card {
-    background: rgba(59, 66, 82, 0.7);
-    padding: 15px;
-    border-radius: 8px;
-    transition: transform 0.2s ease;
-}
-
 .show-card:hover {
     transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .show-card.current {
@@ -165,60 +175,73 @@
 }
 
 .show-time {
-  font-size: 0.8rem;
-  color: #88c0d0;
-  margin-bottom: 0.5rem;
-  font-family: 'Press Start 2P', monospace;
+    font-size: 0.9rem;
+    color: #88c0d0;
+    margin: 5px 0;
 }
 
 .show-name {
-  font-size: 1rem;
-  color: var(--text-color);
-  margin-bottom: 0.5rem;
-  font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin: 5px 0;
+    font-weight: bold;
 }
 
 .show-host {
-  font-size: 0.7rem;
-  color: #a3be8c;
-  opacity: 0.8;
+    font-size: 0.85rem;
+    color: #d8dee9;
+    opacity: 0.8;
+    margin: 5px 0;
 }
 
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-color);
-  font-style: italic;
+.no-shows {
+    text-align: center;
+    padding: 20px;
+    color: #d8dee9;
+    background: rgba(59, 66, 82, 0.3);
+    border-radius: 8px;
 }
 
 /* Mobile styles */
 @media (max-width: 768px) {
-  .timezone-selector {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-  
-  .time-display {
-    width: 100%;
-    text-align: center;
-  }
-  
-  .timezone-controls {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .show-list {
-    grid-template-columns: 1fr;
-  }
-  
-  .now-playing-container,
-  .upcoming-container {
-    padding: 1rem;
-  }
-  
-  .show-card {
-    width: 100%;
-  }
+    .timezone-selector {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+    
+    .time-display {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .timezone-controls {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .shows-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .now-playing-container,
+    .upcoming-container {
+        padding: 1rem;
+    }
+    
+    .show-card {
+        width: 100%;
+    }
+    
+    .mobile-menu-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        display: none;
+    }
+    
+    .nav-menu.active {
+        display: block;
+    }
 }

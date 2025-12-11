@@ -54,6 +54,13 @@ async function initSchedule() {
     }
     timezoneSelect.value = userTimezone;
     
+    // Set up timezone change handler
+    timezoneSelect.addEventListener('change', (e) => {
+        userTimezone = e.target.value;
+        setCookie('user_timezone', userTimezone, 365);
+        updateSchedule();
+    });
+    
     // Load schedule data
     try {
         const response = await fetch('../Radio-Schedule.json');
@@ -64,13 +71,6 @@ async function initSchedule() {
         console.error('Error loading schedule data:', error);
         currentShowsContainer.innerHTML = '<div class="error">Error loading schedule. Please try again later.</div>';
     }
-    
-    // Set up timezone change handler
-    timezoneSelect.addEventListener('change', (e) => {
-        userTimezone = e.target.value;
-        setCookie('user_timezone', userTimezone, 365);
-        updateSchedule();
-    });
     
     // Update time and schedule every minute
     updateCurrentTime();
@@ -117,7 +117,6 @@ function updateCurrentTime() {
         day: 'numeric'
     };
     
-    // Update time display
     const timeStr = now.toLocaleTimeString('en-US', timeOptions);
     const dateStr = now.toLocaleDateString('en-US', dateOptions);
     
@@ -128,69 +127,16 @@ function updateCurrentTime() {
     updateSchedule();
 }
 
-// Convert local time to specified timezone
-function getTimeInZone(date, timeZone) {
-    if (timeZone === 'auto') return date;
-    
-    const options = {
-        timeZone,
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        timeZoneName: 'short'
-    };
-    
-    const formatter = new Intl.DateTimeFormat('en-US', options);
-    const parts = formatter.formatToParts(date);
-    const timeString = parts.find(part => part.type === 'time').value;
-    
-    // Parse the time string back to hours and minutes
-    const [hours, minutes] = timeString.split(':').map(Number);
-    return new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        hours,
-        minutes,
-        date.getSeconds()
-    );
-}
-
-// Populate timezone select dropdown
-function populateTimezoneSelect() {
-    timezoneSelect.innerHTML = '';
-    
-    for (const [value, label] of Object.entries(timezoneMap)) {
-        const option = document.createElement('option');
-        option.value = value;
-        option.textContent = label;
-        timezoneSelect.appendChild(option);
-    }
-}
-
-// Calculate time in minutes since midnight
-function getTimeInMinutes(date) {
-    return date.getHours() * 60 + date.getMinutes();
-}
-
-// Format time with AM/PM
-function formatTime(hours, minutes) {
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const hours12 = hours % 12 || 12;
-    return `${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-}
-
-// Update the updateSchedule function to handle timezone conversion
+// Update the schedule display
 function updateSchedule() {
     if (!scheduleData.length) return;
     
-    // Get current time in user's timezone
-    const now = userTimezone === 'auto' ? new Date() : new Date(new Date().toLocaleString('en-US', { timeZone: userTimezone }));
-    currentTime = now;
-    
-    const currentDay = daysOfWeek[now.getDay()];
-    const currentTimeInMinutes = getTimeInMinutes(now);
+    // Get current time in station's timezone (MT)
+    const stationTz = 'America/Denver';
+    const now = new Date();
+    const nowInStationTz = new Date(now.toLocaleString('en-US', { timeZone: stationTz }));
+    const currentDay = daysOfWeek[nowInStationTz.getDay()];
+    const currentTimeInMinutes = nowInStationTz.getHours() * 60 + nowInStationTz.getMinutes();
     
     // Reset current and upcoming shows
     currentShows = [];
@@ -198,57 +144,64 @@ function updateSchedule() {
     
     // Process each show in the schedule
     scheduleData.forEach(show => {
-        // Convert show times to the selected timezone
         const [startHour, startMinute] = show.start.split(':').map(Number);
         const [endHour, endMinute] = show.end.split(':').map(Number);
         
-        // Create date objects in the station's timezone (MT)
-        const stationTz = 'America/Denver';
-        const nowInStationTz = new Date(now.toLocaleString('en-US', { timeZone: stationTz }));
-        const today = nowInStationTz.toISOString().split('T')[0];
+        const startTimeInMinutes = startHour * 60 + startMinute;
+        const endTimeInMinutes = endHour * 60 + endMinute;
         
-        // Create date objects for show start/end in station timezone
-        const showStart = new Date(`${today}T${show.start}:00-07:00`); // MT is UTC-7
-        const showEnd = new Date(`${today}T${show.end}:00-07:00`);
+        // Convert show times to user's selected timezone for display
+        let displayStartTime = show.start;
+        let displayEndTime = show.end;
         
-        // Convert to user's selected timezone
-        const userStartTime = userTimezone === 'auto' 
-            ? showStart 
-            : new Date(showStart.toLocaleString('en-US', { timeZone: userTimezone }));
-        const userEndTime = userTimezone === 'auto'
-            ? showEnd
-            : new Date(showEnd.toLocaleString('en-US', { timeZone: userTimezone }));
-        
-        // Get hours and minutes in user's timezone
-        const userStartHour = userStartTime.getHours();
-        const userStartMinute = userStartTime.getMinutes();
-        const userEndHour = userEndTime.getHours();
-        const userEndMinute = userEndTime.getMinutes();
-        
-        const startTimeInMinutes = userStartHour * 60 + userStartMinute;
-        const endTimeInMinutes = userEndHour * 60 + userEndMinute;
+        if (userTimezone !== 'auto') {
+            try {
+                const startDate = new Date();
+                startDate.setHours(startHour, startMinute, 0, 0);
+                const endDate = new Date();
+                endDate.setHours(endHour, endMinute, 0, 0);
+                
+                // Format times for display in user's timezone
+                const formatOptions = { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: true,
+                    timeZone: userTimezone
+                };
+                
+                displayStartTime = startDate.toLocaleTimeString('en-US', formatOptions);
+                displayEndTime = endDate.toLocaleTimeString('en-US', formatOptions);
+            } catch (e) {
+                console.error('Error converting time:', e);
+            }
+        }
         
         // Check if show is currently playing in station's timezone
-        const isCurrentlyPlaying = nowInStationTz >= showStart && nowInStationTz < showEnd;
+        const isCurrentlyPlaying = 
+            (startTimeInMinutes <= endTimeInMinutes && 
+             currentTimeInMinutes >= startTimeInMinutes && 
+             currentTimeInMinutes < endTimeInMinutes) ||
+            (startTimeInMinutes > endTimeInMinutes && 
+             (currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes < endTimeInMinutes));
         
         if (isCurrentlyPlaying) {
             currentShows.push({
                 ...show,
                 isCurrent: true,
-                timeString: `${formatTime(userStartHour, userStartMinute)} - ${formatTime(userEndHour, userEndMinute)}`,
-                description: show.description
+                timeString: `${formatTime(displayStartTime)} - ${formatTime(displayEndTime)}`,
+                description: show.description || 'No description available'
             });
         } 
         // Check if show is upcoming today
-        else if (nowInStationTz < showStart) {
-            const minutesUntil = Math.round((showStart - nowInStationTz) / (1000 * 60));
+        else if (currentTimeInMinutes < startTimeInMinutes) {
+            const minutesUntil = startTimeInMinutes - currentTimeInMinutes;
             upcomingShows.push({
                 ...show,
                 isCurrent: false,
-                timeString: `${formatTime(userStartHour, userStartMinute)} - ${formatTime(userEndHour, userEndMinute)}`,
+                timeString: `${formatTime(displayStartTime)} - ${formatTime(displayEndTime)}`,
                 minutesUntil: minutesUntil,
                 startsIn: minutesUntil <= 120 ? `in ${minutesUntil} min` : null,
-                description: show.description
+                description: show.description || 'No description available'
             });
         }
     });
@@ -260,7 +213,23 @@ function updateSchedule() {
     renderShows();
 }
 
-// Format time in 12-hour format with AM/PM
+// Helper function to format time from "HH:MM AM/PM" to "HH:MM AM/PM"
+function formatTime(timeStr) {
+    if (typeof timeStr === 'string') {
+        // If it's already in "HH:MM AM/PM" format, return as is
+        if (timeStr.match(/^\d{1,2}:\d{2} [AP]M$/i)) {
+            return timeStr;
+        }
+        // If it's in "HH:MM" format, convert to "HH:MM AM/PM"
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    }
+    return timeStr;
+}
+
+// Render the shows in the UI
 function renderShows() {
     // Clear containers
     currentShowsContainer.innerHTML = '';
@@ -272,11 +241,11 @@ function renderShows() {
             <h2>Now Playing</h2>
             <div class="shows-grid">
                 ${currentShows.map(show => `
-                    <div class="show-card current" title="${show.description || 'No description available'}">
+                    <div class="show-card current" data-description="${show.description}">
                         <h3>${show.show}</h3>
                         <p class="show-time">${show.timeString}</p>
                         <p class="show-host">Host: ${show.host}</p>
-                        ${show.description ? `<p class="show-description">${show.description}</p>` : ''}
+                        <div class="show-description">${show.description}</div>
                     </div>
                 `).join('')}
             </div>
@@ -291,11 +260,11 @@ function renderShows() {
             <h2>Upcoming Shows</h2>
             <div class="shows-grid">
                 ${upcomingShows.map(show => `
-                    <div class="show-card" title="${show.description || 'No description available'}">
+                    <div class="show-card" data-description="${show.description}">
                         <h3>${show.show}</h3>
                         <p class="show-time">${show.timeString} ${show.startsIn ? `<span class="starts-soon">${show.startsIn}</span>` : ''}</p>
                         <p class="show-host">Host: ${show.host}</p>
-                        ${show.description ? `<p class="show-description">${show.description}</p>` : ''}
+                        <div class="show-description">${show.description}</div>
                     </div>
                 `).join('')}
             </div>
@@ -304,26 +273,53 @@ function renderShows() {
         upcomingShowsContainer.innerHTML = '<div class="no-shows">No upcoming shows scheduled</div>';
     }
     
-    // Add event listeners for tooltips on mobile
+    // Initialize tooltips
+    initTooltips();
+}
+
+function initTooltips() {
+    const showCards = document.querySelectorAll('.show-card');
+    
+    // For touch devices
     if ('ontouchstart' in window) {
-        document.querySelectorAll('.show-card').forEach(card => {
-            card.addEventListener('click', function() {
+        showCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't toggle if clicking on a link
+                if (e.target.tagName === 'A') return;
+                
+                // Close other open tooltips
+                document.querySelectorAll('.show-card.show-description-visible').forEach(openCard => {
+                    if (openCard !== this) {
+                        openCard.classList.remove('show-description-visible');
+                    }
+                });
+                
+                // Toggle current card
                 this.classList.toggle('show-description-visible');
             });
+        });
+        
+        // Close tooltip when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.show-card')) {
+                document.querySelectorAll('.show-card.show-description-visible').forEach(card => {
+                    card.classList.remove('show-description-visible');
+                });
+            }
         });
     }
 }
 
 // Cookie helper functions
 function setCookie(name, value, days) {
-    const date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-    const expires = `expires=${date.toUTCString()}`;
-    document.cookie = `${name}=${value};${expires};path=/`;
+    const d = new Date();
+    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = "expires=" + d.toUTCString();
+    document.cookie = name + "=" + value + ";" + expires + ";path=/";
 }
 
 function getCookie(name) {
-    const nameEQ = `${name}=`;
+    const nameEQ = name + "=";
     const ca = document.cookie.split(';');
     for (let i = 0; i < ca.length; i++) {
         let c = ca[i];
@@ -339,8 +335,3 @@ if (document.readyState === 'loading') {
 } else {
     initSchedule();
 }
-
-// Clean up on page unload
-window.addEventListener('beforeunload', () => {
-    if (scheduleInterval) clearInterval(scheduleInterval);
-});
