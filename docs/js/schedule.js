@@ -316,35 +316,64 @@ function renderShows() {
 
 function initTooltips() {
     const showCards = document.querySelectorAll('.show-card');
+    const body = document.body;
     
-    // For touch devices
-    if ('ontouchstart' in window) {
-        showCards.forEach(card => {
-            card.addEventListener('click', function(e) {
-                // Don't toggle if clicking on a link
-                if (e.target.tagName === 'A') return;
-                
-                // Close other open tooltips
-                document.querySelectorAll('.show-card.show-description-visible').forEach(openCard => {
-                    if (openCard !== this) {
-                        openCard.classList.remove('show-description-visible');
-                    }
-                });
-                
-                // Toggle current card
-                this.classList.toggle('show-description-visible');
-            });
-        });
-        
-        // Close tooltip when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.show-card')) {
-                document.querySelectorAll('.show-card.show-description-visible').forEach(card => {
-                    card.classList.remove('show-description-visible');
-                });
-            }
-        });
+    // Create overlay element if it doesn't exist
+    let overlay = document.querySelector('.description-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'description-overlay';
+        body.appendChild(overlay);
     }
+
+    // For touch devices
+    showCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't toggle if clicking on a link
+            if (e.target.tagName === 'A') return;
+            
+            // Toggle the active class
+            const isActive = this.classList.contains('show-description-visible');
+            
+            // Close all other open descriptions
+            document.querySelectorAll('.show-card.show-description-visible').forEach(openCard => {
+                if (openCard !== this) {
+                    openCard.classList.remove('show-description-visible');
+                }
+            });
+            
+            // Toggle current card
+            this.classList.toggle('show-description-visible', !isActive);
+            
+            // Toggle overlay
+            if (!isActive) {
+                overlay.style.display = 'block';
+            } else {
+                overlay.style.display = 'none';
+            }
+            
+            // Prevent event bubbling
+            e.stopPropagation();
+        });
+    });
+    
+    // Close description when clicking overlay
+    overlay.addEventListener('click', function() {
+        document.querySelectorAll('.show-card.show-description-visible').forEach(card => {
+            card.classList.remove('show-description-visible');
+        });
+        this.style.display = 'none';
+    });
+
+    // Close description when clicking outside on desktop
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.show-card')) {
+            document.querySelectorAll('.show-card.show-description-visible').forEach(card => {
+                card.classList.remove('show-description-visible');
+            });
+            overlay.style.display = 'none';
+        }
+    });
 }
 
 // Cookie helper functions

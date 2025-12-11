@@ -100,9 +100,9 @@
 
 .show-card {
     position: relative;
-    overflow: visible;  /* Allow content to overflow */
-    z-index: 1;        /* Ensure proper stacking context */
-    margin-bottom: 1rem; /* Add space between cards */
+    margin-bottom: 1.5rem; /* Add more space between cards */
+    z-index: 1;
+    cursor: pointer;
 }
 
 .show-description {
@@ -110,27 +110,65 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 100%;         /* Position below the card */
-    background: rgba(0, 0, 0, 0.9);
-    color: #fff;
+    top: 100%;
+    background: #1a1e26; /* Solid dark background */
+    color: #e6e6e6;
     padding: 1rem;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    z-index: 10;       /* Ensure it appears above other elements */
-    margin-top: 5px;   /* Small gap between card and description */
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* Very high z-index to ensure it's on top */
+    margin-top: 5px;
+    border: 1px solid #2a2f3b;
+    max-width: 100%;
+    box-sizing: border-box;
+    line-height: 1.5;
 }
 
-/* Show description on hover */
-.show-card:hover .show-description {
-    display: block;
+/* Show description on hover for desktop */
+@media (hover: hover) and (pointer: fine) {
+    .show-card:hover .show-description {
+        display: block;
+    }
 }
 
 /* For touch devices */
 .show-card.show-description-visible .show-description {
     display: block;
-    position: relative; /* Change to relative for better mobile display */
-    margin-top: 0.5rem;
-    background: rgba(0, 0, 0, 0.7);
+    position: fixed; /* Changed to fixed for better mobile experience */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    z-index: 1001; /* Above everything else */
+    border: 2px solid #3a7bd5;
+}
+
+/* Add overlay for mobile when description is shown */
+.description-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    cursor: pointer;
+}
+
+/* Show overlay when description is visible on mobile */
+.show-description-visible + .description-overlay {
+    display: block;
+}
+
+/* Make sure the show card is above other content when active */
+.show-card.show-description-visible {
+    position: relative;
+    z-index: 1002;
 }
 
 /* For non-touch devices */
