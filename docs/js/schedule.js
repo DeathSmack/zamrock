@@ -131,6 +131,8 @@ function updateSchedule() {
     // Get current time in station's timezone (MT)
     const stationTz = 'America/Denver';
     const now = new Date();
+    
+    // Create a date object for the station's current time
     const nowInStationTz = new Date(now.toLocaleString('en-US', { timeZone: stationTz }));
     const currentDay = daysOfWeek[nowInStationTz.getDay()];
     const currentTimeInMinutes = nowInStationTz.getHours() * 60 + nowInStationTz.getMinutes();
@@ -144,21 +146,35 @@ function updateSchedule() {
         const [startHour, startMinute] = show.start.split(':').map(Number);
         const [endHour, endMinute] = show.end.split(':').map(Number);
         
-        const startTimeInMinutes = startHour * 60 + startMinute;
-        const endTimeInMinutes = endHour * 60 + endMinute;
+        // Create date objects for the show times in station's timezone
+        const showDate = new Date(nowInStationTz);
+        showDate.setHours(startHour, startMinute, 0, 0);
         
-        // Convert show times to user's selected timezone for display
+        const endDate = new Date(nowInStationTz);
+        endDate.setHours(endHour, endMinute, 0, 0);
+        
+        // Handle shows that cross midnight
+        if (endHour < startHour || (endHour === startHour && endMinute < startMinute)) {
+            if (nowInStationTz < endDate) {
+                // If we're before the end time of an overnight show, adjust the start date to yesterday
+                showDate.setDate(showDate.getDate() - 1);
+            } else {
+                // Otherwise, adjust the end date to tomorrow
+                endDate.setDate(endDate.getDate() + 1);
+            }
+        }
+        
+        // Convert to timestamps for comparison
+        const showStartTime = showDate.getTime();
+        const showEndTime = endDate.getTime();
+        const currentTime = nowInStationTz.getTime();
+        
+        // Format times for display in user's timezone
         let displayStartTime = show.start;
         let displayEndTime = show.end;
         
         if (userTimezone !== 'auto') {
             try {
-                const startDate = new Date();
-                startDate.setHours(startHour, startMinute, 0, 0);
-                const endDate = new Date();
-                endDate.setHours(endHour, endMinute, 0, 0);
-                
-                // Format times for display in user's timezone
                 const formatOptions = { 
                     hour: '2-digit', 
                     minute: '2-digit', 
@@ -166,7 +182,8 @@ function updateSchedule() {
                     timeZone: userTimezone
                 };
                 
-                displayStartTime = startDate.toLocaleTimeString('en-US', formatOptions);
+                // Use the original date objects but format in user's timezone
+                displayStartTime = showDate.toLocaleTimeString('en-US', formatOptions);
                 displayEndTime = endDate.toLocaleTimeString('en-US', formatOptions);
             } catch (e) {
                 console.error('Error converting time:', e);
@@ -174,31 +191,28 @@ function updateSchedule() {
         }
         
         // Check if show is currently playing in station's timezone
-        const isCurrentlyPlaying = 
-            (startTimeInMinutes <= endTimeInMinutes && 
-             currentTimeInMinutes >= startTimeInMinutes && 
-             currentTimeInMinutes < endTimeInMinutes) ||
-            (startTimeInMinutes > endTimeInMinutes && 
-             (currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes < endTimeInMinutes));
+        const isCurrentlyPlaying = currentTime >= showStartTime && currentTime < showEndTime;
         
         if (isCurrentlyPlaying) {
             currentShows.push({
                 ...show,
                 isCurrent: true,
                 timeString: `${formatTime(displayStartTime)} - ${formatTime(displayEndTime)}`,
-                description: show.description || 'No description available'
+                description: show.description || 'No description available',
+                sortTime: showStartTime
             });
         } 
         // Check if show is upcoming today
-        else if (currentTimeInMinutes < startTimeInMinutes) {
-            const minutesUntil = startTimeInMinutes - currentTimeInMinutes;
+        else if (currentTime < showStartTime) {
+            const minutesUntil = Math.ceil((showStartTime - currentTime) / (1000 * 60));
             upcomingShows.push({
                 ...show,
                 isCurrent: false,
                 timeString: `${formatTime(displayStartTime)} - ${formatTime(displayEndTime)}`,
                 minutesUntil: minutesUntil,
                 startsIn: minutesUntil <= 120 ? `in ${minutesUntil} min` : null,
-                description: show.description || 'No description available'
+                description: show.description || 'No description available',
+                sortTime: showStartTime
             });
         }
     });
