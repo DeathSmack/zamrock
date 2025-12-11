@@ -2,15 +2,14 @@
 
 // Function to format date
 function formatDate(dateString) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    };
     return new Date(dateString).toLocaleDateString('en-US', options);
-}
-
-// Function to strip HTML tags from content
-function stripHtml(html) {
-    if (!html) return '';
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
 }
 
 // Function to create a news card with Mastodon embed
@@ -27,6 +26,7 @@ function createNewsCard(post) {
     iframe.style.border = '0';
     iframe.allowFullscreen = true;
     iframe.loading = 'lazy';
+    iframe.setAttribute('data-lang', 'en');
     
     // Add loading indicator
     const loading = document.createElement('div');
@@ -36,6 +36,22 @@ function createNewsCard(post) {
     // Handle iframe load
     iframe.onload = function() {
         loading.style.display = 'none';
+        // Force dark theme
+        const style = document.createElement('style');
+        style.textContent = `
+            .mastodon-embed {
+                background: #2e3440 !important;
+                color: #d8dee9 !important;
+            }
+            .mastodon-embed .button {
+                background: #81a1c1 !important;
+                color: #2e3440 !important;
+            }
+            .mastodon-embed .button:hover {
+                background: #88c0d0 !important;
+            }
+        `;
+        iframe.contentDocument.head.appendChild(style);
     };
     
     card.appendChild(loading);

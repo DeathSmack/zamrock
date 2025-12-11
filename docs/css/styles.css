@@ -220,3 +220,137 @@ body {
         cursor: pointer;
     }
 }
+
+/* Navigation */
+.site-title a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.site-title a:hover {
+    color: var(--accent-color);
+}
+
+.main-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.nav-btn {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    background: rgba(46, 52, 64, 0.7);
+}
+
+.nav-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Dark theme for Mastodon embeds */
+.mastodon-embed {
+    background: #2e3440 !important;
+    color: #d8dee9 !important;
+}
+
+.mastodon-embed .button {
+    background: #81a1c1 !important;
+    color: #2e3440 !important;
+}
+
+.mastodon-embed .button:hover {
+    background: #88c0d0 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-nav {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .nav-btn {
+        text-align: center;
+        padding: 10px;
+    }
+}
+
+.about-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    color: var(--text-color);
+}
+
+.about-section h1 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5em;
+}
+
+.about-section h2 {
+    color: var(--primary-color);
+    margin: 30px 0 15px;
+    font-size: 1.5em;
+}
+
+.about-content {
+    background: rgba(46, 52, 64, 0.7);
+    padding: 30px;
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+    line-height: 1.8;
+}
+
+.about-content p {
+    margin-bottom: 20px;
+}
+
+/* Footer Styles */
+.site-footer {
+    background: rgba(46, 52, 64, 0.9);
+    color: var(--text-color);
+    padding: 20px 0;
+    margin-top: 40px;
+    border-top: 2px solid var(--border-color);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
