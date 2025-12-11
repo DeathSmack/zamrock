@@ -100,31 +100,37 @@
 
 .show-card {
     position: relative;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: rgba(59, 66, 82, 0.7);
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    overflow: visible;  /* Allow content to overflow */
+    z-index: 1;        /* Ensure proper stacking context */
+    margin-bottom: 1rem; /* Add space between cards */
 }
 
-.show-card .show-description {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-    opacity: 0;
-    margin-top: 0;
-    padding: 0;
-    font-size: 0.9em;
-    color: #d8dee9;
+.show-description {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;         /* Position below the card */
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 10;       /* Ensure it appears above other elements */
+    margin-top: 5px;   /* Small gap between card and description */
 }
 
+/* Show description on hover */
+.show-card:hover .show-description {
+    display: block;
+}
+
+/* For touch devices */
 .show-card.show-description-visible .show-description {
-    max-height: 500px;
-    opacity: 1;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(136, 192, 208, 0.3);
+    display: block;
+    position: relative; /* Change to relative for better mobile display */
+    margin-top: 0.5rem;
+    background: rgba(0, 0, 0, 0.7);
 }
 
 /* For non-touch devices */

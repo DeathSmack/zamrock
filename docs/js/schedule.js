@@ -51,12 +51,13 @@ async function initSchedule() {
     }
     timezoneSelect.value = userTimezone;
     
-    // Set up timezone change handler
-    timezoneSelect.addEventListener('change', (e) => {
-        userTimezone = e.target.value;
-        setCookie('user_timezone', userTimezone, 365);
-        updateSchedule();
-    });
+// Update the timezone change handler to ensure immediate updates
+timezoneSelect.addEventListener('change', (e) => {
+    userTimezone = e.target.value;
+    setCookie('user_timezone', userTimezone, 365);
+    updateCurrentTime();  // Update time display immediately
+    updateSchedule();     // Update schedule with new timezone
+});
     
     // Load schedule data
     try {
