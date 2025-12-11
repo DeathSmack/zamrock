@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZamRock Radio</title>
+  <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif"/>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Listen to ZamRock Radio - Your favorite online radio station with great music and live streaming." />
+  <meta name="keywords" content="ZamRock, Radio, Online Radio, Music, Stream" />
+  <meta name="author" content="Your Name or Your Website" />
+
+  <!-- Open Graph / Facebook Meta Tags -->
+  <meta property="og:title" content="ZamRock Radio" />
+  <meta property="og:description" content="Tune in to ZamRock Radio for great music and live streaming." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://zamrock.net" /> <!-- Your domain -->
+  <meta property="og:image" content="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg" />
+
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ZamRock Radio" />
+  <meta name="twitter:description" content="Tune in to ZamRock Radio for great music and live streaming." />
+  <meta name="twitter:image" content="https://github.com/DeathSmack/zamrock/blob/6227f3fb00eb3e802a17fe9d6666a831daf02fc7/docs/img/website_bg/website_bg_014.jpg?raw=true" />
+
+  <!-- Fonts and styles -->
+  <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+  <div class="overlay"></div>
+  <div class="container">
+    <h1 class="site-title">ZamRock Radio</h1>
+    <button class="mobile-menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <nav class="nav-menu">
+      <ul>
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="about/index.html">About</a></li>
+        <li><a href="contact/index.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="player-container">
+      <!-- Updated the stream URL here -->
+      <audio id="radioStream" src="https://divine-paper-3624.deathsmack-a51.workers.dev/" crossorigin="anonymous"></audio>
+      <button id="playButton" class="play-btn">Play</button>
+      <div class="volume-container">
+        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider" />
+      </div>
+    </div>
+  </div>
+  <script src="js/main.js"></script>
+</body>
+</html>
