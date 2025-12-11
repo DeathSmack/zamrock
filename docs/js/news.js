@@ -13,35 +13,33 @@ function stripHtml(html) {
     return doc.body.textContent || "";
 }
 
-// Function to create a news card
+// Function to create a news card with Mastodon embed
 function createNewsCard(post) {
     const card = document.createElement('div');
     card.className = 'news-card';
     
-    const content = stripHtml(post.content);
-    const title = content.split('\n')[0] || 'Update';
-    const body = content.length > 150 ? content.substring(0, 150) + '...' : content;
+    // Create iframe for Mastodon embed
+    const iframe = document.createElement('iframe');
+    iframe.className = 'mastodon-embed';
+    iframe.src = `${post.url}/embed`;
+    iframe.width = '100%';
+    iframe.height = '300';
+    iframe.style.border = '0';
+    iframe.allowFullscreen = true;
+    iframe.loading = 'lazy';
     
-    const titleEl = document.createElement('h3');
-    titleEl.textContent = title.substring(0, 50);
+    // Add loading indicator
+    const loading = document.createElement('div');
+    loading.className = 'loading-embed';
+    loading.textContent = 'Loading post...';
     
-    const date = document.createElement('span');
-    date.className = 'date';
-    date.textContent = formatDate(post.created_at);
+    // Handle iframe load
+    iframe.onload = function() {
+        loading.style.display = 'none';
+    };
     
-    const contentEl = document.createElement('p');
-    contentEl.textContent = body;
-    
-    const link = document.createElement('a');
-    link.href = post.url || '#';
-    link.textContent = 'Read more on Mastodon';
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    
-    card.appendChild(titleEl);
-    card.appendChild(date);
-    card.appendChild(contentEl);
-    card.appendChild(link);
+    card.appendChild(loading);
+    card.appendChild(iframe);
     
     return card;
 }
@@ -56,7 +54,7 @@ async function loadNews(limit = 3, containerId = 'newsContainer') {
     try {
         // Using CORS proxy for GitHub Pages
         const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const apiUrl = `https://musicworld.social/api/v1/accounts/114289974100154452/statuses?limit=${limit}`;
+        const apiUrl = `https://musicworld.social/api/v1/accounts/114289974100154452/statuses?limit=${limit}&exclude_replies=true&exclude_reblogs=true`;
         const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
         
         if (!response.ok) {
@@ -80,6 +78,17 @@ async function loadNews(limit = 3, containerId = 'newsContainer') {
             const card = createNewsCard(post);
             container.appendChild(card);
         });
+        
+        // Load Mastodon embed script if not already loaded
+        if (!window.MastodonEmbed) {
+            const script = document.createElement('script');
+            script.src = 'https://mastodon.social/embed.js';
+            script.async = true;
+            document.body.appendChild(script);
+        } else {
+            // Refresh embeds if script was already loaded
+            window.MastodonEmbed?.();
+        }
         
     } catch (error) {
         console.error('Error loading news:', error);

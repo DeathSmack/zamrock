@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>News - ZamRock Radio</title>
+    <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif"/>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Latest news and updates from ZamRock Radio" />
+    <meta name="keywords" content="ZamRock, Radio, News, Updates, Music" />
+    <meta name="author" content="ZamRock Radio" />
+
+    <!-- Open Graph / Facebook Meta Tags -->
+    <meta property="og:title" content="News - ZamRock Radio" />
+    <meta property="og:description" content="Stay updated with the latest news and updates from ZamRock Radio" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://zamrock.net/news/" />
+    <meta property="og:image" content="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="News - ZamRock Radio" />
+    <meta name="twitter:description" content="Stay updated with the latest news and updates from ZamRock Radio" />
+    <meta name="twitter:image" content="https://github.com/DeathSmack/zamrock/blob/main/docs/img/website_bg/website_bg_014.jpg?raw=true" />
+
+    <!-- Fonts and styles -->
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/styles.css"/>
+    <link rel="stylesheet" href="../css/news.css"/>
+    <style>
+        .news-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .news-card {
+            background: rgba(46, 52, 64, 0.9);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 300px;
+        }
+        
+        .mastodon-embed {
+            width: 100%;
+            min-height: 300px;
+            border: none;
+        }
+        
+        .loading-embed {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-color);
+        }
+        
+        @media (max-width: 768px) {
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="container">
+        <h1 class="site-title">ZamRock Radio News</h1>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle">☰ Menu</button>
+        <nav class="nav-menu" id="mainNav">
+            <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../about/">About</a></li>
+                <li><a href="index.html" class="active">News</a></li>
+                <li><a href="../contact/">Contact</a></li>
+                <li><a href="../schedule/">Schedule</a></li>
+            </ul>
+        </nav>
+
+        <main class="news-container">
+            <h1>Latest News & Updates</h1>
+            <div id="newsContainer" class="news-grid">
+                <div class="loading">Loading news...</div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/news.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        // Initialize mobile menu
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            if (menuToggle && navMenu) {
+                menuToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    navMenu.classList.toggle('active');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                        navMenu.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Load news with more posts
+            if (typeof loadNews === 'function') {
+                loadNews(9, 'newsContainer');
+            } else {
+                console.error('loadNews function not found');
+                const container = document.getElementById('newsContainer');
+                if (container) {
+                    container.innerHTML = '<div class="error">News functionality not available. Please try again later.</div>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
