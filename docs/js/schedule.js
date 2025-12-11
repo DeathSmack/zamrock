@@ -60,9 +60,15 @@ async function initSchedule() {
     
     // Load schedule data
     try {
-        const response = await fetch('/zamrock/Radio-Schedule.json');
+        const response = await fetch('/Radio-Schedule.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
-        scheduleData = data.schedule;
+        scheduleData = data.schedule || [];
+        if (scheduleData.length === 0) {
+            throw new Error('No schedule data found');
+        }
         updateSchedule();
     } catch (error) {
         console.error('Error loading schedule data:', error);
