@@ -248,46 +248,65 @@ function formatTime(timeStr) {
 
 // Render the shows in the UI
 function renderShows() {
-    // Clear containers
-    currentShowsContainer.innerHTML = '';
-    upcomingShowsContainer.innerHTML = '';
+    // Clear containers but keep the headers
+    const currentShowsGrid = currentShowsContainer.querySelector('.shows-grid');
+    const upcomingShowsGrid = upcomingShowsContainer.querySelector('.shows-grid');
+    
+    // Clear existing show cards but keep the headers
+    if (currentShowsGrid) {
+        currentShowsGrid.innerHTML = '';
+    } else {
+        currentShowsContainer.innerHTML = `
+            <div class="shows-grid"></div>
+        `;
+    }
+    
+    if (upcomingShowsGrid) {
+        upcomingShowsGrid.innerHTML = '';
+    } else {
+        upcomingShowsContainer.innerHTML = `
+            <div class="shows-grid"></div>
+        `;
+    }
+    
+    // Get the grid containers
+    const currentGrid = currentShowsContainer.querySelector('.shows-grid');
+    const upcomingGrid = upcomingShowsContainer.querySelector('.shows-grid');
     
     // Show current shows
     if (currentShows.length > 0) {
-        currentShowsContainer.innerHTML = `
-            <h2>Now Playing</h2>
-            <div class="shows-grid">
-                ${currentShows.map(show => `
-                    <div class="show-card current" data-description="${show.description}">
-                        <h3>${show.show}</h3>
-                        <p class="show-time">${show.timeString}</p>
-                        <p class="show-host">${show.host || 'Automated Playlist'}</p>
-                        <div class="show-description">${show.description}</div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
+        currentShows.forEach(show => {
+            const showCard = document.createElement('div');
+            showCard.className = 'show-card current';
+            showCard.setAttribute('data-description', show.description);
+            showCard.innerHTML = `
+                <h3>${show.show}</h3>
+                <p class="show-time">${show.timeString}</p>
+                <p class="show-host">${show.host || 'Automated Playlist'}</p>
+                <div class="show-description">${show.description}</div>
+            `;
+            currentGrid.appendChild(showCard);
+        });
     } else {
-        currentShowsContainer.innerHTML = '<div class="no-shows">No shows currently playing. Check back later!</div>';
+        currentGrid.innerHTML = '<div class="no-shows">No shows currently playing. Check back later!</div>';
     }
     
     // Show upcoming shows
     if (upcomingShows.length > 0) {
-        upcomingShowsContainer.innerHTML = `
-            <h2>Upcoming Playlists</h2>
-            <div class="shows-grid">
-                ${upcomingShows.slice(0, 6).map(show => `
-                    <div class="show-card" data-description="${show.description}">
-                        <h3>${show.show}</h3>
-                        <p class="show-time">${show.timeString} ${show.startsIn ? `<span class="starts-soon">${show.startsIn}</span>` : ''}</p>
-                        <p class="show-host">${show.host || 'Automated Playlist'}</p>
-                        <div class="show-description">${show.description}</div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
+        upcomingShows.slice(0, 6).forEach(show => {
+            const showCard = document.createElement('div');
+            showCard.className = 'show-card';
+            showCard.setAttribute('data-description', show.description);
+            showCard.innerHTML = `
+                <h3>${show.show}</h3>
+                <p class="show-time">${show.timeString} ${show.startsIn ? `<span class="starts-soon">${show.startsIn}</span>` : ''}</p>
+                <p class="show-host">${show.host || 'Automated Playlist'}</p>
+                <div class="show-description">${show.description}</div>
+            `;
+            upcomingGrid.appendChild(showCard);
+        });
     } else {
-        upcomingShowsContainer.innerHTML = '<div class="no-shows">No upcoming shows scheduled for today.</div>';
+        upcomingGrid.innerHTML = '<div class="no-shows">No upcoming shows scheduled for today.</div>';
     }
     
     // Initialize tooltips
