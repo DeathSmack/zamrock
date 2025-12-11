@@ -33,8 +33,8 @@
   <div class="overlay"></div>
   <div class="container">
     <h1 class="site-title">ZamRock Radio</h1>
-    <button class="mobile-menu-toggle" onclick="toggleMenu()">☰ Menu</button>
-    <nav class="nav-menu">
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">☰ Menu</button>
+    <nav class="nav-menu" id="mainNav">
       <ul>
         <li><a href="../">Home</a></li>
         <li><a href="../about/">About</a></li>
@@ -53,32 +53,38 @@
 
     <div class="schedule-container">
       <div class="timezone-selector">
-        <label for="timezone">Select your timezone:</label>
-        <select id="timezone" onchange="updateTimezone(this.value)">
-          <option value="auto">Auto-detect</option>
-          <option value="UTC">UTC</option>
-          <option value="America/New_York">Eastern Time (ET)</option>
-          <option value="America/Chicago">Central Time (CT)</option>
-          <option value="America/Denver">Mountain Time (MT)</option>
-          <option value="America/Los_Angeles">Pacific Time (PT)</option>
-          <option value="Europe/London">London</option>
-          <option value="Europe/Paris">Paris</option>
-          <option value="Asia/Tokyo">Tokyo</option>
-          <option value="Australia/Sydney">Sydney</option>
-        </select>
-        <div id="current-time"></div>
+        <div class="time-display">
+          <div id="current-day">Loading...</div>
+          <div id="current-time"></div>
+        </div>
+        <div class="timezone-controls">
+          <label for="timezone">Timezone:</label>
+          <select id="timezone">
+            <option value="auto">Auto-detect</option>
+            <option value="America/Denver" selected>Mountain Time (MT)</option>
+            <option value="America/New_York">Eastern Time (ET)</option>
+            <option value="America/Chicago">Central Time (CT)</option>
+            <option value="America/Los_Angeles">Pacific Time (PT)</option>
+            <option value="UTC">UTC</option>
+            <option value="Europe/London">London</option>
+            <option value="Europe/Paris">Paris</option>
+            <option value="Asia/Tokyo">Tokyo</option>
+            <option value="Australia/Sydney">Sydney</option>
+          </select>
+        </div>
       </div>
 
-      <div id="schedule">
-        <div class="schedule-header">
-          <div class="time-col">Time</div>
-          <div class="show-col">Show</div>
-          <div class="dj-col">DJ</div>
-          <div class="now-playing">Now Playing</div>
+      <div class="now-playing-container">
+        <h2>Now Playing</h2>
+        <div id="current-shows">
+          <div class="loading">Loading current shows...</div>
         </div>
-        <div id="schedule-entries">
-          <!-- Schedule entries will be populated by JavaScript -->
-          <div class="loading">Loading schedule...</div>
+      </div>
+
+      <div class="upcoming-container">
+        <h2>Upcoming Playlists</h2>
+        <div id="upcoming-shows">
+          <div class="loading">Loading upcoming playlists...</div>
         </div>
       </div>
     </div>

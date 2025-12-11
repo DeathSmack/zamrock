@@ -1,0 +1,104 @@
+{
+  "timezone": "MT",
+  "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  "schedule": [
+    {
+      "start": "06:00",
+      "end": "12:00",
+      "show": "Acid Trip",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "06:00",
+      "end": "09:00",
+      "show": "Morning Coffee Mix",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "07:00",
+      "end": "13:00",
+      "show": "Afrobeat Legacy",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "08:00",
+      "end": "14:00",
+      "show": "Blues in Every Tongue",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "10:00",
+      "end": "16:00",
+      "show": "The Funky Truth",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "11:00",
+      "end": "17:00",
+      "show": "ZamDelic Trance",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "12:00",
+      "end": "22:00",
+      "show": "Zamrock Rising",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "00:30",
+      "end": "18:00",
+      "show": "Artist of the Month",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "09:00",
+      "end": "15:00",
+      "show": "Cloud Pants",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "14:00",
+      "end": "16:00",
+      "show": "Country, …Moo",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "12:00",
+      "end": "22:00",
+      "show": "ZamRock Classics",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "18:00",
+      "end": "22:00",
+      "show": "The Catnip Sessions",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "22:00",
+      "end": "06:00",
+      "show": "Dublab Sessions",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    },
+    {
+      "start": "22:00",
+      "end": "06:00",
+      "show": "Endless Mixtapes",
+      "host": "DJ LiquidSoap",
+      "description": ""
+    }
+  ]
+}
