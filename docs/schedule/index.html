@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZamRock Radio - Schedule</title>
+  <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif"/>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="ZamRock Radio Schedule - Check out our daily playlist schedule and upcoming shows." />
+  <meta name="keywords" content="ZamRock, Radio, Schedule, Playlist, Shows" />
+  <meta name="author" content="ZamRock Radio" />
+
+  <!-- Open Graph / Facebook Meta Tags -->
+  <meta property="og:title" content="ZamRock Radio Schedule" />
+  <meta property="og:description" content="Check out the ZamRock Radio schedule for upcoming shows and playlists." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://zamrock.net/schedule/" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg" />
+
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ZamRock Radio Schedule" />
+  <meta name="twitter:description" content="Check out the ZamRock Radio schedule for upcoming shows and playlists." />
+  <meta name="twitter:image" content="https://github.com/DeathSmack/zamrock/blob/main/docs/img/website_bg/website_bg_014.jpg?raw=true" />
+
+  <!-- Fonts and styles -->
+  <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <link rel="stylesheet" href="../css/schedule.css"/>
+</head>
+<body>
+  <div class="overlay"></div>
+  <div class="container">
+    <h1 class="site-title">ZamRock Radio</h1>
+    <button class="mobile-menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+    <nav class="nav-menu">
+      <ul>
+        <li><a href="../">Home</a></li>
+        <li><a href="../about/">About</a></li>
+        <li><a href="../contact/">Contact</a></li>
+        <li><a href="#" class="active">Schedule</a></li>
+      </ul>
+    </nav>
+
+    <div class="player-container">
+      <audio id="radioStream" src="https://divine-paper-3624.deathsmack-a51.workers.dev/" crossorigin="anonymous"></audio>
+      <button id="playButton" class="play-btn">Play</button>
+      <div class="volume-container">
+        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider" />
+      </div>
+    </div>
+
+    <div class="schedule-container">
+      <div class="timezone-selector">
+        <label for="timezone">Select your timezone:</label>
+        <select id="timezone" onchange="updateTimezone(this.value)">
+          <option value="auto">Auto-detect</option>
+          <option value="UTC">UTC</option>
+          <option value="America/New_York">Eastern Time (ET)</option>
+          <option value="America/Chicago">Central Time (CT)</option>
+          <option value="America/Denver">Mountain Time (MT)</option>
+          <option value="America/Los_Angeles">Pacific Time (PT)</option>
+          <option value="Europe/London">London</option>
+          <option value="Europe/Paris">Paris</option>
+          <option value="Asia/Tokyo">Tokyo</option>
+          <option value="Australia/Sydney">Sydney</option>
+        </select>
+        <div id="current-time"></div>
+      </div>
+
+      <div id="schedule">
+        <div class="schedule-header">
+          <div class="time-col">Time</div>
+          <div class="show-col">Show</div>
+          <div class="dj-col">DJ</div>
+          <div class="now-playing">Now Playing</div>
+        </div>
+        <div id="schedule-entries">
+          <!-- Schedule entries will be populated by JavaScript -->
+          <div class="loading">Loading schedule...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/schedule.js"></script>
+</body>
+</html>
