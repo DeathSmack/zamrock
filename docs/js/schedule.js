@@ -34,9 +34,6 @@ async function initSchedule() {
     // Set up mobile menu
     setupMobileMenu();
     
-    // Populate timezone dropdown
-    populateTimezoneSelect();
-    
     // Try to get timezone from cookie or use browser's timezone
     const timezoneCookie = getCookie('user_timezone');
     if (timezoneCookie && timezoneMap[timezoneCookie]) {
@@ -63,7 +60,7 @@ async function initSchedule() {
     
     // Load schedule data
     try {
-        const response = await fetch('../Radio-Schedule.json');
+        const response = await fetch('/zamrock/Radio-Schedule.json');
         const data = await response.json();
         scheduleData = data.schedule;
         updateSchedule();
@@ -86,7 +83,7 @@ function setupMobileMenu() {
         });
         
         // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', function(e) {
             if (!e.target.closest('.nav-menu') && !e.target.closest('.mobile-menu-toggle')) {
                 mainNav.style.display = 'none';
             }
@@ -244,33 +241,33 @@ function renderShows() {
                     <div class="show-card current" data-description="${show.description}">
                         <h3>${show.show}</h3>
                         <p class="show-time">${show.timeString}</p>
-                        <p class="show-host">Host: ${show.host}</p>
+                        <p class="show-host">${show.host || 'Automated Playlist'}</p>
                         <div class="show-description">${show.description}</div>
                     </div>
                 `).join('')}
             </div>
         `;
     } else {
-        currentShowsContainer.innerHTML = '<div class="no-shows">No shows currently playing</div>';
+        currentShowsContainer.innerHTML = '<div class="no-shows">No shows currently playing. Check back later!</div>';
     }
     
     // Show upcoming shows
     if (upcomingShows.length > 0) {
         upcomingShowsContainer.innerHTML = `
-            <h2>Upcoming Shows</h2>
+            <h2>Upcoming Playlists</h2>
             <div class="shows-grid">
-                ${upcomingShows.map(show => `
+                ${upcomingShows.slice(0, 6).map(show => `
                     <div class="show-card" data-description="${show.description}">
                         <h3>${show.show}</h3>
                         <p class="show-time">${show.timeString} ${show.startsIn ? `<span class="starts-soon">${show.startsIn}</span>` : ''}</p>
-                        <p class="show-host">Host: ${show.host}</p>
+                        <p class="show-host">${show.host || 'Automated Playlist'}</p>
                         <div class="show-description">${show.description}</div>
                     </div>
                 `).join('')}
             </div>
         `;
     } else {
-        upcomingShowsContainer.innerHTML = '<div class="no-shows">No upcoming shows scheduled</div>';
+        upcomingShowsContainer.innerHTML = '<div class="no-shows">No upcoming shows scheduled for today.</div>';
     }
     
     // Initialize tooltips
