@@ -99,21 +99,69 @@
 }
 
 .show-card {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  padding: 1rem;
-  border-left: 4px solid var(--primary-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.show-card .show-description {
+    display: none;
+    margin-top: 10px;
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.show-card.show-description-visible .show-description {
+    display: block;
+}
+
+/* For non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+    .show-card .show-description {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(59, 66, 82, 0.95);
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        z-index: 10;
+        display: none;
+    }
+    
+    .show-card:hover .show-description {
+        display: block;
+    }
+}
+
+.starts-soon {
+    color: #81a1c1;
+    font-size: 0.9em;
+    margin-left: 8px;
+}
+
+.shows-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.show-card {
+    background: rgba(59, 66, 82, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
 }
 
 .show-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
 }
 
 .show-card.current {
-  background: rgba(94, 129, 172, 0.3);
-  border-left: 4px solid #d08770;
+    border-left: 4px solid #81a1c1;
+    background: rgba(129, 161, 193, 0.1);
 }
 
 .show-time {
