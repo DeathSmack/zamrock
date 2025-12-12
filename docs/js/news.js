@@ -61,7 +61,7 @@ function createNewsCard(post) {
 }
 
 // Function to load news from Mastodon with CORS proxy
-async function loadNews(limit = 3, containerId = 'newsContainer') {
+async function loadNews(limit = 4, containerId = 'newsContainer') {
     const container = document.getElementById(containerId);
     if (!container) return;
     
