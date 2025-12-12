@@ -1,6 +1,15 @@
 // Static header text
-const headerElement = document.querySelector('h1');
+const headerElement = document.querySelector('h1.site-title');
 const headerText = "ZamRock Radio";
+
+// Ensure header has a link
+if (headerElement && !headerElement.querySelector('a')) {
+    const link = document.createElement('a');
+    link.href = 'https://zamrock.net';
+    link.textContent = headerElement.textContent;
+    headerElement.textContent = '';
+    headerElement.appendChild(link);
+}
 
 // Array of titles for tab animation
 const titles = [
@@ -48,9 +57,20 @@ function animateTabTitle() {
 // Start the tab title animation
 setTimeout(animateTabTitle, 1000);
 
-// Keep header static
+// Keep header text content up to date while preserving the link
 if (headerElement) {
-    headerElement.textContent = headerText;
+    const link = headerElement.querySelector('a');
+    if (link) {
+        link.textContent = headerText;
+    } else {
+        headerElement.textContent = headerText;
+        // Add link if it was missing
+        const newLink = document.createElement('a');
+        newLink.href = 'https://zamrock.net';
+        newLink.textContent = headerText;
+        headerElement.textContent = '';
+        headerElement.appendChild(newLink);
+    }
 }
 
 // Mobile menu toggle function
