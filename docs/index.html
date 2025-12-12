@@ -9,13 +9,13 @@
   <!-- SEO Meta Tags -->
   <meta name="description" content="Listen to ZamRock Radio - Your favorite online radio station with great music and live streaming." />
   <meta name="keywords" content="ZamRock, Radio, Online Radio, Music, Stream" />
-  <meta name="author" content="Your Name or Your Website" />
+  <meta name="author" content="ZamRock Radio" />
 
   <!-- Open Graph / Facebook Meta Tags -->
   <meta property="og:title" content="ZamRock Radio" />
   <meta property="og:description" content="Tune in to ZamRock Radio for great music and live streaming." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://zamrock.net" /> <!-- Your domain -->
+  <meta property="og:url" content="https://zamrock.net" />
   <meta property="og:image" content="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg" />
 
   <!-- Twitter Card Meta Tags -->
@@ -26,21 +26,21 @@
 
   <!-- Fonts and styles -->
   <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css"/>
   <link rel="stylesheet" href="css/news.css"/>
 </head>
 <body>
   <div class="overlay"></div>
   <div class="container">
-    <h1 class="site-title">ZamRock Radio</h1>
-    <button class="mobile-menu-toggle" id="mobileMenuToggle">☰ Menu</button>
-    <nav class="nav-menu" id="mainNav">
-      <ul>
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="about/">About</a></li>
-        <li><a href="contact/">Contact</a></li>
-        <li><a href="schedule/">Schedule</a></li>
-      </ul>
+    <h1 class="site-title"><a href="https://zamrock.net">ZamRock Radio</a></h1>
+    <div class="tagline">ZAMZAM FOR LIFE...</div>
+    
+    <nav class="main-nav">
+      <a href="schedule/" class="nav-btn">Schedule</a>
+      <a href="news/" class="nav-btn">News</a>
+      <a href="contact/" class="nav-btn">Contact</a>
+      <a href="about/" class="nav-btn">About</a>
     </nav>
     <div class="player-container">
       <!-- Updated the stream URL here -->
@@ -63,12 +63,27 @@
 </section>
 
   </div>
+  
+  <footer class="site-footer">
+    <div class="footer-content">
+      <p> 2025 ZamRock Radio - All Rights Reserved</p>
+      <div class="footer-links">
+        <a href="about/">About</a>
+        <a href="contact/">Contact</a>
+        <a href="schedule/">Schedule</a>
+        <a href="news/">News</a>
+      </div>
+    </div>
+  </footer>
+  
   <script src="js/main.js"></script>
   <script src="js/news.js"></script>
   <script>
     // Load news when the page loads
     document.addEventListener('DOMContentLoaded', function() {
-      loadNews(3, 'newsContainer');
+      if (typeof loadNews === 'function') {
+        loadNews(3, 'newsContainer');
+      }
     });
   </script>
 </body>

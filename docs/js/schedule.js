@@ -307,7 +307,7 @@ function renderShows() {
             upcomingGrid.appendChild(showCard);
         });
     } else {
-        upcomingGrid.innerHTML = '<div class="no-shows">No upcoming shows scheduled for today.</div>';
+        upcomingGrid.innerHTML = '<div class="no-shows">No upcoming playlists for hours, check back later!</div>';
     }
     
     // Initialize tooltips
