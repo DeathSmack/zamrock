@@ -84,43 +84,69 @@ window.addEventListener('resize', () => {
     }
 });
 
-// Background images array
+// Background images array with full URLs
 const backgroundImages = [
-    'img/website_bg/website_bg_001.jpg?raw=true',
-    'img/website_bg/website_bg_002.jpg?raw=true',
-    'img/website_bg/website_bg_003.jpg?raw=true',
-    'img/website_bg/website_bg_004.jpg?raw=true',
-    'img/website_bg/website_bg_005.jpg?raw=true',
-    'img/website_bg/website_bg_006.jpg?raw=true',
-    'img/website_bg/website_bg_007.jpg?raw=true',
-    'img/website_bg/website_bg_008.jpg?raw=true',
-    'img/website_bg/website_bg_009.jpg?raw=true',
-    'img/website_bg/website_bg_010.jpg?raw=true',
-    'img/website_bg/website_bg_011.jpg?raw=true',
-    'img/website_bg/website_bg_012.jpg?raw=true',
-    'img/website_bg/website_bg_013.jpg?raw=true',
-    'img/website_bg/website_bg_014.jpg?raw=true',
-    'img/website_bg/website_bg_015.jpg?raw=true',
-    'img/website_bg/website_bg_016.jpg?raw=true',
-    'img/website_bg/website_bg_017.jpg?raw=true',
-    'img/website_bg/website_bg_018.jpg?raw=true',
-    'img/website_bg/website_bg_019.jpg?raw=true',
-    'img/website_bg/website_bg_020.jpg?raw=true'
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_001.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_002.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_003.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_004.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_005.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_006.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_007.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_008.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_009.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_010.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_011.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_012.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_013.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_015.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_016.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_017.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_018.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_019.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_020.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_021.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_022.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_023.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_024.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_025.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_026.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_027.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_028.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_029.jpg',
+    'https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_030.jpg'
 ];
 
 function setRandomBackground() {
     if (backgroundImages.length === 0) return;
     const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
-    document.body.style.backgroundImage = `url('${randomImage}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundAttachment = 'fixed';
-    document.body.style.backgroundRepeat = 'no-repeat';
+    
+    // Preload the image before setting it as background
+    const img = new Image();
+    img.onload = function() {
+        // Only update the background if the image loads successfully
+        document.body.style.backgroundImage = `url('${randomImage}')`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+        document.body.style.backgroundRepeat = 'no-repeat';
+    };
+    img.src = randomImage;
 }
 
+// Initialize background rotation on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Set initial background
     setRandomBackground();
-    setInterval(setRandomBackground, 20000);
+    
+    // Rotate background every 20 seconds
+    const backgroundInterval = setInterval(setRandomBackground, 20000);
+    
+    // Cleanup interval when page is unloaded
+    window.addEventListener('beforeunload', () => {
+        clearInterval(backgroundInterval);
+    });
 
     const audio = document.getElementById('radioStream');
     const playButton = document.getElementById('playButton');
