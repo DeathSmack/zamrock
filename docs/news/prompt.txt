@@ -23,3 +23,9 @@ all pages need same button order too
 Schedule, News, Contact, About
 I think the nav shoul be saved somewhere all files can ref too, so later on I can adjust add/del buttons in one place
 backgrounds still only work on landing page please fix that too
+
+none of this is changing much why isn't the title a link too landing I've must asked like 6 times? whats wrong?
+you changed layout of news on landing change it back
+fix the backgrounds this should not be so hard
+mobile still has menu looking thing on it
+should just be buttons no menu to hold them

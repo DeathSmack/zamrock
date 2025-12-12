@@ -1,141 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>News - ZamRock Radio</title>
-    <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>News - ZamRock Radio</title>
+  <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif"/>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Latest news and updates from ZamRock Radio" />
+  <meta name="keywords" content="ZamRock, Radio, News, Updates, Music" />
+  <meta name="author" content="ZamRock Radio" />
+
+  <!-- Open Graph / Facebook Meta Tags -->
+  <meta property="og:title" content="News - ZamRock Radio" />
+  <meta property="og:description" content="Stay updated with the latest news and updates from ZamRock Radio" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://zamrock.net/news/" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg" />
+
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="News - ZamRock Radio" />
+  <meta name="twitter:description" content="Stay updated with the latest news and updates from ZamRock Radio" />
+  <meta name="twitter:image" content="https://github.com/DeathSmack/zamrock/blob/main/docs/img/website_bg/website_bg_014.jpg?raw=true" />
+
+  <!-- Fonts and styles -->
+  <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <link rel="stylesheet" href="../css/news.css"/>
+  <style>
+    .news-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
     
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Latest news and updates from ZamRock Radio" />
-    <meta name="keywords" content="ZamRock, Radio, News, Updates, Music" />
-    <meta name="author" content="ZamRock Radio" />
-
-    <!-- Open Graph / Facebook Meta Tags -->
-    <meta property="og:title" content="News - ZamRock Radio" />
-    <meta property="og:description" content="Stay updated with the latest news and updates from ZamRock Radio" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://zamrock.net/news/" />
-    <meta property="og:image" content="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg" />
-
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="News - ZamRock Radio" />
-    <meta name="twitter:description" content="Stay updated with the latest news and updates from ZamRock Radio" />
-    <meta name="twitter:image" content="https://github.com/DeathSmack/zamrock/blob/main/docs/img/website_bg/website_bg_014.jpg?raw=true" />
-
-    <!-- Fonts and styles -->
-    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="../css/styles.css"/>
-    <link rel="stylesheet" href="../css/news.css"/>
-    <style>
-        .news-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
-            margin-top: 20px;
-        }
-        
-        .news-card {
-            background: rgba(46, 52, 64, 0.9);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            min-height: 300px;
-        }
-        
-        .mastodon-embed {
-            width: 100%;
-            min-height: 300px;
-            border: none;
-        }
-        
-        .loading-embed {
-            padding: 20px;
-            text-align: center;
-            color: var(--text-color);
-        }
-        
-        @media (max-width: 768px) {
-            .news-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .news-card {
+      background: rgba(46, 52, 64, 0.9);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 300px;
+      padding: 15px;
+    }
+    
+    .mastodon-embed {
+      width: 100%;
+      min-height: 300px;
+      border: none;
+    }
+    
+    .loading-embed {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-color);
+    }
+    
+    @media (max-width: 768px) {
+      .news-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .news-card {
+        min-height: auto;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="overlay"></div>
-    <div class="container">
-        <h1 class="site-title"><a href="../">ZamRock Radio</a></h1>
-        <div class="tagline">ZAMZAM FOR LIFE...</div>
-        
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">Menu</button>
-        
-        <nav class="main-nav" id="mainNav">
-            <a href="../schedule/" class="nav-btn">Schedule</a>
-            <a href="../news/" class="nav-btn active">News</a>
-            <a href="../contact/" class="nav-btn">Contact</a>
-            <a href="../about/" class="nav-btn">About</a>
-        </nav>
+  <div class="overlay"></div>
+  <div class="container">
+    <h1 class="site-title"><a href="/">ZamRock Radio</a></h1>
+    <div class="tagline">ZAMZAM FOR LIFE...</div>
+    
+    <nav class="main-nav">
+      <a href="../schedule/" class="nav-btn">Schedule</a>
+      <a href="../news/" class="nav-btn active">News</a>
+      <a href="../contact/" class="nav-btn">Contact</a>
+      <a href="../about/" class="nav-btn">About</a>
+    </nav>
 
-        <main class="news-container">
-            <h1>Latest News & Updates</h1>
-            <div id="newsContainer" class="news-grid">
-                <div class="loading">Loading news...</div>
-            </div>
-        </main>
-    </div>
-
-    <script src="../js/news.js"></script>
-    <footer class="site-footer">
-        <div class="footer-content">
-            <p> 2025 ZamRock Radio - All Rights Reserved</p>
-            <div class="footer-links">
-                <a href="../about/">About</a>
-                <a href="../contact/">Contact</a>
-                <a href="../schedule/">Schedule</a>
-                <a href="../news/">News</a>
-            </div>
+    <main class="main-content">
+      <div class="news-container">
+        <h1>Latest News & Updates</h1>
+        <div id="newsContainer" class="news-grid">
+          <div class="loading">Loading news...</div>
         </div>
-    </footer>
-    <script src="../js/main.js"></script>
-    <script>
-        // Initialize mobile menu
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('mobileMenuToggle');
-            const navMenu = document.querySelector('.nav-menu');
-            
-            if (menuToggle && navMenu) {
-                menuToggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    navMenu.classList.toggle('active');
-                });
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-                        navMenu.classList.remove('active');
-                    }
-                });
-            }
-            
-            // Load news with more posts
-            if (typeof loadNews === 'function') {
-                loadNews(9, 'newsContainer');
-            } else {
-                console.error('loadNews function not found');
-                const container = document.getElementById('newsContainer');
-                if (container) {
-                    container.innerHTML = '<div class="error">News functionality not available. Please try again later.</div>';
-                }
-            }
-        });
-    </script>
+      </div>
+    </main>
+  </div>
+  
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="social-links">
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+      </div>
+      <p>&copy; 2025 ZamRock Radio. All rights reserved.</p>
+    </div>
+  </footer>
+  
+  <script src="../js/main.js"></script>
+  <script src="../js/news.js"></script>
+  <script>
+    // Load news when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof loadNews === 'function') {
+        loadNews(9, 'newsContainer');
+      } else {
+        console.error('loadNews function not found');
+        const container = document.getElementById('newsContainer');
+        if (container) {
+          container.innerHTML = '<div class="error">News functionality not available. Please try again later.</div>';
+        }
+      }
+    });
+  </script>
 </body>
 </html>
