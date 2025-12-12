@@ -5,6 +5,8 @@
     --text-color: #d8dee9;
     --accent-color: #5e81ac;
     --border-color: #d8dee9;
+    --nav-btn-padding: 10px 15px;
+    --nav-btn-min-width: 120px;
 }
 
 * {
@@ -15,16 +17,13 @@
 
 body {
     font-family: 'Press Start 2P', system-ui, -apple-system, sans-serif;
-    background: #000;
+    background: #000 url('../img/website_bg/website_bg_014.jpg') no-repeat center center fixed;
+    background-size: cover;
     color: var(--text-color);
     line-height: 1.6;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
 }
 
 .overlay {
@@ -50,34 +49,54 @@ body {
     padding: 20px 0;
 }
 
-/* Menu Styles */
-.nav-menu {
-    display: block;
-}
-
-.nav-menu ul {
-    list-style: none;
+/* Navigation Styles */
+.main-nav {
     display: flex;
-    gap: 10px;
     justify-content: center;
+    gap: 10px;
     padding: 20px 0;
-    margin: 0;
+    flex-wrap: wrap;
 }
 
-.nav-menu a {
+.nav-btn {
     color: var(--text-color);
     text-decoration: none;
-    padding: 10px 15px;
+    padding: var(--nav-btn-padding);
     border: 2px solid var(--border-color);
     border-radius: 5px;
     transition: all 0.3s ease;
-    display: block;
+    text-align: center;
+    min-width: var(--nav-btn-min-width);
+    flex: 1 0 auto;
+    max-width: 200px;
 }
 
-.nav-menu a:hover, 
-.nav-menu a.active {
+.nav-btn:hover, 
+.nav-btn.active {
     background: var(--primary-color);
     color: #fff;
+    text-decoration: none;
+}
+
+/* Site Title and Subtitle */
+.site-title {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 2.5rem;
+}
+
+.site-title a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.tagline {
+    text-align: center;
+    margin: -10px 0 20px;
+    font-size: 1rem;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 /* Mobile Menu Styles */
@@ -90,8 +109,10 @@ body {
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 5px;
-    margin: 10px 0;
+    margin: 10px auto;
     z-index: 1000;
+    width: 90%;
+    max-width: 300px;
 }
 
 .nav-menu {
@@ -119,6 +140,11 @@ body {
     padding: 20px;
     z-index: 999;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.nav-menu.active .nav-btn {
+    margin: 5px 0;
+    width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -183,22 +209,55 @@ body {
     margin: 10px 0;
 }
 
+/* Footer Styles */
+.footer {
+    background-color: rgba(46, 52, 64, 0.9);
+    padding: 20px 0;
+    margin-top: 40px;
+    text-align: center;
+}
+
+.footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.social-links {
+    margin: 15px 0;
+}
+
+.social-links a {
+    color: var(--text-color);
+    margin: 0 10px;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: var(--primary-color);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-    .mobile-menu-toggle {
-        display: block;
-        margin: 10px auto;
-    }
-    
-    .nav-menu ul {
+    .main-nav {
         flex-direction: column;
-        align-items: stretch;
-        padding: 10px 0;
-        display: none;
+        align-items: center;
+        padding: 10px;
     }
     
-    .nav-menu.active ul {
-        display: flex;
+    .nav-btn {
+        width: 100%;
+        max-width: 250px;
+        margin: 5px 0;
+    }
+    
+    .site-title {
+        font-size: 2rem;
+    }
+    
+    .tagline {
+        font-size: 0.8rem;
     }
     
     .nav-menu li {
@@ -208,6 +267,7 @@ body {
     .nav-menu a {
         text-align: center;
         padding: 8px 10px;
+    }
     }
     
     .toggle-menu {

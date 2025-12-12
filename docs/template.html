@@ -3,67 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ZamRock Radio</title>
+  <title>ZamRock Radio - {{PAGE_TITLE}}</title>
   <link rel="icon" href="https://github.com/DeathSmack/zamrock/raw/main/graphics/favicon.gif" type="image/gif"/>
   
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Listen to ZamRock Radio - Your favorite online radio station with great music and live streaming." />
+  <meta name="description" content="{{PAGE_DESCRIPTION}}" />
   <meta name="keywords" content="ZamRock, Radio, Online Radio, Music, Stream" />
   <meta name="author" content="ZamRock Radio" />
 
   <!-- Open Graph / Facebook Meta Tags -->
-  <meta property="og:title" content="ZamRock Radio" />
-  <meta property="og:description" content="Tune in to ZamRock Radio for great music and live streaming." />
+  <meta property="og:title" content="ZamRock Radio - {{PAGE_TITLE}}" />
+  <meta property="og:description" content="{{PAGE_DESCRIPTION}}" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://zamrock.net" />
+  <meta property="og:url" content="https://zamrock.net/{{PAGE_SLUG}}/" />
   <meta property="og:image" content="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg" />
 
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="ZamRock Radio" />
-  <meta name="twitter:description" content="Tune in to ZamRock Radio for great music and live streaming." />
-  <meta name="twitter:image" content="https://github.com/DeathSmack/zamrock/blob/6227f3fb00eb3e802a17fe9d6666a831daf02fc7/docs/img/website_bg/website_bg_014.jpg?raw=true" />
+  <meta name="twitter:title" content="ZamRock Radio - {{PAGE_TITLE}}" />
+  <meta name="twitter:description" content="{{PAGE_DESCRIPTION}}" />
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/DeathSmack/zamrock/main/docs/img/website_bg/website_bg_014.jpg" />
 
   <!-- Fonts and styles -->
   <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css"/>
-  <link rel="stylesheet" href="css/news.css"/>
+  <link rel="stylesheet" href="../css/styles.css"/>
+  <link rel="stylesheet" href="../css/news.css"/>
 </head>
 <body>
   <div class="overlay"></div>
   <div class="container">
-    <h1 class="site-title">ZamRock Radio</h1>
+    <h1 class="site-title"><a href="../">ZamRock Radio</a></h1>
     <div class="tagline">ZAMZAM FOR LIFE...</div>
     
     <button class="mobile-menu-toggle" id="mobileMenuToggle">Menu</button>
     
     <nav class="main-nav" id="mainNav">
-      <a href="news/" class="nav-btn">News</a>
-      <a href="schedule/" class="nav-btn">Schedule</a>
-      <a href="contact/" class="nav-btn">Contact</a>
-      <a href="about/" class="nav-btn">About</a>
+      <a href="../news/" class="nav-btn">News</a>
+      <a href="../schedule/" class="nav-btn">Schedule</a>
+      <a href="../contact/" class="nav-btn">Contact</a>
+      <a href="../about/" class="nav-btn">About</a>
     </nav>
-    <div class="player-container">
-      <!-- Updated the stream URL here -->
-      <audio id="radioStream" src="https://divine-paper-3624.deathsmack-a51.workers.dev/" crossorigin="anonymous"></audio>
-      <button id="playButton" class="play-btn">Play</button>
-      <div class="volume-container">
-        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider" />
-      </div>
-    </div>
 
-    <!-- News Section -->
-<section class="news-section">
-  <h2>Latest Updates</h2>
-  <div id="newsContainer" class="news-grid">
-    <div class="loading">Loading news...</div>
-  </div>
-  <div class="view-more">
-    <a href="news/" class="btn">View All Updates</a>
-  </div>
-</section>
-
+    <main class="main-content">
+      <!-- Page content goes here -->
+      {{PAGE_CONTENT}}
+    </main>
   </div>
   
   <footer class="footer">
@@ -78,8 +63,6 @@
     </div>
   </footer>
   
-  <script src="js/main.js"></script>
-  <script src="js/news.js"></script>
   <script>
     // Mobile menu toggle
     document.addEventListener('DOMContentLoaded', function() {
@@ -90,11 +73,6 @@
         mobileMenuToggle.addEventListener('click', function() {
           mainNav.classList.toggle('active');
         });
-      }
-      
-      // Load news when the page loads
-      if (typeof loadNews === 'function') {
-        loadNews(3, 'newsContainer');
       }
     });
   </script>
