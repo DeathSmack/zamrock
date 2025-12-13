@@ -1,4 +1,10 @@
 const scheduleData = [{
+        title: "Fresh Fish!",
+        start: 6,
+        end: 22,
+        description: "Recently added tracks"
+    },
+    {
         title: "Acid Trip, A Journey Through Psychedelic Sounds",
         start: 6,
         end: 12,
