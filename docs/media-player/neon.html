@@ -10,38 +10,60 @@
   audio{width:100%;margin-bottom:10px;}
   .meta{background:#333;border:1px solid #0f0;padding:5px;}
   .meta span{display:block;margin:2px 0;}
+  /* colour picker */
+  #color-picker{margin-top:6px;text-align:center;}
+  .color-circle{
+    display:inline-block;width:20px;height:20px;border-radius:50%;
+    margin:0 4px;cursor:pointer;border:2px solid #111;box-shadow:0 0 2px #000;
+  }
+  .color-circle[data-color="green"]   {background:#0f0;}
+  .color-circle[data-color="magenta"] {background:#f0f;}
+  .color-circle[data-color="cyan"]    {background:#0ff;}
+  .color-circle[data-color="yellow"]  {background:#ff0;}
+  .color-circle[data-color="orange"]  {background:#ff8000;}
 </style>
 </head>
 <body>
 <div class="wrapper">
   <audio id="radio" controls autoplay>
-    <source src="https://zamrock.deathsmack.com/listen/zamrock/radio.mp3" type="audio/mpeg">
+    <source src="https://divine-paper-3624.deathsmack-a51.workers.dev/" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
+
   <div class="meta" id="meta">
     <span id="title">Song: Loading…</span>
     <span id="artist">Artist: </span>
     <span id="album">Album: </span>
     <span id="playlist">Playlist: </span>
+  </div>
+
+  <!-- colour‑picker circles -->
+  <div id="color-picker">
+    <span class="color-circle" data-color="green"></span>
+    <span class="color-circle" data-color="magenta"></span>
+    <span class="color-circle" data-color="cyan"></span>
+    <span class="color-circle" data-color="yellow"></span>
+    <span class="color-circle" data-color="orange"></span>
   </div>
 </div>
 
 <script>
 const API_URL = 'https://zamrock.deathsmack.com/api/nowplaying/1';
-const POLL_INTERVAL = 5000; // 5 s
+const POLL_INTERVAL = 2000;            // 2 s
 
 async function fetchMetadata() {
   try {
-    const resp = await fetch(API_URL, {mode: 'cors', cache: 'no-store'});
-    if (!resp.ok) throw new Error('bad status ' + resp.status);
+    const resp = await fetch(API_URL, {mode:'cors', cache:'no-store'});
+    if (!resp.ok) throw new Error('status '+resp.status);
     const data = await resp.json();
 
-    const title   = data.now_playing.song.title   ||
-                    data.now_playing.song.text    ||
-                    "Unknown Track";
-    const artist  = data.now_playing.song.artist || "Unknown Artist";
-    const album   = data.now_playing.song.album  || "Unknown Album";
-    const playlist= data.now_playing.playlist     || "Unknown Collection";
+    // safe extraction – default if missing/empty
+    const title    = (data.now_playing.song.title   ||
+                      data.now_playing.song.text    ||
+                      "").trim() || "Unknown Track";
+    const artist   = (data.now_playing.song.artist || "").trim() || "Unknown Artist";
+    const album    = (data.now_playing.song.album  || "").trim() || "Unknown Album";
+    const playlist = (data.now_playing.playlist   || "").trim() || "Unknown Collection";
 
     return {title, artist, album, playlist};
   } catch (e) {
@@ -52,166 +74,47 @@ async function fetchMetadata() {
 
 function renderMeta(info) {
   if (!info) return;
-  document.getElementById('title').textContent   = `Song: ${info.title}`;
+  document.getElementById('title').textContent   = `Song:   ${info.title}`;
   document.getElementById('artist').textContent  = `Artist: ${info.artist}`;
-  document.getElementById('album').textContent   = `Album: ${info.album}`;
-  document.getElementById('playlist').textContent = `Playlist: ${info.playlist}`;
+  document.getElementById('album').textContent   = `Album:  ${info.album}`;
+  document.getElementById('playlist').textContent = `Playlist:${info.playlist}`;
 }
 
 (async () => {
   const metaDiv = document.getElementById('meta');
   const update = async () => {
-    const info = await fetchMetadata();
-    if (info) renderMeta(info);
+    const data = await fetchMetadata();
+    if (data) renderMeta(data);
     else metaDiv.innerHTML = '<span>Loading track information…</span>';
   };
-  await update();          // initial load
+  await update();               // first instant
   setInterval(update, POLL_INTERVAL);
 })();
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>ZamRock 8‑Bit Web Player</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<style>
-  body{margin:0;background:#111;color:#0f0;font-family:'Press Start 2P',monospace;font-size:12px;}
-  .wrapper{max-width:320px;margin:20px auto;background:#222;border:2px solid #0f0;padding:10px;box-shadow:0 0 10px #0f0;}
-  audio{width:100%;margin-bottom:10px;}
-  .meta{background:#333;border:1px solid #0f0;padding:5px;}
-  .meta span{display:block;margin:2px 0;}
-</style>
-</head>
-<body>
-<div class="wrapper">
-  <audio id="radio" controls autoplay>
-    <source src="https://zamrock.deathsmack.com/listen/zamrock/radio.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
-  <div class="meta" id="meta">
-    <span id="title">Song: Loading…</span>
-    <span id="artist">Artist: </span>
-    <span id="album">Album: </span>
-    <span id="playlist">Playlist: </span>
-  </div>
-</div>
 
-<script>
-const API_URL = 'https://zamrock.deathsmack.com/api/nowplaying/1';
-const POLL_INTERVAL = 5000; // 5 s
+/* ---------- colour‑picker logic ---------- */
+const picker = document.getElementById('color-picker');
+picker.addEventListener('click', e => {
+  if (!e.target.dataset.color) return;
+  const color = {
+    green:   '#0f0',
+    magenta:'#f0f',
+    cyan:    '#0ff',
+    yellow:  '#ff0',
+    orange:  '#ff8000'
+  }[e.target.dataset.color] || '#0f0';
 
-async function fetchMetadata() {
-  try {
-    const resp = await fetch(API_URL, {mode: 'cors', cache: 'no-store'});
-    if (!resp.ok) throw new Error('bad status ' + resp.status);
-    const data = await resp.json();
-
-    const title   = data.now_playing.song.title   ||
-                    data.now_playing.song.text    ||
-                    "Unknown Track";
-    const artist  = data.now_playing.song.artist || "Unknown Artist";
-    const album   = data.now_playing.song.album  || "Unknown Album";
-    const playlist= data.now_playing.playlist     || "Unknown Collection";
-
-    return {title, artist, album, playlist};
-  } catch (e) {
-    console.warn('Metadata fetch failed:', e);
-    return null;
-  }
-}
-
-function renderMeta(info) {
-  if (!info) return;
-  document.getElementById('title').textContent   = `Song: ${info.title}`;
-  document.getElementById('artist').textContent  = `Artist: ${info.artist}`;
-  document.getElementById('album').textContent   = `Album: ${info.album}`;
-  document.getElementById('playlist').textContent = `Playlist: ${info.playlist}`;
-}
-
-(async () => {
-  const metaDiv = document.getElementById('meta');
-  const update = async () => {
-    const info = await fetchMetadata();
-    if (info) renderMeta(info);
-    else metaDiv.innerHTML = '<span>Loading track information…</span>';
-  };
-  await update();          // initial load
-  setInterval(update, POLL_INTERVAL);
-})();
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>ZamRock 8‑Bit Web Player</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<style>
-  body{margin:0;background:#111;color:#0f0;font-family:'Press Start 2P',monospace;font-size:12px;}
-  .wrapper{max-width:320px;margin:20px auto;background:#222;border:2px solid #0f0;padding:10px;box-shadow:0 0 10px #0f0;}
-  audio{width:100%;margin-bottom:10px;}
-  .meta{background:#333;border:1px solid #0f0;padding:5px;}
-  .meta span{display:block;margin:2px 0;}
-</style>
-</head>
-<body>
-<div class="wrapper">
-  <audio id="radio" controls autoplay>
-    <source src="redacted" type="audio/mpeg">  // missing //
-    Your browser does not support the audio element.
-  </audio>
-  <div class="meta" id="meta">
-    <span id="title">Song: Loading…</span>
-    <span id="artist">Artist: </span>
-    <span id="album">Album: </span>
-    <span id="playlist">Playlist: </span>
-  </div>
-</div>
-
-<script>
-const API_URL = 'redacted';  // missing //
-const POLL_INTERVAL = 5000; // 5 s
-
-async function fetchMetadata() {
-  try {
-    const resp = await fetch(API_URL, {mode: 'cors', cache: 'no-store'});
-    if (!resp.ok) throw new Error('bad status ' + resp.status);
-    const data = await resp.json();
-
-    const title   = data.now_playing.song.title   ||
-                    data.now_playing.song.text    ||
-                    "Unknown Track";
-    const artist  = data.now_playing.song.artist || "Unknown Artist";
-    const album   = data.now_playing.song.album  || "Unknown Album";
-    const playlist= data.now_playing.playlist     || "Unknown Collection";
-
-    return {title, artist, album, playlist};
-  } catch (e) {
-    console.warn('Metadata fetch failed:', e);
-    return null;
-  }
-}
-
-function renderMeta(info) {
-  if (!info) return;
-  document.getElementById('title').textContent   = `Song: ${info.title}`;
-  document.getElementById('artist').textContent  = `Artist: ${info.artist}`;
-  document.getElementById('album').textContent   = `Album: ${info.album}`;
-  document.getElementById('playlist').textContent = `Playlist: ${info.playlist}`;
-}
-
-(async () => {
-  const metaDiv = document.getElementById('meta');
-  const update = async () => {
-    const info = await fetchMetadata();
-    if (info) renderMeta(info);
-    else metaDiv.innerHTML = '<span>Loading track information…</span>';
-  };
-  await update();          // initial load
-  setInterval(update, POLL_INTERVAL);
-})();
+  // change colour of the whole player
+  document.body.style.color = color;
+  // quick hint
+  const flash = document.createElement('div');
+  flash.textContent = `Color set to ${e.target.dataset.color}`;
+  flash.style.cssText = `
+    position:fixed;bottom:30px;right:50%;transform:translateX(50%);
+    background:#111;color:#fff;padding:4px 8px;border-radius:4px;opacity:.8;
+  `;
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.remove(),1200);
+});
 </script>
 </body>
 </html>
