@@ -4,6 +4,13 @@
   "schedule": [
     {
       "start": "06:00",
+      "end": "22:00",
+      "show": "Fresh Fish! 🐟",
+      "host": "DJ LiquidSoap",
+      "description": "Recently added tracks"
+    },
+    {
+      "start": "06:00",
       "end": "12:00",
       "show": "Acid Trip",
       "host": "DJ LiquidSoap",
