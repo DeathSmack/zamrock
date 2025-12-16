@@ -110,7 +110,7 @@ async function loadNews(limit = 4, containerId = 'newsContainer') {
         console.error('Error loading news:', error);
         container.innerHTML = `
             <div class="error">
-                <p>Failed to load news. Please check your connection and try again.</p>
+                <p>Failed to load news. You broke it.. Pound that reload! or go direct to our news feed <a href="https://musicworld.social/@ZamRock">here</a>.</p>
                 <p><small>Error: ${error.message}</small></p>
             </div>`;
     }
