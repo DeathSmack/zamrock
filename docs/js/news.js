@@ -1,5 +1,3 @@
-// news.js – Handles fetching and displaying Mastodon posts
-
 'use strict';
 
 /**
@@ -10,11 +8,11 @@
  */
 function formatDate(dateString) {
   const options = {
-    year:    'numeric',
-    month:   'long',
-    day:     'numeric',
-    hour:    '2-digit',
-    minute:  '2-digit'
+    year:   'numeric',
+    month:  'long',
+    day:    'numeric',
+    hour:   '2-digit',
+    minute: '2-digit'
   };
   return new Date(dateString).toLocaleDateString('en-US', options);
 }
@@ -29,12 +27,10 @@ function createNewsCard(post) {
   const card = document.createElement('div');
   card.className = 'news-card';
 
-  // Loading indicator
   const loading = document.createElement('div');
   loading.className = 'loading-embed';
   loading.textContent = 'Loading post...';
 
-  // Mastodon embed iframe
   const iframe = document.createElement('iframe');
   iframe.className = 'mastodon-embed';
   iframe.src = `${post.url}/embed`;
@@ -44,11 +40,9 @@ function createNewsCard(post) {
   iframe.setAttribute('allowfullscreen', '');
   iframe.setAttribute('loading', 'lazy');
 
-  // Show loading indicator until iframe is ready
   iframe.onload = function () {
     loading.style.display = 'none';
 
-    // Inject dark‑theme style into the iframe
     const style = document.createElement('style');
     style.textContent = `
       .mastodon-embed {
@@ -63,7 +57,6 @@ function createNewsCard(post) {
         background: #88c0d0 !important;
       }
     `;
-    // Guard against missing iframe document
     if (iframe.contentDocument && iframe.contentDocument.head) {
       iframe.contentDocument.head.appendChild(style);
     }
@@ -79,16 +72,15 @@ function createNewsCard(post) {
  * Loads Mastodon news posts and renders them into the given container.
  *
  * @param {number}   limit       – Number of posts to fetch (default 4).
- * @param {string}   containerId – ID of the container element (default 'newsContainer').
+ * @param {string}   containerId – ID of the container element (default 'news-container').
  */
-async function loadNews(limit = 4, containerId = 'newsContainer') {
+async function loadNews(limit = 4, containerId = 'news-container') {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   container.innerHTML = '<div class="loading">Loading news...</div>';
 
   try {
-    // Use AllOrigins as a CORS proxy
     const proxyUrl = 'https://api.allorigins.win/get?url=';
     const apiUrl =
       `https://musicworld.social/api/v1/accounts/114289974100154452/statuses?limit=${limit}&exclude_replies=true&exclude_reblogs=true`;
@@ -107,7 +99,6 @@ async function loadNews(limit = 4, containerId = 'newsContainer') {
       return;
     }
 
-    // Render news cards
     container.innerHTML = '';
     container.className = 'news-grid';
 
@@ -116,14 +107,13 @@ async function loadNews(limit = 4, containerId = 'newsContainer') {
       container.appendChild(card);
     });
 
-    // Load Mastodon embed script if it hasn't been loaded yet
+    // Load Mastodon embed script if not already loaded
     if (!window.MastodonEmbed) {
       const script = document.createElement('script');
       script.src = 'https://mastodon.social/embed.js';
       script.async = true;
       document.body.appendChild(script);
     } else {
-      // Refresh embeds if script already exists
       window.MastodonEmbed?.();
     }
   } catch (error) {
