@@ -5,7 +5,6 @@
 #  • Per‑user sleep/wake via `!sleep`, `!wake`, or any message containing “Soap”
 #  • 5‑minute contextual window for normal messages
 #  • Owner (owner id in .env) can always use commands and put the bot to sleep
-#  • Plus: Owner-only commands to change models, list models, set default model
 # ──────────────────────────────────────────────────────────────────────────────────────
 
 import os
@@ -75,71 +74,58 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
-# ──────────────────────────────────────────────────────────────────────────────────────
-#  Config: models list and default
-# ──────────────────────────────────────────────────────────────────────────────────────
-# You can update this list as needed, or load from a file if preferred
-MODELS = os.getenv("MODELS", "liquidsoap,another-model,yet-another").split(",")
-DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", MODELS[0])
-
-# store current model in memory
-current_model = DEFAULT_MODEL
-
 def is_owner(user: discord.User) -> bool:
     return str(user.id) == OWNER_ID
 
 # ──────────────────────────────────────────────────────────────────────────────────────
-#  Owner-only commands to manage models
+#  Per‑user “sleep” state
+# ──────────────────────────────────────────────────────────────────────────────────────
+USER_SLEEP = {}            # user_id -> True if that user told the bot to sleep
+
+# ──────────────────────────────────────────────────────────────────────────────────────
+#  Random “thinking” messages (cat‑DJ style)
+# ──────────────────────────────────────────────────────────────────────────────────────
+THINKING_MSGS = [
+    "🔊 *Looking around the studio for the right answer…*",
+    "🎧 *1 second… how do I adjust my collar?*",
+    "🎶 *1 second, I need to load the next track…*",
+    "🐱 *Purr‑ing through the code…*",
+    "🚀 *Loading neural nets like a beat drop!*",
+    "🕺 *Dancing with data, hold tight!*",
+    "😺 *Whiskers on the wires, stay tuned!*",
+    "🎛️ *Turning up the volume on the neural nets!*",
+    "🎧 *Dropping beats while I think…*",
+]
+async def send_thinking(channel):
+    msg = random.choice(THINKING_MSGS)
+    await channel.send(msg)
+
+# ──────────────────────────────────────────────────────────────────────────────────────
+#  Sanitiser that removes a leading “soap” greeting
+# ──────────────────────────────────────────────────────────────────────────────────────
+def sanitize(content: str) -> str:
+    return re.sub(r'^\s*soap\b', '', content, flags=re.IGNORECASE).strip()
+
+# ──────────────────────────────────────────────────────────────────────────────────────
+#  Helper that sends a query and replies (chunked)
+# ──────────────────────────────────────────────────────────────────────────────────────
+async def handle_query(message: discord.Message, prompt: str):
+    print(f"[{time.strftime('%H:%M:%S')}] Asking model on behalf of {message.author}")
+    await send_thinking(message.channel)
+    answer = query_openwebui(prompt)
+    await send_chunks(message.channel, answer)
+
+# ──────────────────────────────────────────────────────────────────────────────────────
+#  Context window & last‑query time (for non‑prefixed normal messages)
+# ──────────────────────────────────────────────────────────────────────────────────────
+COOLDOWN_SEC = 5 * 60            # 5‑minute contextual window
+LAST_QUERY_TIME = {}             # user_id -> timestamp of last !ask/soap query
+
+# ──────────────────────────────────────────────────────────────────────────────────────
+#  Main message handler (re‑written for per‑user sleep)
 # ──────────────────────────────────────────────────────────────────────────────────────
 @client.event
-async def on_message(message):
-    global current_model
-    # Your existing commands and logic...
-
-    # -- ADDITIONAL OWNER-ONLY COMMANDS START HERE --
-    if message.content.startswith("!listmodels") and is_owner(message.author):
-        models_str = "\n".join(f"{i+1}. {m}" for i, m in enumerate(MODELS))
-        await message.channel.send(f"Available models:\n{models_str}")
-        return
-
-    if message.content.startswith("!setmodel") and is_owner(message.author):
-        parts = message.content.split(maxsplit=1)
-        if len(parts) < 2:
-            await message.channel.send("Usage: !setmodel <model_name|number>")
-            return
-        arg = parts[1]
-        # Check if number
-        if arg.isdigit():
-            index = int(arg) - 1
-            if 0 <= index < len(MODELS):
-                current_model = MODELS[index]
-                await message.channel.send(f"Model changed to: {current_model}")
-            else:
-                await message.channel.send("Invalid model number.")
-        else:
-            # Check by name
-            if arg in MODELS:
-                current_model = arg
-                await message.channel.send(f"Model changed to: {current_model}")
-            else:
-                await message.channel.send("Model name not found.")
-        return
-
-    if message.content.startswith("!defaultmodel") and is_owner(message.author):
-        current_model = DEFAULT_MODEL
-        await message.channel.send(f"Model reset to default: {current_model}")
-        return
-
-    # ... rest of your existing on_message logic ...
-    # (your current code continues here)
-
-    # Ignore other parts (your existing code)
-    # ... existing code continues unchanged ...
-    # For clarity, I will just append your existing on_message code after this
-
-    # -- your existing on_message code starts here (from your code above) --
-    # ignore the previous comment, just append the rest of your code here
-
+async def on_message(message: discord.Message):
     # Ignore the bot's own messages
     if message.author == client.user:
         return
