@@ -1,1 +1,0 @@
-gntl embeds
