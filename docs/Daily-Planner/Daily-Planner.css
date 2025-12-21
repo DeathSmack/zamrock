@@ -1,1 +1,68 @@
+/* ────────────────────────
+   Dark theme + 12‑hr view
+   ──────────────────────── */
 
+/* General */
+body{
+  background:#1e1e2e;
+  color:#e0e0e0;
+  font-family:Arial,Helvetica,sans-serif;
+  margin:0;
+  padding:20px;
+}
+h1{margin-bottom:10px;}
+
+/* Table */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#2a2a3a;
+}
+th, td{
+  border:1px solid #444;
+  padding:8px;
+  text-align:center;
+}
+th{background:#1a1a2e; color:#c8c8d2;}
+td:first-child, td:nth-child(2){color:#c8c8d2;}
+td:nth-child(4){color:#c8c8d2;}
+
+/* Time picker (24‑hr) */
+input[type="time"]{
+  width:70px;
+  padding:2px;
+  background:#333;
+  color:#c8c8d2;
+  border:1px solid #555;
+}
+.time-12h{
+  margin-left:4px;
+  font-size:10px;
+  color:#9ac7ff;
+  display:inline-block;
+}
+
+/* ▲/▼ arrows & action icons */
+.time-controls{display:inline-block; margin-left:4px;}
+.time-controls button{font-size:10px; line-height:12px; width:18px; height:18px;
+  padding:0; margin:0 1px; border:none;
+  background:#444; color:#e0e0e0; cursor:pointer;}
+.time-controls button:hover{background:#555;}
+
+.move-controls{display:inline-block;}
+.move-controls button{font-size:10px; line-height:12px; width:18px; height:18px;
+  padding:0; margin:0 1px; border:none;
+  background:#444; color:#e0e0e0; cursor:pointer;}
+.move-controls button:hover{background:#555;}
+
+/* Global add‑at‑end button */
+.global-btn{
+  background:#444; color:#e0e0e0; border:none;
+  padding:5px 10px; cursor:pointer;
+}
+.global-btn:hover{background:#555;}
+
+/* Drag‑and‑drop visual cue */
+tr{cursor:move;}
+tr.ui-sortable-helper{background:#37363c;}
+tr:hover{background:#313132;}
