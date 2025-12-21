@@ -1,8 +1,6 @@
-/* ────────────────────────
-   Schedule table – 12‑hr view + Add / Delete
-   ──────────────────────── */
+/* ──── Schedule table – 12‑hr view + Add / Delete ──── */
 
-/* ---------- Data --------------------------------------------------- */
+/* ---------- Data ------------------------------- */
 let shows = [
   {id:1, name:"The Morning Coffee Mix",          start:"06:00", end:"10:30"},
   {id:2, name:"Acid Trip, Psychedelic Sounds",   start:"09:30", end:"13:30"},
@@ -19,25 +17,21 @@ let shows = [
 shows.forEach((s,i)=>s.order=i);
 let nextId = Math.max(...shows.map(s=>s.id)) + 1;
 
-/* ---------- Helpers ------------------------------------------------- */
+/* ---------- Helpers ----------------------------- */
 function timeToMinutes(t){const [h,m]=t.split(':').map(Number);return h*60+m;}
 function minutesToTime(m){const h=Math.floor(m/60).toString().padStart(2,'0');
                            const min=(m%60).toString().padStart(2,'0');return `${h}:${min}`;}
 function formatDuration(m){const h=Math.floor(m/60);const min=m%60;return `${h}h ${min}m`;}
-
-/* 12‑hour (AM/PM) formatter */
 function format12h(t){const [hRaw,min] = t.split(':').map(Number);
                       const period = hRaw>=12?'PM':'AM';
                       const h = hRaw%12||12;
                       return `${h}:${min.toString().padStart(2,'0')} ${period}`;}
 
-/* ---------- Render --------------------------------------------------- */
+/* ---------- Render ------------------------------- */
 function renderSchedule(){
   const tbody = $("#schedule tbody");
   tbody.empty();
-
   shows.sort((a,b)=>a.order-b.order);
-
   shows.forEach((s,i)=>{
     const startMin   = timeToMinutes(s.start);
     const endMin     = timeToMinutes(s.end);
@@ -54,101 +48,73 @@ function renderSchedule(){
     const overlapStr = formatDuration(overlap);
 
     const tr = $("<tr>").attr("data-id", s.id);
-
     tr.append($("<td>").text(i+1));
-
-    /* ── Row‑move arrows ── */
-    const upBtn   = $('<button class="move-up">&#x25B2;</button>');
-    const downBtn = $('<button class="move-down">&#x25BC;</button>');
-    const moveCtrls = $('<div class="move-controls">')
-                       .append(upBtn).append(downBtn);
-    tr.append($("<td>").append(moveCtrls));
-
+    tr.append($("<td>").html('<div class="move-controls"><button class="move-up">▲</button><button class="move-down">▼</button></div>'));
     tr.append($("<td>").text(s.name));
 
-    /* ── Start field + 12‑hr display ── */
-    const startInput = $("<input type='time' class='start'>")
-                        .val(s.start).data('id',s.id);
-    const start12h   = $('<span class="time-12h start-12h"></span>')
-                        .text(format12h(s.start));
-    const startCtrls = $('<div class="time-controls">')
-                        .append('<button class="dec start-dec">&#x25BC;</button>')
-                        .append('<button class="inc start-inc">&#x25B2;</button>');
-    tr.append($("<td>").append(startInput).append(start12h).append(startCtrls));
+    // Start column
+    tr.append($("<td>").html(`
+      <input type="time" class="time-input start" value="${s.start}">
+      <span class="time-12h start-12h">${format12h(s.start)}</span>
+      <div class="time-controls"><button class="dec start-dec">▼</button><button class="inc start-inc">▲</button></div>
+    `));
 
-    /* ── End field + 12‑hr display ── */
-    const endInput = $("<input type='time' class='end'>")
-                      .val(s.end).data('id',s.id);
-    const end12h   = $('<span class="time-12h end-12h"></span>')
-                      .text(format12h(s.end));
-    const endCtrls = $('<div class="time-controls">')
-                      .append('<button class="dec end-dec">&#x25BC;</button>')
-                      .append('<button class="inc end-inc">&#x25B2;</button>');
-    tr.append($("<td>").append(endInput).append(end12h).append(endCtrls));
+    // End column
+    tr.append($("<td>").html(`
+      <input type="time" class="time-input end" value="${s.end}">
+      <span class="time-12h end-12h">${format12h(s.end)}</span>
+      <div class="time-controls"><button class="dec end-dec">▼</button><button class="inc end-inc">▲</button></div>
+    `));
 
     tr.append($("<td>").text(durationStr));
     tr.append($("<td>").text(overlapStr));
-
-    /* ── Actions (Add / Delete) ── */
-    const addBtn   = $('<button class="add-row" title="Add after this row">&#x2795;</button>');   // +
-    const deleteBtn= $('<button class="delete-row" title="Delete this row">&#x1F5D1;</button>'); // 🗑️
-    const actCell  = $('<td class="actions-cell">')
-                      .append(addBtn).append(deleteBtn);
-    tr.append(actCell);
-
+    tr.append($("<td>").html('<button class="add-row">+</button> <button class="delete-row">🗑️</button>'));
     tbody.append(tr);
   });
 
-  /* ---------- Time input change ---------- */
-  $(".start, .end").off('change').on('change', function(){
-    const id = $(this).data('id');
-    const s  = shows.find(item=>item.id===id);
-    if($(this).hasClass('start')) s.start = $(this).val();
-    else s.end   = $(this).val();
+  /* ---------- Event listeners (re‑bind after every render) ---------- */
 
-    // update 12‑hr display
-    $(this).closest('td').find('.time-12h').text(format12h($(this).val()));
+  // 24‑hr → 12‑hr updates
+  $(".time-input").off('change').on('change', function(){
+    const id = $(this).closest('tr').data('id');
+    const field = $(this).hasClass('start') ? 'start' : 'end';
+    shows.find(x=>x.id===id)[field] = $(this).val();
+    $(this).siblings('.time-12h').text(format12h(shows.find(x=>x.id===id)[field]));
     renderSchedule();
   });
 
-  /* ---------- Time increment/decrement ---------- */
+  // ▲ / ▼ arrow helpers (30‑min steps)
   $(".inc").off('click').on('click', function(){
-    const id  = $(this).closest('tr').data('id');
-    const field = $(this).hasClass('start-inc') ? 'start' :
-                  $(this).hasClass('end-inc')   ? 'end'   : null;
-    if(!field) return;
-    const step = 15;
-    const s = shows.find(it=>it.id===id);
-    let minutes = timeToMinutes(s[field]) + step;
-    minutes = Math.max(0, Math.min(23*60+59, minutes));
-    s[field] = minutesToTime(minutes);
-    $(this).closest('td').find(`.${field}-12h`).text(format12h(s[field]));
+    const tr = $(this).closest('tr');
+    const id = tr.data('id');
+    const show = shows.find(x=>x.id===id);
+    const field = $(this).hasClass('start-inc') ? 'start' : 'end';
+    let minutes = timeToMinutes(show[field]) + 30;
+    minutes = Math.min(23*60+59, minutes);
+    show[field] = minutesToTime(minutes);
     renderSchedule();
   });
   $(".dec").off('click').on('click', function(){
-    const id  = $(this).closest('tr').data('id');
-    const field = $(this).hasClass('start-dec') ? 'start' :
-                  $(this).hasClass('end-dec')   ? 'end'   : null;
-    if(!field) return;
-    const step = 15;
-    const s = shows.find(it=>it.id===id);
-    let minutes = timeToMinutes(s[field]) - step;
-    minutes = Math.max(0, Math.min(23*60+59, minutes));
-    s[field] = minutesToTime(minutes);
-    $(this).closest('td').find(`.${field}-12h`).text(format12h(s[field]));
+    const tr = $(this).closest('tr');
+    const id = tr.data('id');
+    const show = shows.find(x=>x.id===id);
+    const field = $(this).hasClass('start-dec') ? 'start' : 'end';
+    let minutes = timeToMinutes(show[field]) - 30;
+    minutes = Math.max(0, minutes);
+    show[field] = minutesToTime(minutes);
     renderSchedule();
   });
 
-  /* ---------- Row move arrows ---------- */
+  // Move‑up / move‑down arrows
   $(".move-up").off('click').on('click', function(){
     const tr = $(this).closest('tr');
     const idx = tr.index();
     if(idx===0) return;
     const id = tr.data('id');
-    const s = shows.find(it=>it.id===id);
+    const current = shows.find(x=>x.id===id);
     const prevId = $("#schedule tbody tr").eq(idx-1).data('id');
-    const prev = shows.find(it=>it.id===prevId);
-    [s.order, prev.order] = [prev.order, s.order];
+    const prevShow = shows.find(x=>x.id===prevId);
+    [current.order, prevShow.order] = [prevShow.order, current.order];
     renderSchedule();
   });
   $(".move-down").off('click').on('click', function(){
@@ -156,47 +122,40 @@ function renderSchedule(){
     const idx = tr.index();
     if(idx===shows.length-1) return;
     const id = tr.data('id');
-    const s = shows.find(it=>it.id===id);
+    const current = shows.find(x=>x.id===id);
     const nextId = $("#schedule tbody tr").eq(idx+1).data('id');
-    const next = shows.find(it=>it.id===nextId);
-    [s.order, next.order] = [next.order, s.order];
+    const nextShow = shows.find(x=>x.id===nextId);
+    [current.order, nextShow.order] = [nextShow.order, current.order];
     renderSchedule();
   });
 
-  /* ---------- Add / Delete actions ---------- */
+  // Add row after this row
   $(".add-row").off('click').on('click', function(){
     const tr = $(this).closest('tr');
     const idx = tr.index();
-    const curId = tr.data('id');
-
-    // create new show
     const newShow = {
       id: nextId++,
       name: "New Show",
       start: "00:00",
-      end:   "00:30",
+      end: "00:30",
       order: shows[idx].order + 1
     };
-
-    // bump orders of following rows
-    shows.forEach(s=>{ if(s.order>shows[idx].order) s.order++; });
-
+    shows.forEach(x=>{ if(x.order>shows[idx].order) x.order++; });
     shows.push(newShow);
     renderSchedule();
   });
 
+  // Delete this row
   $(".delete-row").off('click').on('click', function(){
     const tr = $(this).closest('tr');
     const id = tr.data('id');
-    shows = shows.filter(s=>s.id!==id);
-
-    // re‑number orders
-    shows.forEach((s,i)=>s.order=i);
+    shows = shows.filter(x=>x.id!==id);
+    shows.forEach((x,i)=>x.order=i);
     renderSchedule();
   });
 }
 
-/* ---------- Initialise + sortable -------------------------------- */
+/* ---------- Initialise & jQuery UI sortable ---------- */
 $(function(){
   renderSchedule();
 
@@ -212,9 +171,9 @@ $(function(){
     }
   }).disableSelection();
 
-  // global “Add at End” button
+  // Global “Add at End” button
   $("#add-at-end").on('click', function(){
-    const last = shows[shows.length-1];
+    const last = shows[shows.length-1] || {order:-1};
     const newShow = {
       id: nextId++,
       name:"New Show",
