@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ZamRock Radio Schedule – Dark 12‑hr + Add / Delete</title>
+
+  <!-- jQuery UI CSS (drag & drop) -->
+  <link rel="stylesheet"
+        href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+  <!-- Custom stylesheet – keeps the page tidy -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>ZamRock Radio Schedule</h1>
+
+  <p>
+    Drag rows to reorder, use ▲/▼ arrows to adjust times,
+    move rows with the arrows in column 2,
+    add a new row after any row with the “+” button, and
+    delete any row with the trash icon.
+  </p>
+
+  <table id="schedule">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Move</th>
+        <th>Show</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Duration</th>
+        <th>Overlap with previous</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Global “Add at End” button -->
+  <div style="margin-top: 10px;">
+    <button id="add-at-end" class="global-btn">
+      <span>+ Add at End</span>
+    </button>
+  </div>
+
+  <!-- JavaScript dependencies (jQuery + jQuery UI) -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+  <!-- Your custom logic – load *after* the DOM is ready -->
+  <script defer src="schedule.js"></script>
+</body>
+</html>
