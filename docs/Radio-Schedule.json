@@ -3,91 +3,91 @@
   "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
   "schedule": [
     {
-      "start": "06:00",
-      "end": "22:00",
+      "start": "18:15",
+      "end": "20:30",
       "show": "🐟 Fresh Fish!",
       "host": "DJ LiquidSoap",
       "description": "Recently added tracks"
     },
     {
-      "start": "09:30",
-      "end": "13:30",
+      "start": "08:00",
+      "end": "10:30",
       "show": "Acid Trip",
       "host": "DJ LiquidSoap",
       "description": "Wake up to a psychedelic journey, perfect for a mind-bending start to the day."
     },
     {
       "start": "06:00",
-      "end": "10:30",
+      "end": "10:45",
       "show": "Morning Coffee Mix",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "07:00",
-      "end": "13:00",
+      "start": "14:15",
+      "end": "16:00",
       "show": "Afrobeat Legacy",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "15:45",
-      "end": "18:00",
+      "start": "11:00",
+      "end": "14:00",
       "show": "Blues in Every Tongue",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "10:00",
-      "end": "16:00",
+      "start": "13:00",
+      "end": "15:00",
       "show": "The Funky Truth",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "14:00",
-      "end": "17:00",
+      "start": "10:30",
+      "end": "12:30",
       "show": "ZamDelic Trance",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "12:00",
-      "end": "22:00",
+      "start": "15:00",
+      "end": "18:00",
       "show": "Zamrock Rising",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "12:30",
-      "end": "18:00",
+      "start": "19:30",
+      "end": "21:15",
       "show": "Artist of the Month",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "12:15",
-      "end": "15:15",
+      "start": "09:30",
+      "end": "11:00",
       "show": "Cloud Pants",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "14:00",
-      "end": "16:00",
+      "start": "17:45",
+      "end": "20:00",
       "show": "Country, …Moo",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "12:00",
+      "start": "16:00",
       "end": "22:00",
       "show": "ZamRock Classics",
       "host": "DJ LiquidSoap",
       "description": ""
     },
     {
-      "start": "18:00",
+      "start": "20:00",
       "end": "22:00",
       "show": "The Catnip Sessions",
       "host": "DJ LiquidSoap",
