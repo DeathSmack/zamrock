@@ -184,10 +184,11 @@ function initializeData() {
 }
 
 function setupEventListeners() {
-  // Time format toggle
+  // Time format toggle (display only - always saves in 24hr)
   $('#time-format-toggle').on('change', function() {
     use12HourFormat = $(this).is(':checked');
     localStorage.setItem('use12HourFormat', use12HourFormat);
+    $('#time-format-label').text(use12HourFormat ? '12hr' : '24hr');
     renderSchedule(); // Re-render to update time display
   });
   
@@ -197,6 +198,7 @@ function setupEventListeners() {
     use12HourFormat = savedFormat === 'true';
     $('#time-format-toggle').prop('checked', use12HourFormat);
   }
+  $('#time-format-label').text(use12HourFormat ? '12hr' : '24hr');
   
   // Day checkboxes
   $('input[name="days"]').on('change', function() {
@@ -641,17 +643,17 @@ function renderSchedule() {
         <td><input type="text" class="playlist-description" value="${escapeHtml(p.description || '')}" placeholder="Description (shown on schedule page)"></td>
         <td>
           <div class="time-control">
-            <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-            <input type="time" class="time-start" value="${p.start}" step="900" list="time-options" title="Start time${overnightLabel}">
             <button type="button" class="time-btn inc" title="15 minutes later">+</button>
+            <input type="time" class="time-start" value="${p.start}" step="900" list="time-options" title="Start time${overnightLabel}">
+            <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
             ${use12HourFormat ? `<span class="time-display">${format12h(p.start)}</span>` : ''}
           </div>
         </td>
         <td>
           <div class="time-control">
-            <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-            <input type="time" class="time-end" value="${p.end}" step="900" list="time-options" title="End time${overnightLabel}">
             <button type="button" class="time-btn inc" title="15 minutes later">+</button>
+            <input type="time" class="time-end" value="${p.end}" step="900" list="time-options" title="End time${overnightLabel}">
+            <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
             ${use12HourFormat ? `<span class="time-display">${format12h(p.end)}${isOvernight ? ' (+1 day)' : ''}</span>` : ''}
           </div>
         </td>

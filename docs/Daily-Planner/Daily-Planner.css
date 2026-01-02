@@ -271,15 +271,26 @@ button:disabled, .btn:disabled {
 
 table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
+  table-layout: fixed;
 }
 
 th, td {
-  padding: 12px 15px;
+  padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid #3a3a3a;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+th:nth-child(1), td:nth-child(1) { width: 15%; } /* Playlist Name */
+th:nth-child(2), td:nth-child(2) { width: 20%; } /* Description */
+th:nth-child(3), td:nth-child(3) { width: 12%; } /* Start Time */
+th:nth-child(4), td:nth-child(4) { width: 12%; } /* End Time */
+th:nth-child(5), td:nth-child(5) { width: 10%; } /* Weight */
+th:nth-child(6), td:nth-child(6) { width: 8%; }  /* Actions */
 
 th {
   background-color: #3a3a3a;
@@ -301,20 +312,34 @@ tr:hover {
 
 .time-control {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
+  width: 100%;
+}
+
+.time-control .time-btn {
+  width: 30px;
+  height: 24px;
+  padding: 0;
+  font-size: 0.9em;
+  line-height: 1;
 }
 
 .time-control input[type="time"] {
-  width: 100px;
+  width: 100%;
+  max-width: 90px;
   text-align: center;
+  padding: 4px;
+  font-size: 0.85em;
 }
 
 .time-display {
   color: #a0a0a0;
-  font-size: 0.85em;
-  min-width: 70px;
-  display: inline-block;
+  font-size: 0.75em;
+  display: block;
+  margin-top: 2px;
+  text-align: center;
 }
 
 .time-input {

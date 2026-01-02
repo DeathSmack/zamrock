@@ -220,10 +220,12 @@ function updateSchedule() {
         const showEndTime = endDate.getTime();
         const currentTime = nowInStationTz.getTime();
         
-        // Format times for display in user's timezone
-        let displayStartTime = show.start;
-        let displayEndTime = show.end;
+        // Format times for display - always show in 12hr format
+        // Times are stored in 24hr format (HH:MM), convert to 12hr for display
+        let displayStartTime = formatTime(show.start); // Convert 24hr to 12hr
+        let displayEndTime = formatTime(show.end);   // Convert 24hr to 12hr
         
+        // If user has selected a timezone, convert the times
         if (userTimezone !== 'auto') {
             try {
                 const formatOptions = { 
@@ -238,6 +240,9 @@ function updateSchedule() {
                 displayEndTime = endDate.toLocaleTimeString('en-US', formatOptions);
             } catch (e) {
                 console.error('Error converting time:', e);
+                // Fallback to formatting the 24hr times
+                displayStartTime = formatTime(show.start);
+                displayEndTime = formatTime(show.end);
             }
         }
         
