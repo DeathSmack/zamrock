@@ -216,20 +216,11 @@ function setupEventListeners() {
     use12HourFormat = $(this).val() === '12';
     localStorage.setItem('use12HourFormat', use12HourFormat);
     // Update all time displays
-    $('.time-display').each(function() {
-      const $formats = $(this).find('.time-formats');
-      const $display = $formats.find('.time-format-display');
-      const $secondary = $formats.find('.time-format-secondary');
-      const time24 = $(this).find('.time-picker').val();
-      
+    $('.time-format-display').each(function() {
+      const $display = $(this);
+      const time24 = $display.siblings('.time-picker').val();
       if (time24) {
-        if (use12HourFormat) {
-          $display.text(TimeUtils.format12h(time24));
-          $secondary.text(time24);
-        } else {
-          $display.text(time24);
-          $secondary.text(TimeUtils.format12h(time24));
-        }
+        $display.text(use12HourFormat ? TimeUtils.format12h(time24) : time24);
       }
     });
   });
@@ -686,19 +677,13 @@ function renderSchedule() {
         <td class="time-cell">
           <div class="time-display">
             <input type="time" class="time-picker" value="${p.start}">
-            <div class="time-formats">
-              <div class="time-format-display">${TimeUtils.format12h(p.start)}</div>
-              <div class="time-format-secondary">${p.start}</div>
-            </div>
+            <div class="time-format-display">${use12HourFormat ? TimeUtils.format12h(p.start) : p.start}</div>
           </div>
         </td>
         <td class="time-cell">
           <div class="time-display">
             <input type="time" class="time-picker" value="${p.end}">
-            <div class="time-formats">
-              <div class="time-format-display">${TimeUtils.format12h(p.end)}</div>
-              <div class="time-format-secondary">${p.end}</div>
-            </div>
+            <div class="time-format-display">${use12HourFormat ? TimeUtils.format12h(p.end) : p.end}</div>
           </div>
         </td>
         <td class="weight-cell">
@@ -718,20 +703,11 @@ function renderSchedule() {
   saveToLocalStorage();
 
   // Update time displays based on current format
-  $('.time-display').each(function() {
-    const $formats = $(this).find('.time-formats');
-    const $display = $formats.find('.time-format-display');
-    const $secondary = $formats.find('.time-format-secondary');
-    const time24 = $(this).find('.time-picker').val();
-    
+  $('.time-format-display').each(function() {
+    const $display = $(this);
+    const time24 = $display.siblings('.time-picker').val();
     if (time24) {
-      if (use12HourFormat) {
-        $display.text(TimeUtils.format12h(time24));
-        $secondary.text(time24);
-      } else {
-        $display.text(time24);
-        $secondary.text(TimeUtils.format12h(time24));
-      }
+      $display.text(use12HourFormat ? TimeUtils.format12h(time24) : time24);
     }
   });
 }
