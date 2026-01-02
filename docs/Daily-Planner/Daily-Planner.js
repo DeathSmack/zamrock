@@ -229,15 +229,8 @@ function setupEventListeners() {
   $('input[name="time-format"]').on('change', function() {
     use12HourFormat = $(this).val() === '12';
     localStorage.setItem('use12HourFormat', use12HourFormat);
-    // Update time inputs format
-    $('.time-picker').each(function() {
-      const time24 = $(this).val();
-      if (time24) {
-        $(this).attr('type', 'text')
-          .val(use12HourFormat ? TimeUtils.format12h(time24) : time24)
-          .attr('type', 'time');
-      }
-    });
+    // Re-render the schedule to update all time displays
+    renderSchedule();
   });
   
   // Load saved time format preference
@@ -690,10 +683,16 @@ function renderSchedule() {
         <td><input type="text" class="playlist-name" value="${escapeHtml(p.name)}" placeholder="Playlist name"></td>
         <td><input type="text" class="playlist-description" value="${escapeHtml(p.description || '')}" placeholder="Description (shown on schedule page)"></td>
         <td class="time-cell">
-          <input type="time" class="time-picker" value="${p.start}">
+          <div class="time-display">
+            <input type="time" class="time-picker" value="${p.start}">
+            <div class="time-format-display">${TimeUtils.format12h(p.start)}</div>
+          </div>
         </td>
         <td class="time-cell">
-          <input type="time" class="time-picker" value="${p.end}">
+          <div class="time-display">
+            <input type="time" class="time-picker" value="${p.end}">
+            <div class="time-format-display">${TimeUtils.format12h(p.end)}</div>
+          </div>
         </td>
         <td class="weight-cell">
           <input type="number" class="weight-input" min="1" max="25" value="${Math.min(25, Math.max(1, p.weight || 10))}" onchange="this.value = Math.min(25, Math.max(1, parseInt(this.value) || 1));">
@@ -711,12 +710,25 @@ function renderSchedule() {
   // Save to localStorage after rendering
   saveToLocalStorage();
 
+  // Update time displays based on current format
+  $('.time-format-display').each(function() {
+    const $display = $(this);
+    const time24 = $display.siblings('.time-picker').val();
+    if (time24) {
+      $display.text(use12HourFormat ? TimeUtils.format12h(time24) : time24);
+    }
+  });
+
   // Initialize time pickers
   $('.time-picker').each(function() {
     const $input = $(this);
     const time24 = $input.val();
     if (time24) {
       $input.val(time24);
+      // Update the display
+      $input.siblings('.time-format-display').text(
+        use12HourFormat ? TimeUtils.format12h(time24) : time24
+      );
     }
     
     $input.off('change').on('change', function() {
@@ -732,45 +744,19 @@ function renderSchedule() {
         } else {
           playlist.end = time24;
         }
+        // Update the display
+        $(this).siblings('.time-format-display').text(
+          use12HourFormat ? TimeUtils.format12h(time24) : time24
+        );
         saveToLocalStorage();
-        renderSchedule();
       }
     });
   });
 
   // ... (rest of the code remains the same)
 
-  // Make table rows sortable
-  $('tbody').sortable({
-    update: function(event, ui) {
-      const newOrder = [];
-      $('tbody tr').each(function(index) {
-        const id = $(this).data('id');
-        const playlist = currentSchedule.playlists.find(p => p.id === id);
-        if (playlist) newOrder.push(playlist);
-      });
-      currentSchedule.playlists = newOrder;
-      saveToLocalStorage();
-    },
-    handle: '.drag-handle',
-    helper: 'clone',
-    opacity: 0.8,
-    cursor: 'move',
-    placeholder: 'sortable-placeholder',
-    start: function(event, ui) {
-      ui.placeholder.height(ui.helper.outerHeight());
-    },
-    items: '> tr',
-    cancel: 'input,button,select,textarea',
-    distance: 5
-  });
-
-  // Add drag handle to rows
-  $('tbody tr').each(function() {
-    if (!$(this).find('.drag-handle').length) {
-      $(this).prepend('<td class="drag-handle"><i class="fas fa-grip-vertical"></i></td>');
-    }
-  });
+  // Remove any existing drag handles
+  $('.drag-handle').remove();
   
   // Load default schedule
   loadDefaultSchedule().then(response => {
