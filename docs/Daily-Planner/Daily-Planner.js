@@ -244,6 +244,11 @@ function setupEventListeners() {
   
   // Export button
   $('#export-json').on('click', function() {
+    if (currentSchedule.days.length === 0 && currentSchedule.holidays.length === 0) {
+      showNotification('Please select at least one day or holiday before exporting.', 'error');
+      return;
+    }
+    
     const data = {
       name: currentSchedule.name,
       days: currentSchedule.days,
@@ -251,17 +256,41 @@ function setupEventListeners() {
       playlists: currentSchedule.playlists.map(({id, ...rest}) => rest) // Remove id from playlists
     };
     
+    // Build filename: name-day1-day2.json or name-holiday1-holiday2.json
+    let filenameParts = [];
+    const namePart = currentSchedule.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-').toLowerCase();
+    if (namePart) {
+      filenameParts.push(namePart);
+    }
+    
+    // Add days
+    const sortedDays = [...currentSchedule.days].sort();
+    sortedDays.forEach(day => {
+      filenameParts.push(day);
+    });
+    
+    // Add holidays
+    const sortedHolidays = [...currentSchedule.holidays].sort();
+    sortedHolidays.forEach(holidayId => {
+      const holiday = HOLIDAYS.find(h => h.id === holidayId);
+      if (holiday) {
+        const holidayName = holiday.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-').toLowerCase();
+        filenameParts.push(holidayName);
+      }
+    });
+    
+    const filename = filenameParts.join('-') + '.json';
+    
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const filename = currentSchedule.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-').toLowerCase();
-    a.download = `${filename}.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showNotification('Schedule exported successfully!', 'success');
+    showNotification(`Schedule exported as ${filename}`, 'success');
   });
   
   // New schedule button
@@ -600,48 +629,37 @@ function renderSchedule() {
     }
   });
 
-  // ▲ / ▼ arrow helpers (30‑min steps) and weight controls
-  $(".time-btn.inc, .time-btn.dec, .weight-inc, .weight-dec").off('click').on('click', function() {
+  // ▲ / ▼ arrow helpers (30‑min steps) - weight controls handled separately
+  $(".time-btn.inc, .time-btn.dec").off('click').on('click', function() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
     const playlist = currentSchedule.playlists.find(x => x.id === id);
     if (!playlist) return;
     
-    const isWeight = $(this).hasClass('weight-inc') || $(this).hasClass('weight-dec');
+    // Handle time adjustment
+    const input = $(this).siblings('input');
+    const isStart = input.hasClass('time-start');
+    const isInc = $(this).hasClass('inc');
+    const field = isStart ? 'start' : 'end';
     
-    if (isWeight) {
-      // Handle weight adjustment
-      const isInc = $(this).hasClass('weight-inc');
-      playlist.weight = Math.min(25, Math.max(1, (playlist.weight || 10) + (isInc ? 1 : -1)));
-      tr.find('.weight-input').val(playlist.weight);
-      saveToLocalStorage();
-      renderSchedule();
-    } else {
-      // Handle time adjustment
-      const input = $(this).siblings('input');
-      const isStart = input.hasClass('time-start');
-      const isInc = $(this).hasClass('inc');
-      const field = isStart ? 'start' : 'end';
-      
-      let minutes = timeToMinutes(playlist[field]);
-      minutes += isInc ? 30 : -30;
-      
-      // Handle day wrap-around
-      if (minutes >= 24 * 60) minutes = 0;
-      if (minutes < 0) minutes = 23 * 60 + 30; // 23:30
-      
-      playlist[field] = minutesToTime(minutes);
-      input.val(playlist[field]);
-      
-      // Auto-adjust end time if it's before start time
-      if (!isStart && timeToMinutes(playlist.end) < timeToMinutes(playlist.start)) {
-        playlist.end = playlist.start;
-        tr.find('.time-end').val(playlist.end);
-      }
-      
-      saveToLocalStorage();
-      renderSchedule();
+    let minutes = timeToMinutes(playlist[field]);
+    minutes += isInc ? 30 : -30;
+    
+    // Handle day wrap-around
+    if (minutes >= 24 * 60) minutes = 0;
+    if (minutes < 0) minutes = 23 * 60 + 30; // 23:30
+    
+    playlist[field] = minutesToTime(minutes);
+    input.val(playlist[field]);
+    
+    // Auto-adjust end time if it's before start time
+    if (!isStart && timeToMinutes(playlist.end) < timeToMinutes(playlist.start)) {
+      playlist.end = playlist.start;
+      tr.find('.time-end').val(playlist.end);
     }
+    
+    saveToLocalStorage();
+    renderSchedule();
   });
 
   // Weight input changes
