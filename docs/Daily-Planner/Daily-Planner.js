@@ -49,6 +49,52 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem('radioSchedule', JSON.stringify(currentSchedule));
+  } catch (e) {
+    console.error('Error saving to localStorage:', e);
+  }
+}
+
+function updateActiveDaysDisplay() {
+  const display = $('#active-days-display');
+  const daysText = display.find('.no-days');
+  const daysList = currentSchedule.days.length > 0 
+    ? currentSchedule.days.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')
+    : 'No days selected';
+  
+  if (currentSchedule.days.length > 0) {
+    display.html(`Active for: ${currentSchedule.days.map(d => 
+      `<span class="day-tag">${d.charAt(0).toUpperCase() + d.slice(1)}</span>`
+    ).join(' ')}`);
+  } else {
+    display.html('Active for: <span class="no-days">No days selected</span>');
+  }
+}
+
+function formatDuration(minutes) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function format12h(time24) {
+  if (!time24) return '';
+  const [hours, minutes] = time24.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours % 12 || 12;
+  return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
 // Initialize data
 function initializeData() {
   // Initialize holiday select dropdown
@@ -73,8 +119,10 @@ function initializeData() {
     $(this).prop('checked', currentSchedule.days.includes(day));
   });
   
-  renderSchedule();
-    try {
+  // Try to load from localStorage
+  try {
+    const savedSchedule = localStorage.getItem('radioSchedule');
+    if (savedSchedule) {
       const parsed = JSON.parse(savedSchedule);
       currentSchedule = {
         ...currentSchedule,
@@ -88,10 +136,17 @@ function initializeData() {
       if (currentSchedule.shows.length > 0) {
         nextId = Math.max(...currentSchedule.shows.map(s => s.id || 0), 0) + 1;
       }
-    } catch (e) {
-      console.error('Error loading schedule:', e);
-      showNotification('Error loading saved schedule. Creating a new one.', 'error');
+      
+      // Update UI with loaded data
+      $('#schedule-name').val(currentSchedule.name);
+      $('input[name="days"]').each(function() {
+        const day = $(this).val();
+        $(this).prop('checked', currentSchedule.days.includes(day));
+      });
     }
+  } catch (e) {
+    console.error('Error loading schedule:', e);
+    showNotification('Error loading saved schedule. Creating a new one.', 'error');
   }
   
   // Initialize UI
@@ -110,6 +165,7 @@ function setupEventListeners() {
       currentSchedule.days.push($(this).val());
     });
     updateActiveSelections();
+    saveToLocalStorage();
   });
   
   // Add holiday button
@@ -117,7 +173,9 @@ function setupEventListeners() {
     const holidayId = $('#holiday-select').val();
     if (holidayId && !currentSchedule.holidays.includes(holidayId)) {
       currentSchedule.holidays.push(holidayId);
+      $('#holiday-select').val(''); // Reset dropdown
       updateActiveSelections();
+      saveToLocalStorage();
     }
   });
   
@@ -133,11 +191,13 @@ function setupEventListeners() {
       currentSchedule.holidays = currentSchedule.holidays.filter(h => h !== value);
     }
     updateActiveSelections();
+    saveToLocalStorage();
   });
   
   // Schedule name
   $('#schedule-name').on('change', function() {
     currentSchedule.name = $(this).val().trim() || 'My Schedule';
+    saveToLocalStorage();
   });
   
   // File operations
@@ -210,12 +270,14 @@ function setupEventListeners() {
       currentSchedule.name = 'My Schedule';
       currentSchedule.holidays = [];
       currentSchedule.days = [];
+      nextId = 1;
       
       $('#schedule-name').val('My Schedule');
       $('input[name="days"]').prop('checked', false);
       
       renderSchedule();
       updateActiveSelections();
+      saveToLocalStorage();
     }
   });
   
@@ -229,6 +291,7 @@ function setupEventListeners() {
   $(document).on('click', '.delete-show', function() {
     const id = $(this).closest('tr').data('id');
     currentSchedule.shows = currentSchedule.shows.filter(show => show.id !== id);
+    saveToLocalStorage();
     renderSchedule();
   });
   
@@ -249,6 +312,7 @@ function setupEventListeners() {
       } else {
         show.end = input.val();
       }
+      saveToLocalStorage();
     }
   });
   
@@ -265,6 +329,7 @@ function setupEventListeners() {
     const show = currentSchedule.shows.find(s => s.id === id);
     if (show) {
       show.weight = weight;
+      saveToLocalStorage();
     }
   });
   
@@ -274,6 +339,7 @@ function setupEventListeners() {
     const show = currentSchedule.shows.find(s => s.id === id);
     if (show) {
       show.name = $(this).val();
+      saveToLocalStorage();
     }
   });
   
@@ -287,6 +353,7 @@ function setupEventListeners() {
       } else {
         show.end = $(this).val();
       }
+      saveToLocalStorage();
     }
   });
   
@@ -297,6 +364,7 @@ function setupEventListeners() {
     if (show) {
       show.weight = Math.min(25, Math.max(1, parseInt($(this).val()) || 5));
       $(this).val(show.weight);
+      saveToLocalStorage();
     }
   });
 }
@@ -532,23 +600,28 @@ function renderSchedule() {
   });
 
   // ▲ / ▼ arrow helpers (30‑min steps) and weight controls
-  $(".inc, .dec, .weight-inc, .weight-dec").off('click').on('click', function() {
+  $(".time-btn.inc, .time-btn.dec, .weight-inc, .weight-dec").off('click').on('click', function() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
     const show = currentSchedule.shows.find(x => x.id === id);
     if (!show) return;
     
-    const isStart = $(this).hasClass('start-inc') || $(this).hasClass('start-dec');
-    const isInc = $(this).hasClass('inc') || $(this).hasClass('weight-inc');
     const isWeight = $(this).hasClass('weight-inc') || $(this).hasClass('weight-dec');
     
     if (isWeight) {
       // Handle weight adjustment
-      show.weight = Math.min(25, Math.max(1, (show.weight || 3) + (isInc ? 1 : -1)));
+      const isInc = $(this).hasClass('weight-inc');
+      show.weight = Math.min(25, Math.max(1, (show.weight || 10) + (isInc ? 1 : -1)));
       tr.find('.weight-input').val(show.weight);
+      saveToLocalStorage();
+      renderSchedule();
     } else {
       // Handle time adjustment
+      const input = $(this).siblings('input');
+      const isStart = input.hasClass('time-start');
+      const isInc = $(this).hasClass('inc');
       const field = isStart ? 'start' : 'end';
+      
       let minutes = timeToMinutes(show[field]);
       minutes += isInc ? 30 : -30;
       
@@ -557,21 +630,17 @@ function renderSchedule() {
       if (minutes < 0) minutes = 23 * 60 + 30; // 23:30
       
       show[field] = minutesToTime(minutes);
-      
-      // Update the display
-      tr.find(`.time-input.${field}`).val(show[field]);
-      tr.find(`.${field}-12h`).text(format12h(show[field]));
+      input.val(show[field]);
       
       // Auto-adjust end time if it's before start time
       if (!isStart && timeToMinutes(show.end) < timeToMinutes(show.start)) {
         show.end = show.start;
-        tr.find('.time-input.end').val(show.end);
-        tr.find('.end-12h').text(format12h(show.end));
+        tr.find('.time-end').val(show.end);
       }
+      
+      saveToLocalStorage();
+      renderSchedule();
     }
-    
-    saveToLocalStorage();
-    renderSchedule();
   });
 
   // Weight input changes
@@ -699,6 +768,7 @@ $(document).ready(function() {
         }
       });
       currentSchedule.shows = newOrder;
+      saveToLocalStorage();
       renderSchedule();
     },
     handle: 'td:not(:last-child)',
@@ -708,111 +778,6 @@ $(document).ready(function() {
     placeholder: 'sortable-placeholder',
     forcePlaceholderSize: true
   }).disableSelection();
-  
-  // Day/Event selection
-  $('#day-select').on('change', function() {
-    const day = $(this).val();
-    currentDay = day;
-    
-    if (day === '') {
-      // Custom day/event
-      $('#custom-day').show().focus();
-      const customName = localStorage.getItem('customDayName') || '';
-      if (customName) {
-        $('#custom-day').val(customName);
-      }
-    } else {
-      $('#custom-day').hide();
-      // Load schedule for selected day
-      const savedShows = localStorage.getItem(`schedule_${day}`);
-      if (savedShows) {
-        shows = JSON.parse(savedShows);
-        nextId = Math.max(...shows.map(s => s.id), 0) + 1;
-        renderSchedule();
-      } else {
-        // Create a new empty schedule for this day
-        shows = [{
-          id: 1,
-          name: 'New Show',
-          start: '00:00',
-          end: '01:00',
-          weight: 3,
-          order: 0
-        }];
-        nextId = 2;
-        renderSchedule();
-      }
-    }
-    
-    saveToLocalStorage();
-  });
-  
-  // Custom day/event name input
-  $('#custom-day').on('change keyup', function() {
-    if (currentDay === '') {
-      saveToLocalStorage();
-    }
-  });
-  
-  // Sort by selection
-  $('#sort-by').on('change', function() {
-    renderSchedule();
-  });
-  
-  // Load schedule button
-  $('#load-schedule').on('click', function() {
-    // Create a file input element
-    const fileInput = $('<input type="file" accept=".json" style="display: none;">');
-    
-    fileInput.on('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        loadScheduleFromFile(file);
-      }
-    });
-    
-    // Trigger the file dialog
-    $('body').append(fileInput);
-    fileInput.trigger('click');
-    fileInput.remove();
-  });
-  
-  // Save schedule button
-  $('#save-schedule').on('click', function() {
-    saveToLocalStorage();
-    alert('Schedule saved!');
-  });
-  
-  // New schedule button
-  $('#new-schedule').on('click', createNewSchedule);
-  
-  // Export JSON button
-  $('#export-json').on('click', exportSchedule);
-  
-  const newShow = {
-    id: nextId++,
-    name: "New Show",
-    start: last.start,
-    end: minutesToTime(defaultEndTime),
-    weight: 10, // Default weight to 10 (middle of 1-25)
-    order: currentSchedule.shows.length > 0 ? last.order + 1 : 0
-  };
-  
-  // Update orders of subsequent shows
-  currentSchedule.shows.forEach(s => { 
-    if (s.order > last.order) s.order++;
-  });
-  
-  currentSchedule.shows.push(newShow);
-  saveToLocalStorage();
-  renderSchedule();
-  
-  // Scroll to the new row and focus the name input
-  const newRow = $(`tr[data-id="${newShow.id}"]`);
-  $('html, body').animate({
-    scrollTop: newRow.offset().top - 100
-  }, 500);
-  newRow.find('.show-name').focus().select();
 });
 
 function addNewShow() {
@@ -848,176 +813,6 @@ function addNewShow() {
         scrollTop: newRow.offset().top - 100
       }, 100);
       newRow.find('.show-name').focus().select();
-  const id = $(this).closest('tr').data('id');
-  const show = shows.find(x => x.id === id);
-  if (show) {
-    show.name = $(this).val();
-    saveToLocalStorage();
-  }
-});
-
-// 24‑hr → 12‑hr updates
-$(".time-input").off('change').on('change', function() {
-  const tr = $(this).closest('tr');
-  const id = tr.data('id');
-  const field = $(this).hasClass('start') ? 'start' : 'end';
-  const show = shows.find(x => x.id === id);
-  
-  if (show) {
-    show[field] = $(this).val();
-    
-    // Auto-adjust end time if it's before start time (for the same day)
-    if (field === 'start' && timeToMinutes(show.end) < timeToMinutes(show.start)) {
-      show.end = show.start;
     }
-    
-    // Update the display
-    tr.find(`.${field}-12h`).text(format12h(show[field]));
-    saveToLocalStorage();
-    renderSchedule();
-  }
-});
-
-// ▲ / ▼ arrow helpers (30‑min steps) and weight controls
-$(".inc, .dec, .weight-inc, .weight-dec").off('click').on('click', function() {
-  const tr = $(this).closest('tr');
-  const id = tr.data('id');
-  const show = shows.find(x => x.id === id);
-  if (!show) return;
-  
-  const isStart = $(this).hasClass('start-inc') || $(this).hasClass('start-dec');
-  const isInc = $(this).hasClass('inc') || $(this).hasClass('weight-inc');
-  const isWeight = $(this).hasClass('weight-inc') || $(this).hasClass('weight-dec');
-  
-  if (isWeight) {
-    // Handle weight adjustment
-    show.weight = Math.min(10, Math.max(1, (show.weight || 3) + (isInc ? 1 : -1)));
-    tr.find('.weight-input').val(show.weight);
-  } else {
-    // Handle time adjustment
-    const field = isStart ? 'start' : 'end';
-    let minutes = timeToMinutes(show[field]);
-    minutes += isInc ? 30 : -30;
-    
-    // Handle day wrap-around
-    if (minutes >= 24 * 60) minutes = 0;
-    if (minutes < 0) minutes = 23 * 60 + 30; // 23:30
-    
-    show[field] = minutesToTime(minutes);
-    
-    // Update the display
-    tr.find(`.time-input.${field}`).val(show[field]);
-    tr.find(`.${field}-12h`).text(format12h(show[field]));
-    
-    // Auto-adjust end time if it's before start time
-    if (!isStart && timeToMinutes(show.end) < timeToMinutes(show.start)) {
-      show.end = show.start;
-      tr.find('.time-input.end').val(show.end);
-      tr.find('.end-12h').text(format12h(show.end));
-    }
-  }
-  
-  saveToLocalStorage();
-  renderSchedule();
-});
-
-// Weight input changes
-$("#schedule").on('change', '.weight-input', function() {
-  const id = $(this).closest('tr').data('id');
-  const show = currentSchedule.shows.find(x => x.id === id);
-  if (show) {
-    let weight = parseInt($(this).val(), 10);
-    // Ensure weight is between 1 and 25
-    weight = Math.min(25, Math.max(1, isNaN(weight) ? 10 : weight));
-    show.weight = weight;
-    $(this).val(weight);
-    saveToLocalStorage();
-    
-    // If sorted by weight, re-render to update order
-    const sortBy = $('#sort-by').val();
-    if (sortBy === 'weight' || sortBy === 'weight-asc') {
-      renderSchedule();
-    }
-  }
-});
-
-// Move-up / move-down arrows
-$(".move-up, .move-down").off('click').on('click', function() {
-  const tr = $(this).closest('tr');
-  const idx = tr.index();
-  const isUp = $(this).hasClass('move-up');
-  
-  if ((isUp && idx === 0) || (!isUp && idx === shows.length - 1)) return;
-  
-  const id = tr.data('id');
-  const current = shows.find(x => x.id === id);
-  const targetIdx = isUp ? idx - 1 : idx + 1;
-  const targetId = $(`#schedule tbody tr`).eq(targetIdx).data('id');
-  const targetShow = shows.find(x => x.id === targetId);
-  
-  if (current && targetShow) {
-    // Swap orders
-    [current.order, targetShow.order] = [targetShow.order, current.order];
-    saveToLocalStorage();
-    renderSchedule();
-  }
-});
-
-// Add row after this row
-$("#schedule").on('click', '.add-row', function() {
-  const tr = $(this).closest('tr');
-  const currentShow = currentSchedule.shows.find(s => s.id === tr.data('id'));
-  
-  if (currentShow) {
-    // Calculate default end time (30 minutes after start)
-    const startTime = timeToMinutes(currentShow.start);
-    const defaultEndTime = (startTime + 30) % (24 * 60);
-    
-    const newShow = {
-      id: nextId++,
-      name: "New Show",
-      start: currentShow.start,
-      end: minutesToTime(defaultEndTime),
-      weight: 10, // Default weight to 10 (middle of 1-25)
-      order: currentShow.order + 1
-    };
-    
-    // Update orders of subsequent shows
-    currentSchedule.shows.forEach(s => { 
-      if (s.order > currentShow.order) s.order++;
-    });
-    
-    currentSchedule.shows.push(newShow);
-    saveToLocalStorage();
-    renderSchedule();
-    
-    // Focus the new show's name input
-    $(`tr[data-id="${newShow.id}"] .show-name`).focus().select();
-  }
-});
-
-// Delete this row
-$("#schedule").on('click', '.delete-row', function() {
-  if (currentSchedule.shows.length <= 1) {
-    alert('You must have at least one show in the schedule.');
-    return;
-  }
-  
-  if (confirm('Are you sure you want to delete this show?')) {
-    const tr = $(this).closest('tr');
-    const id = tr.data('id');
-    const showToDelete = currentSchedule.shows.find(s => s.id === id);
-    
-    if (showToDelete) {
-      // Update orders of subsequent shows
-      currentSchedule.shows.forEach(s => {
-        if (s.order > showToDelete.order) s.order--;
-      });
-      
-      // Remove the show
-      currentSchedule.shows = currentSchedule.shows.filter(s => s.id !== id);
-      saveToLocalStorage();
-      renderSchedule();
-    }
-  }
-});
+  }, 100);
+}
