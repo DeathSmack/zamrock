@@ -57,10 +57,23 @@ function initializeData() {
   HOLIDAYS.forEach(holiday => {
     holidaySelect.append(`<option value="${holiday.id}">${holiday.name}</option>`);
   });
-
-  // Try to load from localStorage
-  const savedSchedule = localStorage.getItem('radioSchedule');
-  if (savedSchedule) {
+  
+  // Start with default shows
+  currentSchedule.shows = [
+    {id: 1, name: "The Morning Show", start: "06:00", end: "10:00", weight: 5, order: 0},
+    {id: 2, name: "Midday Mix", start: "10:00", end: "14:00", weight: 4, order: 1},
+    {id: 3, name: "Afternoon Drive", start: "14:00", end: "18:00", weight: 5, order: 2},
+    {id: 4, name: "Evening Vibes", start: "18:00", end: "22:00", weight: 4, order: 3}
+  ];
+  nextId = 5;
+  
+  // Set default days (Mon-Fri)
+  $('input[name="days"]').each(function() {
+    const day = $(this).val();
+    $(this).prop('checked', currentSchedule.days.includes(day));
+  });
+  
+  renderSchedule();
     try {
       const parsed = JSON.parse(savedSchedule);
       currentSchedule = {
@@ -92,12 +105,21 @@ function initializeData() {
 function setupEventListeners() {
   // Day checkboxes
   $('input[name="days"]').on('change', function() {
-    updateActiveDays();
-    saveToLocalStorage();
+    currentSchedule.days = [];
+    $('input[name="days"]:checked').each(function() {
+      currentSchedule.days.push($(this).val());
+    });
+    updateActiveSelections();
   });
   
   // Add holiday button
-  $('#add-holiday').on('click', addHoliday);
+  $('#add-holiday').on('click', function() {
+    const holidayId = $('#holiday-select').val();
+    if (holidayId && !currentSchedule.holidays.includes(holidayId)) {
+      currentSchedule.holidays.push(holidayId);
+      updateActiveSelections();
+    }
+  });
   
   // Remove tag (day or holiday)
   $(document).on('click', '.remove-tag', function() {
@@ -106,35 +128,108 @@ function setupEventListeners() {
     
     if (type === 'day') {
       $(`input[name="days"][value="${value}"]`).prop('checked', false);
-      updateActiveDays();
+      currentSchedule.days = currentSchedule.days.filter(d => d !== value);
     } else if (type === 'holiday') {
       currentSchedule.holidays = currentSchedule.holidays.filter(h => h !== value);
-      updateScheduleUI();
-      saveToLocalStorage();
     }
+    updateActiveSelections();
   });
   
   // Schedule name
   $('#schedule-name').on('change', function() {
-    currentSchedule.name = $(this).val().trim() || 'Untitled Schedule';
-    saveToLocalStorage();
+    currentSchedule.name = $(this).val().trim() || 'My Schedule';
   });
   
   // File operations
-  $('#load-schedule').on('click', triggerFileInput);
-  $('#export-json').on('click', exportSchedule);
-  $('#new-schedule').on('click', createNewSchedule);
+  $('#load-schedule').on('click', function() {
+    $('#file-input').click();
+  });
+  
+  $('#file-input').on('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.shows && Array.isArray(data.shows)) {
+          currentSchedule = {
+            ...currentSchedule,
+            name: data.name || 'My Schedule',
+            days: data.days || [],
+            holidays: data.holidays || [],
+            shows: data.shows.map(show => ({
+              ...show,
+              id: nextId++,
+              weight: Math.min(25, Math.max(1, show.weight || 5))
+            }))
+          };
+          
+          // Update UI
+          $('#schedule-name').val(currentSchedule.name);
+          $('input[name="days"]').prop('checked', false);
+          currentSchedule.days.forEach(day => {
+            $(`input[name="days"][value="${day}"]`).prop('checked', true);
+          });
+          
+          renderSchedule();
+          updateActiveSelections();
+          showNotification('Schedule loaded successfully!', 'success');
+        }
+      } catch (error) {
+        console.error('Error loading schedule:', error);
+        showNotification('Error loading schedule', 'error');
+      }
+    };
+    reader.readAsText(file);
+  });
+  
+  // Export button
+  $('#export-json').on('click', function() {
+    const data = {
+      ...currentSchedule,
+      shows: currentSchedule.shows.map(({id, ...rest}) => rest) // Remove id from shows
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentSchedule.name.replace(/[^\w\s]/gi, '')}_schedule.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  
+  // New schedule button
+  $('#new-schedule').on('click', function() {
+    if (confirm('Are you sure you want to create a new schedule? This will clear all current shows.')) {
+      currentSchedule.shows = [];
+      currentSchedule.name = 'My Schedule';
+      currentSchedule.holidays = [];
+      currentSchedule.days = [];
+      
+      $('#schedule-name').val('My Schedule');
+      $('input[name="days"]').prop('checked', false);
+      
+      renderSchedule();
+      updateActiveSelections();
+    }
+  });
   
   // Sort by dropdown
   $('#sort-by').on('change', renderSchedule);
   
   // Add show button
-  $('#add-show, #add-at-end').on('click', addNewShow);
+  $('#add-at-end').on('click', addNewShow);
   
   // Delete show button
   $(document).on('click', '.delete-show', function() {
     const id = $(this).closest('tr').data('id');
-    deleteShow(id);
+    currentSchedule.shows = currentSchedule.shows.filter(show => show.id !== id);
+    renderSchedule();
   });
   
   // Time increment/decrement buttons
@@ -143,7 +238,18 @@ function setupEventListeners() {
     const minutes = $(this).hasClass('inc') ? 30 : -30;
     const time = timeToMinutes(input.val());
     const newTime = (time + minutes + (24 * 60)) % (24 * 60);
-    input.val(minutesToTime(newTime)).trigger('change');
+    input.val(minutesToTime(newTime));
+    
+    // Update the show data
+    const id = input.closest('tr').data('id');
+    const show = currentSchedule.shows.find(s => s.id === id);
+    if (show) {
+      if (input.hasClass('time-start')) {
+        show.start = input.val();
+      } else {
+        show.end = input.val();
+      }
+    }
   });
   
   // Weight increment/decrement buttons
@@ -152,11 +258,47 @@ function setupEventListeners() {
     const change = $(this).hasClass('weight-inc') ? 1 : -1;
     let weight = parseInt(input.val()) + change;
     weight = Math.min(25, Math.max(1, weight));
-    input.val(weight).trigger('change');
+    input.val(weight);
+    
+    // Update the show data
+    const id = input.closest('tr').data('id');
+    const show = currentSchedule.shows.find(s => s.id === id);
+    if (show) {
+      show.weight = weight;
+    }
   });
   
-  // Save on input changes
-  $(document).on('change', 'input, select', saveToLocalStorage);
+  // Handle show name changes
+  $(document).on('change', '.show-name', function() {
+    const id = $(this).closest('tr').data('id');
+    const show = currentSchedule.shows.find(s => s.id === id);
+    if (show) {
+      show.name = $(this).val();
+    }
+  });
+  
+  // Handle time changes
+  $(document).on('change', '.time-start, .time-end', function() {
+    const id = $(this).closest('tr').data('id');
+    const show = currentSchedule.shows.find(s => s.id === id);
+    if (show) {
+      if ($(this).hasClass('time-start')) {
+        show.start = $(this).val();
+      } else {
+        show.end = $(this).val();
+      }
+    }
+  });
+  
+  // Handle weight changes
+  $(document).on('change', '.weight-input', function() {
+    const id = $(this).closest('tr').data('id');
+    const show = currentSchedule.shows.find(s => s.id === id);
+    if (show) {
+      show.weight = Math.min(25, Math.max(1, parseInt($(this).val()) || 5));
+      $(this).val(show.weight);
+    }
+  });
 }
 
 function addHoliday() {
@@ -224,13 +366,13 @@ function updateActiveSelections() {
   const container = $('#active-selections');
   container.empty();
   
-  // Add rows for each show
-  currentSchedule.shows.forEach(show => {
-    const dayName = show.day.charAt(0).toUpperCase() + show.day.slice(1);
+  // Add day tags
+  currentSchedule.days.forEach(day => {
+    const dayName = day.charAt(0).toUpperCase() + day.slice(1);
     container.append(`
       <span class="selection-tag day-tag">
         ${dayName}
-        <span class="remove-tag" data-type="day" data-value="${show.day}" title="Remove">&times;</span>
+        <span class="remove-tag" data-type="day" data-value="${day}" title="Remove">&times;</span>
       </span>
     `);
   });
@@ -250,6 +392,9 @@ function updateActiveSelections() {
   if (container.children().length === 0) {
     container.append('<span class="no-selection">No days or holidays selected</span>');
   }
+  
+  // Update active days display
+  updateActiveDaysDisplay();
 }
 
 // Render schedule
@@ -532,34 +677,37 @@ function renderSchedule() {
 
 // Initialize the application when the DOM is ready
 $(document).ready(function() {
-  // Initialize data
-  initializeData();
+  // Add hidden file input for imports
+  $('body').append('<input type="file" id="file-input" accept=".json" style="display: none;">');
   
-  // Set up jQuery UI sortable for the schedule table
+  // Initialize data and event listeners
+  initializeData();
+  setupEventListeners();
+  
+  // Make table rows sortable
   $("#schedule tbody").sortable({
-    items: "tr",
-    update: function(event, ui) {
+    items: "tr:not(.ui-sortable-helper)",
+    update: function() {
       // Update the order of shows when dragged
-      updateShowsFromUI();
-      saveToLocalStorage();
+      const newOrder = [];
+      $("#schedule tbody tr").each(function(index) {
+        const id = $(this).data('id');
+        const show = currentSchedule.shows.find(s => s.id === id);
+        if (show) {
+          show.order = index;
+          newOrder.push(show);
+        }
+      });
+      currentSchedule.shows = newOrder;
+      renderSchedule();
     },
-    handle: 'td:not(:last-child)', // Don't make the delete button draggable
+    handle: 'td:not(:last-child)',
     helper: 'clone',
     opacity: 0.8,
     cursor: 'move',
     placeholder: 'sortable-placeholder',
     forcePlaceholderSize: true
   }).disableSelection();
-  
-  // Initialize tooltips
-  $(document).tooltip({
-    items: '[title]',
-    content: function() {
-      return $(this).attr('title');
-    },
-    show: { effect: 'fadeIn', duration: 100 },
-    hide: { effect: 'fadeOut', duration: 100 }
-  });
   
   // Day/Event selection
   $('#day-select').on('change', function() {
@@ -641,55 +789,65 @@ $(document).ready(function() {
   // Export JSON button
   $('#export-json').on('click', exportSchedule);
   
-  // Global "Add at End" button
-  $("#add-at-end").on('click', function() {
-    const last = currentSchedule.shows.length > 0 
-      ? currentSchedule.shows[currentSchedule.shows.length - 1] 
-      : { order: -1, end: '00:00' };
-    
-    // Calculate default end time (30 minutes after start)
-    const endTime = timeToMinutes(last.end);
-    const defaultEndTime = (endTime + 30) % (24 * 60);
-    
-    const newShow = {
-      id: nextId++,
-      name: "New Show",
-      start: last.start,
-      end: minutesToTime(defaultEndTime),
-      weight: 10, // Default weight to 10 (middle of 1-25)
-      order: currentSchedule.shows.length > 0 ? last.order + 1 : 0
-    };
-    
-    // Update orders of subsequent shows
-    currentSchedule.shows.forEach(s => { 
-      if (s.order > last.order) s.order++;
-    });
-    
-    currentSchedule.shows.push(newShow);
-    saveToLocalStorage();
-    renderSchedule();
-    
-    // Scroll to the new row and focus the name input
-    const newRow = $(`tr[data-id="${newShow.id}"]`);
-    $('html, body').animate({
-      scrollTop: newRow.offset().top - 100
-    }, 500);
-    newRow.find('.show-name').focus().select();
+  const newShow = {
+    id: nextId++,
+    name: "New Show",
+    start: last.start,
+    end: minutesToTime(defaultEndTime),
+    weight: 10, // Default weight to 10 (middle of 1-25)
+    order: currentSchedule.shows.length > 0 ? last.order + 1 : 0
+  };
+  
+  // Update orders of subsequent shows
+  currentSchedule.shows.forEach(s => { 
+    if (s.order > last.order) s.order++;
   });
   
-  // Initialize the UI
-  if (currentDay === '') {
-    $('#custom-day').show();
-  }
-  
-  // Initial render
+  currentSchedule.shows.push(newShow);
+  saveToLocalStorage();
   renderSchedule();
+  
+  // Scroll to the new row and focus the name input
+  const newRow = $(`tr[data-id="${newShow.id}"]`);
+  $('html, body').animate({
+    scrollTop: newRow.offset().top - 100
+  }, 500);
+  newRow.find('.show-name').focus().select();
 });
 
-/* ---------- Event listeners (re‑bind after every render) ---------- */
-
-// Show name changes
-$(".show-name").off('change').on('change', function() {
+function addNewShow() {
+  // Calculate default start time (end of last show or 06:00)
+  let startTime = '06:00';
+  if (currentSchedule.shows.length > 0) {
+    const lastShow = [...currentSchedule.shows].sort((a, b) => b.order - a.order)[0];
+    if (lastShow && lastShow.end) {
+      startTime = lastShow.end;
+    }
+  }
+  
+  // Calculate default end time (1 hour after start)
+  const endTime = minutesToTime((timeToMinutes(startTime) + 60) % (24 * 60));
+  
+  const newShow = {
+    id: nextId++,
+    name: 'New Show',
+    start: startTime,
+    end: endTime,
+    weight: 10,
+    order: currentSchedule.shows.length
+  };
+  
+  currentSchedule.shows.push(newShow);
+  renderSchedule();
+  
+  // Scroll to the new row and focus the name input
+  setTimeout(() => {
+    const newRow = $(`tr[data-id="${newShow.id}"]`);
+    if (newRow.length) {
+      $('html, body').animate({
+        scrollTop: newRow.offset().top - 100
+      }, 100);
+      newRow.find('.show-name').focus().select();
   const id = $(this).closest('tr').data('id');
   const show = shows.find(x => x.id === id);
   if (show) {
