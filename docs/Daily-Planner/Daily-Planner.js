@@ -90,37 +90,76 @@ function escapeHtml(text) {
 
 function format12h(time24) {
   if (!time24) return '';
-  const [hours, minutes] = time24.split(':').map(Number);
-  const period = hours >= 12 ? 'PM' : 'AM';
-  const hours12 = hours % 12 || 12;
-  return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+  try {
+    const [hours, minutes] = time24.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return time24; // Return as-is if invalid
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+  } catch (e) {
+    console.error('Error formatting 12h time:', e);
+    return time24;
+  }
 }
 
 function formatTime(time24, use12hr) {
   if (!time24) return '';
-  if (use12hr) {
-    return format12h(time24);
+  try {
+    if (use12hr) {
+      return format12h(time24);
+    }
+    // Ensure 24-hour format is properly formatted
+    const [h, m] = time24.split(':').map(Number);
+    if (isNaN(h) || isNaN(m)) return time24;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  } catch (e) {
+    console.error('Error formatting time:', e);
+    return time24;
   }
-  return time24; // Already in 24hr format
 }
 
 function parseTimeInput(inputValue, use12hr) {
-  // If input is in 12hr format, convert to 24hr
-  if (use12hr && inputValue) {
-    // Check if it has AM/PM
-    const match = inputValue.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM)/i);
-    if (match) {
+  if (!inputValue) return '';
+  
+  try {
+    // Handle 12-hour format with AM/PM
+    if (use12hr) {
+      const match = inputValue.match(/^(\d{1,2}):?(\d{2})?\s*([AP]M?)?$/i);
+      if (!match) return inputValue;
+      
       let hours = parseInt(match[1]) || 0;
       const minutes = parseInt(match[2]) || 0;
-      const period = match[3].toUpperCase();
+      const period = (match[3] || '').toUpperCase();
       
-      if (period === 'PM' && hours !== 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
+      // Convert to 24-hour format
+      if (period.includes('P') && hours < 12) {
+        hours += 12;
+      } else if (period.includes('A') && hours === 12) {
+        hours = 0;
+      }
       
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      // Ensure valid time
+      hours = Math.min(23, Math.max(0, hours));
+      const validMinutes = Math.min(59, Math.max(0, minutes));
+      
+      return `${hours.toString().padStart(2, '0')}:${validMinutes.toString().padStart(2, '0')}`;
     }
+    
+    // Handle 24-hour format
+    const match24 = inputValue.match(/^(\d{1,2}):?(\d{2})?$/);
+    if (match24) {
+      let hours = parseInt(match24[1]) || 0;
+      const minutes = parseInt(match24[2]) || 0;
+      hours = Math.min(23, Math.max(0, hours));
+      const validMinutes = Math.min(59, Math.max(0, minutes));
+      return `${hours.toString().padStart(2, '0')}:${validMinutes.toString().padStart(2, '0')}`;
+    }
+    
+    return inputValue;
+  } catch (e) {
+    console.error('Error parsing time input:', e);
+    return inputValue;
   }
-  return inputValue; // Return as-is if 24hr or already formatted
 }
 
 // Initialize data
@@ -189,6 +228,17 @@ function setupEventListeners() {
     use12HourFormat = $(this).is(':checked');
     localStorage.setItem('use12HourFormat', use12HourFormat);
     $('#time-format-label').text(use12HourFormat ? '12hr' : '24hr');
+    
+    // Update all time inputs
+    $('input[type="time"], .time-input').each(function() {
+      const $input = $(this);
+      const currentValue = $input.val();
+      if (currentValue) {
+        // Trigger input event to reformat the time
+        $input.trigger('input');
+      }
+    });
+    
     renderSchedule(); // Re-render to update time display
   });
   
@@ -383,49 +433,37 @@ function setupEventListeners() {
   });
   
   // Time increment/decrement buttons (15 minute increments)
-  $(document).on('click', '.time-btn', function() {
-    const input = $(this).siblings('input');
+  $(document).on('click', '.time-btn', function(e) {
+    e.preventDefault();
+    const $input = $(this).siblings('input');
     const minutes = $(this).hasClass('inc') ? 15 : -15;
-    const time = timeToMinutes(input.val());
+    const time = timeToMinutes($input.val() || '00:00');
     const newTime = (time + minutes + (24 * 60)) % (24 * 60);
-    input.val(minutesToTime(newTime));
-    
-    // Update the playlist data
-    const id = input.closest('tr').data('id');
-    const playlist = currentSchedule.playlists.find(p => p.id === id);
-    if (playlist) {
-      if (input.hasClass('time-start')) {
-        playlist.start = input.val();
-      } else {
-        playlist.end = input.val();
-      }
-      saveToLocalStorage();
-    }
+    const newTimeStr = minutesToTime(newTime);
+    $input.val(newTimeStr).trigger('input');
   });
   
-  // Weight increment/decrement buttons
-  $(document).on('click', '.weight-btn', function() {
-    const input = $(this).siblings('input');
-    const change = $(this).hasClass('weight-inc') ? 1 : -1;
-    let weight = parseInt(input.val()) + change;
-    weight = Math.min(25, Math.max(1, weight));
-    input.val(weight);
-    
-    // Update the playlist data
-    const id = input.closest('tr').data('id');
-    const playlist = currentSchedule.playlists.find(p => p.id === id);
-    if (playlist) {
-      playlist.weight = weight;
-      saveToLocalStorage();
-    }
+  // Weight controls
+  $(document).on('click', '.weight-btn', function(e) {
+    e.preventDefault();
+    const $input = $(this).siblings('.weight-input');
+    const change = $(this).hasClass('inc') ? 1 : -1;
+    let value = parseInt($input.val()) || 1;
+    value = Math.min(25, Math.max(1, value + change));
+    $input.val(value).trigger('change');
   });
-  
-  // Handle playlist name changes
-  $(document).on('change', '.playlist-name', function() {
-    const id = $(this).closest('tr').data('id');
+
+  // Handle direct weight input
+  $(document).on('change', '.weight-input', function() {
+    const $input = $(this);
+    let value = parseInt($input.val()) || 1;
+    value = Math.min(25, Math.max(1, value));
+    $input.val(value);
+    
+    const id = $input.closest('tr').data('id');
     const playlist = currentSchedule.playlists.find(p => p.id === id);
     if (playlist) {
-      playlist.name = $(this).val();
+      playlist.weight = value;
       saveToLocalStorage();
     }
   });
@@ -641,20 +679,26 @@ function renderSchedule() {
       <tr data-id="${p.id}" class="${overnightClass}">
         <td><input type="text" class="playlist-name" value="${escapeHtml(p.name)}" placeholder="Playlist name"></td>
         <td><input type="text" class="playlist-description" value="${escapeHtml(p.description || '')}" placeholder="Description (shown on schedule page)"></td>
-        <td>
+        <td class="time-cell">
           <div class="time-control">
-            <button type="button" class="time-btn inc" title="15 minutes later">+</button>
-            <input type="time" class="time-start" value="${p.start}" step="900" list="time-options" title="Start time${overnightLabel}">
-            <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-            ${use12HourFormat ? `<span class="time-display">${format12h(p.start)}</span>` : ''}
+            <div class="time-control-group">
+              <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
+              <input type="time" class="time-start" value="${p.start}" step="900" list="time-options" 
+                     title="Start time${overnightLabel}" data-format="${use12HourFormat ? '12' : '24'}">
+              <button type="button" class="time-btn inc" title="15 minutes later">+</button>
+            </div>
+            ${use12HourFormat ? `<div class="time-12h">${format12h(p.start)}</div>` : ''}
           </div>
         </td>
-        <td>
+        <td class="time-cell">
           <div class="time-control">
-            <button type="button" class="time-btn inc" title="15 minutes later">+</button>
-            <input type="time" class="time-end" value="${p.end}" step="900" list="time-options" title="End time${overnightLabel}">
-            <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-            ${use12HourFormat ? `<span class="time-display">${format12h(p.end)}${isOvernight ? ' (+1 day)' : ''}</span>` : ''}
+            <div class="time-control-group">
+              <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
+              <input type="time" class="time-end" value="${p.end}" step="900" list="time-options" 
+                     title="End time${overnightLabel}" data-format="${use12HourFormat ? '12' : '24'}">
+              <button type="button" class="time-btn inc" title="15 minutes later">+</button>
+            </div>
+            ${use12HourFormat ? `<div class="time-12h">${format12h(p.end)}${isOvernight ? ' (+1 day)' : ''}</div>` : ''}
           </div>
         </td>
         <td>

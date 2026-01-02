@@ -65,6 +65,87 @@ select {
   padding: 8px 12px;
   border-radius: 4px;
   margin-right: 10px;
+  font-size: 0.9em;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Time input controls */
+.time-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.time-12h {
+  font-size: 0.8em;
+  color: #a0a0a0;
+  text-align: center;
+}
+
+.time-control-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-btn {
+  background: #3a3a3a;
+  border: 1px solid #5a5a5a;
+  color: #a0a0a0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+.time-btn:hover {
+  background: #4a4a4a;
+  color: #e0e0e0;
+}
+
+/* Weight controls */
+.weight-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weight-input {
+  width: 40px;
+  text-align: center;
+  margin: 0 4px;
+  -moz-appearance: textfield;
+}
+
+.weight-input::-webkit-outer-spin-button,
+.weight-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.weight-btn {
+  background: #3a3a3a;
+  border: 1px solid #5a5a5a;
+  color: #a0a0a0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+.weight-btn:hover {
+  background: #4a4a4a;
+  color: #e0e0e0;
 }
 
 .playlist-description {
