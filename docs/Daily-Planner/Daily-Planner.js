@@ -3,7 +3,13 @@
 /* ---------- Data & State ------------------------------- */
 let shows = [];
 let nextId = 1;
-let currentDay = '';
+let currentSchedule = {
+  id: 'default',
+  name: 'My Schedule',
+  days: [],
+  holidays: [],
+  shows: []
+};
 
 // Initialize with default data if localStorage is empty
 function initializeData() {
@@ -21,25 +27,76 @@ function initializeData() {
   ];
   
   // Try to load from localStorage
-  const savedDay = localStorage.getItem('currentDay');
-  if (savedDay) {
-    currentDay = savedDay;
-    $('#day-select').val(currentDay);
-    if (currentDay === '') {
-      $('#custom-day').show().val(localStorage.getItem('customDayName') || '');
+  const savedSchedule = localStorage.getItem('radioSchedule');
+  if (savedSchedule) {
+    try {
+      const parsed = JSON.parse(savedSchedule);
+      currentSchedule = {
+        ...currentSchedule,
+        ...parsed,
+        // Ensure arrays exist
+        days: parsed.days || [],
+        holidays: parsed.holidays || [],
+        shows: parsed.shows || []
+      };
+      
+      // Update UI
+      updateScheduleUI();
+      
+      // Set nextId based on existing shows
+      if (currentSchedule.shows.length > 0) {
+        nextId = Math.max(...currentSchedule.shows.map(s => s.id), 0) + 1;
+      } else {
+        nextId = 1;
+      }
+    } catch (e) {
+      console.error('Error loading schedule:', e);
+      createDefaultSchedule();
     }
-    
-    const savedShows = localStorage.getItem(`schedule_${currentDay}`);
-    if (savedShows) {
-      shows = JSON.parse(savedShows);
-      nextId = Math.max(...shows.map(s => s.id), 0) + 1;
-      return;
-    }
+  } else {
+    createDefaultSchedule();
   }
   
-  // Fall back to default data
-  shows = defaultShows;
-  nextId = 11;
+  // Initialize event listeners for day checkboxes
+  $('input[name="days"]').on('change', function() {
+    updateActiveDays();
+    saveToLocalStorage();
+  });
+  
+  // Holiday selector
+  $('#add-holiday').on('click', function() {
+    const holiday = $('#holiday-select').val();
+    if (holiday && !currentSchedule.holidays.includes(holiday)) {
+      currentSchedule.holidays.push(holiday);
+      updateScheduleUI();
+      saveToLocalStorage();
+    }
+  });
+  
+  // Schedule name
+  $('#schedule-name').on('change', function() {
+    currentSchedule.name = $(this).val();
+    saveToLocalStorage();
+  });
+}
+
+function createDefaultSchedule() {
+  currentSchedule = {
+    id: 'default',
+    name: 'My Schedule',
+    days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+    holidays: [],
+    shows: [
+      { id: 1, name: 'Morning Show', start: '06:00', end: '10:00', weight: 10, order: 0 },
+      { id: 2, name: 'Midday Mix', start: '10:00', end: '14:00', weight: 8, order: 1 },
+      { id: 3, name: 'Afternoon Drive', start: '14:00', end: '18:00', weight: 12, order: 2 },
+      { id: 4, name: 'Evening Show', start: '18:00', end: '22:00', weight: 8, order: 3 },
+      { id: 5, name: 'Late Night', start: '22:00', end: '02:00', weight: 6, order: 4 }
+    ]
+  };
+  nextId = 6;
+  updateScheduleUI();
+  saveToLocalStorage();
 }
 
 /* ---------- Helpers ----------------------------- */
@@ -70,60 +127,133 @@ function format12h(t) {
 }
 
 function saveToLocalStorage() {
-  if (currentDay) {
-    localStorage.setItem(`schedule_${currentDay}`, JSON.stringify(shows));
-    localStorage.setItem('currentDay', currentDay);
-    if (currentDay === '') {
-      localStorage.setItem('customDayName', $('#custom-day').val());
-    }
-  }
+  // Update shows from the current DOM state before saving
+  updateShowsFromUI();
+  
+  // Save the entire schedule
+  localStorage.setItem('radioSchedule', JSON.stringify(currentSchedule));
 }
 
-function getDayFileName(day) {
-  if (!day) {
-    const customName = $('#custom-day').val().trim();
-    return customName ? customName.toLowerCase().replace(/\s+/g, '-') + '.json' : 'custom-schedule.json';
-  }
-  return `${day}.json`;
-}
-
-function sortShows() {
-  const sortBy = $('#sort-by').val();
-  
-  if (sortBy === 'weight') {
-    shows.sort((a, b) => (b.weight || 0) - (a.weight || 0) || a.order - b.order);
-  } else if (sortBy === 'weight-asc') {
-    shows.sort((a, b) => (a.weight || 0) - (b.weight || 0) || a.order - b.order);
-  } else {
-    // Default: sort by start time
-    shows.sort((a, b) => {
-      const aStart = timeToMinutes(a.start);
-      const bStart = timeToMinutes(b.start);
-      // Handle overnight shows (assumed to be after 6 PM)
-      const aIsOvernight = aStart >= timeToMinutes('18:00');
-      const bIsOvernight = bStart >= timeToMinutes('18:00');
-      
-      if (aIsOvernight && !bIsOvernight) return 1;
-      if (!aIsOvernight && bIsOvernight) return -1;
-      return aStart - bStart;
-    });
-  }
-  
-  // Update order to match current sort
-  shows.forEach((show, index) => {
-    show.order = index;
+function updateShowsFromUI() {
+  const updatedShows = [];
+  $('#schedule tbody tr').each(function() {
+    const id = $(this).data('id');
+    const show = {
+      id: id,
+      name: $(this).find('.show-name').val(),
+      start: $(this).find('.start').val(),
+      end: $(this).find('.end').val(),
+      weight: parseInt($(this).find('.weight-input').val(), 10) || 1,
+      order: $(this).index()
+    };
+    updatedShows.push(show);
   });
+  
+  currentSchedule.shows = updatedShows;
+  return updatedShows;
+}
+
+function updateActiveDays() {
+  currentSchedule.days = [];
+  $('input[name="days"]:checked').each(function() {
+    currentSchedule.days.push($(this).val());
+  });
+  updateScheduleUI();
+}
+
+function updateScheduleUI() {
+  // Update checkboxes
+  $('input[name="days"]').each(function() {
+    $(this).prop('checked', currentSchedule.days.includes($(this).val()));
+  });
+  
+  // Update schedule name
+  if ($('#schedule-name').val() !== currentSchedule.name) {
+    $('#schedule-name').val(currentSchedule.name);
+  }
+  
+  // Update active days display
+  updateActiveDaysDisplay();
+  
+  // Update holiday tags
+  updateHolidayTags();
+}
+
+function updateActiveDaysDisplay() {
+  const container = $('#active-days-display');
+  const days = currentSchedule.days.map(day => 
+    `<span class="day-tag">${day.charAt(0).toUpperCase() + day.slice(1)}</span>`
+  );
+  
+  const holidays = currentSchedule.holidays.map(holiday => 
+    `<span class="holiday-tag">${formatHolidayName(holiday)}</span>`
+  );
+  
+  if (days.length === 0 && holidays.length === 0) {
+    container.html('Active for: <span class="no-days">No days selected</span>');
+  } else {
+    container.html('Active for: ' + [...days, ...holidays].join(' '));
+  }
+}
+
+function formatHolidayName(id) {
+  const names = {
+    'new-years-day': "New Year's Day",
+    'valentines-day': "Valentine's Day",
+    'st-patricks-day': "St. Patrick's Day",
+    'easter': 'Easter',
+    'independence-day': 'Independence Day',
+    'halloween': 'Halloween',
+    'thanksgiving': 'Thanksgiving',
+    'christmas-eve': 'Christmas Eve',
+    'christmas-day': 'Christmas Day',
+    'new-years-eve': "New Year's Eve"
+  };
+  return names[id] || id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function updateHolidayTags() {
+  // This will be implemented to show holiday tags in the UI
 }
 
 /* ---------- Render ------------------------------- */
 function renderSchedule() {
-  const tbody = $("#schedule tbody");
+  const tbody = $('#schedule tbody');
   tbody.empty();
   
-  // Apply current sort
-  sortShows();
+  // Update shows from UI before rendering
+  updateShowsFromUI();
   
-  shows.forEach((s, i) => {
+  // Sort shows based on current sort option
+  const sortBy = $('#sort-by').val();
+  let sortedShows = [...currentSchedule.shows];
+  
+  switch (sortBy) {
+    case 'weight':
+      sortedShows.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+      break;
+    case 'weight-asc':
+      sortedShows.sort((a, b) => (a.weight || 0) - (b.weight || 0));
+      break;
+    default: // 'start'
+      sortedShows.sort((a, b) => {
+        // Handle overnight shows (end time < start time)
+        const aIsOvernight = timeToMinutes(a.end) <= timeToMinutes(a.start);
+        const bIsOvernight = timeToMinutes(b.end) <= timeToMinutes(b.start);
+        
+        if (aIsOvernight && !bIsOvernight) return 1;
+        if (!aIsOvernight && bIsOvernight) return -1;
+        
+        return timeToMinutes(a.start) - timeToMinutes(b.start) || (a.order - b.order);
+      });
+  }
+  
+  // Update order to match current sort
+  sortedShows.forEach((show, index) => {
+    show.order = index;
+  });
+  
+  sortedShows.forEach((s, i) => {
     const startMin = timeToMinutes(s.start);
     const endMin = timeToMinutes(s.end);
     let duration = endMin - startMin;
@@ -136,7 +266,7 @@ function renderSchedule() {
     const durationStr = formatDuration(duration);
 
     // Overlap with previous programme
-    const prev = shows[i-1];
+    const prev = sortedShows[i-1];
     let overlap = 0;
     if (prev) {
       const prevEnd = timeToMinutes(prev.end);
@@ -184,7 +314,7 @@ function renderSchedule() {
     
     // Weight column
     tr.append($("<td>").html(`
-      <input type="number" class="weight-input" value="${weight}" min="1" max="10">
+      <input type="number" class="weight-input" value="${weight}" min="1" max="25">
       <div class="weight-controls">
         <button class="weight-dec" title="Decrease weight">-</button>
         <button class="weight-inc" title="Increase weight">+</button>
@@ -210,7 +340,7 @@ function renderSchedule() {
   // Show name changes
   $(".show-name").off('change').on('change', function() {
     const id = $(this).closest('tr').data('id');
-    const show = shows.find(x => x.id === id);
+    const show = currentSchedule.shows.find(x => x.id === id);
     if (show) {
       show.name = $(this).val();
       saveToLocalStorage();
@@ -222,7 +352,7 @@ function renderSchedule() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
     const field = $(this).hasClass('start') ? 'start' : 'end';
-    const show = shows.find(x => x.id === id);
+    const show = currentSchedule.shows.find(x => x.id === id);
     
     if (show) {
       show[field] = $(this).val();
@@ -243,7 +373,7 @@ function renderSchedule() {
   $(".inc, .dec, .weight-inc, .weight-dec").off('click').on('click', function() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
-    const show = shows.find(x => x.id === id);
+    const show = currentSchedule.shows.find(x => x.id === id);
     if (!show) return;
     
     const isStart = $(this).hasClass('start-inc') || $(this).hasClass('start-dec');
@@ -252,7 +382,7 @@ function renderSchedule() {
     
     if (isWeight) {
       // Handle weight adjustment
-      show.weight = Math.min(10, Math.max(1, (show.weight || 3) + (isInc ? 1 : -1)));
+      show.weight = Math.min(25, Math.max(1, (show.weight || 3) + (isInc ? 1 : -1)));
       tr.find('.weight-input').val(show.weight);
     } else {
       // Handle time adjustment
@@ -285,10 +415,10 @@ function renderSchedule() {
   // Weight input changes
   $(".weight-input").off('change').on('change', function() {
     const id = $(this).closest('tr').data('id');
-    const show = shows.find(x => x.id === id);
+    const show = currentSchedule.shows.find(x => x.id === id);
     if (show) {
       let weight = parseInt($(this).val(), 10);
-      weight = Math.min(10, Math.max(1, isNaN(weight) ? 3 : weight));
+      weight = Math.min(25, Math.max(1, isNaN(weight) ? 3 : weight));
       show.weight = weight;
       $(this).val(weight);
       saveToLocalStorage();
@@ -307,13 +437,13 @@ function renderSchedule() {
     const idx = tr.index();
     const isUp = $(this).hasClass('move-up');
     
-    if ((isUp && idx === 0) || (!isUp && idx === shows.length - 1)) return;
+    if ((isUp && idx === 0) || (!isUp && idx === currentSchedule.shows.length - 1)) return;
     
     const id = tr.data('id');
-    const current = shows.find(x => x.id === id);
+    const current = currentSchedule.shows.find(x => x.id === id);
     const targetIdx = isUp ? idx - 1 : idx + 1;
     const targetId = $(`#schedule tbody tr`).eq(targetIdx).data('id');
-    const targetShow = shows.find(x => x.id === targetId);
+    const targetShow = currentSchedule.shows.find(x => x.id === targetId);
     
     if (current && targetShow) {
       // Swap orders
@@ -326,7 +456,7 @@ function renderSchedule() {
   // Add row after this row
   $(".add-row").off('click').on('click', function() {
     const tr = $(this).closest('tr');
-    const currentShow = shows.find(s => s.id === tr.data('id'));
+    const currentShow = currentSchedule.shows.find(s => s.id === tr.data('id'));
     
     if (currentShow) {
       // Calculate default end time (30 minutes after start)
@@ -338,16 +468,16 @@ function renderSchedule() {
         name: "New Show",
         start: currentShow.start,
         end: minutesToTime(defaultEndTime),
-        weight: 3,
+        weight: 10, // Default weight to 10 (middle of 1-25)
         order: currentShow.order + 1
       };
       
       // Update orders of subsequent shows
-      shows.forEach(s => { 
+      currentSchedule.shows.forEach(s => { 
         if (s.order > currentShow.order) s.order++;
       });
       
-      shows.push(newShow);
+      currentSchedule.shows.push(newShow);
       saveToLocalStorage();
       renderSchedule();
       
@@ -358,7 +488,7 @@ function renderSchedule() {
 
   // Delete this row
   $(".delete-row").off('click').on('click', function() {
-    if (shows.length <= 1) {
+    if (currentSchedule.shows.length <= 1) {
       alert('You must have at least one show in the schedule.');
       return;
     }
@@ -366,29 +496,111 @@ function renderSchedule() {
     if (confirm('Are you sure you want to delete this show?')) {
       const tr = $(this).closest('tr');
       const id = tr.data('id');
-      const showToDelete = shows.find(s => s.id === id);
+      const showToDelete = currentSchedule.shows.find(s => s.id === id);
       
       if (showToDelete) {
         // Update orders of subsequent shows
-        shows.forEach(s => {
+        currentSchedule.shows.forEach(s => {
           if (s.order > showToDelete.order) s.order--;
         });
         
         // Remove the show
-        shows = shows.filter(s => s.id !== id);
+        currentSchedule.shows = currentSchedule.shows.filter(s => s.id !== id);
         saveToLocalStorage();
         renderSchedule();
+      }
+    }
+  });
+}
+
+/* ---------- File Operations ------------------------------- */
+function loadScheduleFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      // Handle different file formats
+      if (Array.isArray(data)) {
+        // Simple array format - just shows
+        currentSchedule = {
+          ...currentSchedule,
+          shows: data.map(show => ({
+            id: show.id || nextId++,
+            name: show.name || 'Untitled Show',
+            start: show.start || '00:00',
+            end: show.end || '01:00',
+            weight: Math.min(25, Math.max(1, parseInt(show.weight, 10) || 10)),
+            order: show.order || 0
+          }))
+        };
+      } else if (data.shows) {
+        // Full schedule format with days and holidays
+        currentSchedule = {
+          id: data.id || currentSchedule.id,
+          name: data.name || currentSchedule.name,
+          days: data.days || [],
+          holidays: data.holidays || [],
+          shows: (data.shows || []).map(show => ({
+            id: show.id || nextId++,
+            name: show.name || 'Untitled Show',
+            start: show.start || '00:00',
+            end: show.end || '01:00',
+            weight: Math.min(25, Math.max(1, parseInt(show.weight, 10) || 10)),
+            order: show.order || 0
+          }))
+        };
+      } else if (data.schedule) {
+        // Legacy format (array of schedule items)
+        currentSchedule = {
+          ...currentSchedule,
+          shows: data.schedule.map((item, index) => ({
+            id: nextId++,
+            name: item.show || item.name || `Show ${index + 1}`,
+            start: item.start || '00:00',
+            end: item.end || '01:00',
+            weight: Math.min(25, Math.max(1, parseInt(item.weight, 10) || 10)),
+            order: index
+          }))
+        };
+      }
+      
+      // Update nextId to be higher than any existing ID
+      if (currentSchedule.shows.length > 0) {
+        nextId = Math.max(...currentSchedule.shows.map(s => s.id), 0) + 1;
+      } else {
+        nextId = 1;
+      }
+      
+      // Update UI and save
+      updateScheduleUI();
+      renderSchedule();
+      saveToLocalStorage();
+      
+      alert(`Loaded schedule "${currentSchedule.name}" with ${currentSchedule.shows.length} shows`);
+    } catch (error) {
+      console.error('Error parsing schedule file:', error);
+      alert('Error loading schedule file. Please check the file format.\n\n' + error.message);
+    }
+  };
+  
+  reader.onerror = function() {
+    alert('Error reading file');
+  };
+  
+  reader.readAsText(file);
 }
 
 function exportSchedule() {
-  const day = $('#day-select').val() || $('#custom-day').val() || 'schedule';
-  const fileName = getDayFileName(day).replace('.json', '') + '.json';
+  // Update shows from UI before exporting
+  updateShowsFromUI();
   
   // Create a clean export object
   const exportData = {
-    day: day,
+    ...currentSchedule,
     lastUpdated: new Date().toISOString(),
-    shows: shows.map(show => ({
+    // Ensure we don't include any functions or circular references
+    shows: currentSchedule.shows.map(show => ({
       id: show.id,
       name: show.name,
       start: show.start,
@@ -398,35 +610,48 @@ function exportSchedule() {
     }))
   };
   
-  // Create a download link
-  const dataStr = JSON.stringify(exportData, null, 2);
-  const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+  // Create a filename based on the schedule name
+  const filename = `${currentSchedule.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`;
   
-  const linkElement = document.createElement('a');
-  linkElement.setAttribute('href', dataUri);
-  linkElement.setAttribute('download', fileName);
-  document.body.appendChild(linkElement);
-  linkElement.click();
-  document.body.removeChild(linkElement);
+  // Create a download link
+  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportData, null, 2));
+  const downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute('href', dataStr);
+  downloadAnchorNode.setAttribute('download', filename);
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
 }
 
 function createNewSchedule() {
-  if (shows.length > 0 && !confirm('Are you sure you want to create a new schedule? Any unsaved changes will be lost.')) {
+  if (currentSchedule.shows.length > 0 && !confirm('Are you sure you want to create a new schedule? Any unsaved changes will be lost.')) {
     return;
   }
   
-  shows = [{
-    id: 1,
-    name: 'New Show',
-    start: '00:00',
-    end: '01:00',
-    weight: 3,
-    order: 0
-  }];
-  
+  // Create a new schedule with default values
+  currentSchedule = {
+    id: 'schedule-' + Date.now(),
+    name: 'New Schedule',
+    days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+    holidays: [],
+    shows: [{
+      id: 1,
+      name: 'Morning Show',
+      start: '06:00',
+      end: '10:00',
+      weight: 10,
+      order: 0
+    }]
+  };
   nextId = 2;
-  saveToLocalStorage();
+  
+  // Update UI
+  updateScheduleUI();
   renderSchedule();
+  saveToLocalStorage();
+  
+  // Focus the schedule name for editing
+  $('#schedule-name').focus().select();
 }
 
 /* ---------- Initialization & Event Handlers ---------- */
@@ -440,7 +665,7 @@ $(function() {
     update: function(event, ui) {
       $(this).children('tr').each(function(idx) {
         const id = $(this).data('id');
-        const show = shows.find(item => item.id === id);
+        const show = currentSchedule.shows.find(item => item.id === id);
         if (show) show.order = idx;
       });
       saveToLocalStorage();
@@ -530,25 +755,25 @@ $(function() {
   
   // Global "Add at End" button
   $("#add-at-end").on('click', function() {
-    const last = shows[shows.length - 1] || { order: -1 };
+    const last = currentSchedule.shows.length > 0 
+      ? currentSchedule.shows[currentSchedule.shows.length - 1] 
+      : { order: -1, end: '00:00' };
+    
+    // Calculate default times
+    const endTime = timeToMinutes(last.end);
+    const newStart = minutesToTime(endTime);
+    const newEnd = minutesToTime((endTime + 60) % (24 * 60)); // 1 hour after end time
+    
     const newShow = {
       id: nextId++,
       name: "New Show",
-      start: last.end || "00:00",
-      end: "01:00",
-      weight: 3,
-      order: last.order + 1
+      start: newStart,
+      end: newEnd,
+      weight: 10, // Default weight to 10 (middle of 1-25)
+      order: currentSchedule.shows.length > 0 ? last.order + 1 : 0
     };
     
-    // If we have shows, set the start time to the end time of the last show
-    if (shows.length > 0) {
-      const lastShow = shows[shows.length - 1];
-      const endTime = timeToMinutes(lastShow.end);
-      newShow.start = minutesToTime(endTime);
-      newShow.end = minutesToTime((endTime + 60) % (24 * 60)); // 1 hour after end time
-    }
-    
-    shows.push(newShow);
+    currentSchedule.shows.push(newShow);
     saveToLocalStorage();
     renderSchedule();
     
@@ -647,12 +872,13 @@ $(".inc, .dec, .weight-inc, .weight-dec").off('click').on('click', function() {
 });
 
 // Weight input changes
-$(".weight-input").off('change').on('change', function() {
+$("#schedule").on('change', '.weight-input', function() {
   const id = $(this).closest('tr').data('id');
-  const show = shows.find(x => x.id === id);
+  const show = currentSchedule.shows.find(x => x.id === id);
   if (show) {
     let weight = parseInt($(this).val(), 10);
-    weight = Math.min(10, Math.max(1, isNaN(weight) ? 3 : weight));
+    // Ensure weight is between 1 and 25
+    weight = Math.min(25, Math.max(1, isNaN(weight) ? 10 : weight));
     show.weight = weight;
     $(this).val(weight);
     saveToLocalStorage();
@@ -688,9 +914,9 @@ $(".move-up, .move-down").off('click').on('click', function() {
 });
 
 // Add row after this row
-$(".add-row").off('click').on('click', function() {
+$("#schedule").on('click', '.add-row', function() {
   const tr = $(this).closest('tr');
-  const currentShow = shows.find(s => s.id === tr.data('id'));
+  const currentShow = currentSchedule.shows.find(s => s.id === tr.data('id'));
   
   if (currentShow) {
     // Calculate default end time (30 minutes after start)
@@ -702,16 +928,16 @@ $(".add-row").off('click').on('click', function() {
       name: "New Show",
       start: currentShow.start,
       end: minutesToTime(defaultEndTime),
-      weight: 3,
+      weight: 10, // Default weight to 10 (middle of 1-25)
       order: currentShow.order + 1
     };
     
     // Update orders of subsequent shows
-    shows.forEach(s => { 
+    currentSchedule.shows.forEach(s => { 
       if (s.order > currentShow.order) s.order++;
     });
     
-    shows.push(newShow);
+    currentSchedule.shows.push(newShow);
     saveToLocalStorage();
     renderSchedule();
     
@@ -721,8 +947,8 @@ $(".add-row").off('click').on('click', function() {
 });
 
 // Delete this row
-$(".delete-row").off('click').on('click', function() {
-  if (shows.length <= 1) {
+$("#schedule").on('click', '.delete-row', function() {
+  if (currentSchedule.shows.length <= 1) {
     alert('You must have at least one show in the schedule.');
     return;
   }
@@ -730,16 +956,16 @@ $(".delete-row").off('click').on('click', function() {
   if (confirm('Are you sure you want to delete this show?')) {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
-    const showToDelete = shows.find(s => s.id === id);
+    const showToDelete = currentSchedule.shows.find(s => s.id === id);
     
     if (showToDelete) {
       // Update orders of subsequent shows
-      shows.forEach(s => {
+      currentSchedule.shows.forEach(s => {
         if (s.order > showToDelete.order) s.order--;
       });
       
       // Remove the show
-      shows = shows.filter(s => s.id !== id);
+      currentSchedule.shows = currentSchedule.shows.filter(s => s.id !== id);
       saveToLocalStorage();
       renderSchedule();
     }

@@ -2,80 +2,96 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ZamRock Radio Schedule – Dark 12‑hr + Add / Delete</title>
-
-  <!-- 1. jQuery UI CSS (drag‑and‑drop) -->
-  <link rel="stylesheet"
-        href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-
-  <!-- 2. Your custom CSS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radio Schedule Planner</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <link rel="stylesheet" href="Daily-Planner.css">
 </head>
-
 <body>
-  <h1>ZamRock Radio Schedule</h1>
-  
-  <div class="controls">
-    <div class="control-group">
-      <label for="day-select">Day/Event:</label>
-      <select id="day-select">
-        <option value="monday">Monday</option>
-        <option value="tuesday">Tuesday</option>
-        <option value="wednesday">Wednesday</option>
-        <option value="thursday">Thursday</option>
-        <option value="friday">Friday</option>
-        <option value="saturday">Saturday</option>
-        <option value="sunday">Sunday</option>
-        <option value="">Custom (e.g., holiday)</option>
-      </select>
-      <input type="text" id="custom-day" placeholder="Enter custom day/event name" style="display: none;">
+  <div class="container">
+    <h1>Radio Schedule Planner</h1>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label for="schedule-name">Schedule Name:</label>
+        <input type="text" id="schedule-name" placeholder="e.g., Weekday Mornings">
+      </div>
+      
+      <div class="control-group">
+        <label>Active Days:</label>
+        <div class="day-checkboxes">
+          <label><input type="checkbox" name="days" value="monday"> Mon</label>
+          <label><input type="checkbox" name="days" value="tuesday"> Tue</label>
+          <label><input type="checkbox" name="days" value="wednesday"> Wed</label>
+          <label><input type="checkbox" name="days" value="thursday"> Thu</label>
+          <label><input type="checkbox" name="days" value="friday"> Fri</label>
+          <label><input type="checkbox" name="days" value="saturday"> Sat</label>
+          <label><input type="checkbox" name="days" value="sunday"> Sun</label>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <label>Holidays:</label>
+        <select id="holiday-select">
+          <option value="">-- Select Holiday --</option>
+          <option value="new-years-day">New Year's Day</option>
+          <option value="valentines-day">Valentine's Day</option>
+          <option value="st-patricks-day">St. Patrick's Day</option>
+          <option value="easter">Easter</option>
+          <option value="independence-day">Independence Day</option>
+          <option value="halloween">Halloween</option>
+          <option value="thanksgiving">Thanksgiving</option>
+          <option value="christmas-eve">Christmas Eve</option>
+          <option value="christmas-day">Christmas Day</option>
+          <option value="new-years-eve">New Year's Eve</option>
+        </select>
+        <button id="add-holiday">Add Holiday</button>
+      </div>
+      
+      <div class="control-group button-group">
+        <button id="load-schedule" class="btn">Load Schedule</button>
+        <button id="save-schedule" class="btn">Save Schedule</button>
+        <button id="new-schedule" class="btn">New Schedule</button>
+        <button id="export-json" class="btn">Export JSON</button>
+      </div>
+      
+      <div class="control-group">
+        <label>Sort by:</label>
+        <select id="sort-by">
+          <option value="start">Start Time</option>
+          <option value="weight">Weight (High to Low)</option>
+          <option value="weight-asc">Weight (Low to High)</option>
+        </select>
+      </div>
     </div>
     
-    <div class="control-group">
-      <button id="load-schedule">Load Schedule</button>
-      <button id="save-schedule">Save Schedule</button>
-      <button id="new-schedule">New Schedule</button>
-      <button id="export-json">Export JSON</button>
-    </div>
-    
-    <div class="control-group">
-      <label>Sort by:</label>
-      <select id="sort-by">
-        <option value="start">Start Time</option>
-        <option value="weight">Weight (High to Low)</option>
-        <option value="weight-asc">Weight (Low to High)</option>
-      </select>
+    <div class="schedule-container">
+      <div class="active-days-display" id="active-days-display">
+        Active for: <span class="no-days">No days selected</span>
+      </div>
+      
+      <table id="schedule">
+        <thead>
+          <tr>
+            <th>Show Name</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Weight (1-25)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Schedule rows will be added here by JavaScript -->
+        </tbody>
+      </table>
+      
+      <div class="add-row-container">
+        <button id="add-at-end" class="btn">+ Add Show at End</button>
+      </div>
     </div>
   </div>
-  
-  <p class="instructions">
-    Drag rows to reorder, use ▲/▼ arrows to adjust times,
-    move rows with the arrows in column 2,
-    add a new row after any row with the "+" button, and
-    delete any row with the trash icon.
-  </p>
 
-  <table id="schedule">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Move</th>
-        <th>Show</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Duration</th>
-        <th>Weight</th>
-        <th>Overlap with previous</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- Global “Add at End” button -->
-  <div style="margin-top: 10px;">
-    <button id="add-at-end" class="global-btn">
-      <span>+ Add at End</span>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     </button>
   </div>
 
