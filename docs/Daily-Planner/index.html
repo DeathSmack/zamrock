@@ -14,10 +14,44 @@
 
 <body>
   <h1>ZamRock Radio Schedule</h1>
-  <p>
+  
+  <div class="controls">
+    <div class="control-group">
+      <label for="day-select">Day/Event:</label>
+      <select id="day-select">
+        <option value="monday">Monday</option>
+        <option value="tuesday">Tuesday</option>
+        <option value="wednesday">Wednesday</option>
+        <option value="thursday">Thursday</option>
+        <option value="friday">Friday</option>
+        <option value="saturday">Saturday</option>
+        <option value="sunday">Sunday</option>
+        <option value="">Custom (e.g., holiday)</option>
+      </select>
+      <input type="text" id="custom-day" placeholder="Enter custom day/event name" style="display: none;">
+    </div>
+    
+    <div class="control-group">
+      <button id="load-schedule">Load Schedule</button>
+      <button id="save-schedule">Save Schedule</button>
+      <button id="new-schedule">New Schedule</button>
+      <button id="export-json">Export JSON</button>
+    </div>
+    
+    <div class="control-group">
+      <label>Sort by:</label>
+      <select id="sort-by">
+        <option value="start">Start Time</option>
+        <option value="weight">Weight (High to Low)</option>
+        <option value="weight-asc">Weight (Low to High)</option>
+      </select>
+    </div>
+  </div>
+  
+  <p class="instructions">
     Drag rows to reorder, use ▲/▼ arrows to adjust times,
-    move rows with the arrows in column 2,
-    add a new row after any row with the “+” button, and
+    move rows with the arrows in column 2,
+    add a new row after any row with the "+" button, and
     delete any row with the trash icon.
   </p>
 
@@ -30,6 +64,7 @@
         <th>Start</th>
         <th>End</th>
         <th>Duration</th>
+        <th>Weight</th>
         <th>Overlap with previous</th>
         <th>Actions</th>
       </tr>

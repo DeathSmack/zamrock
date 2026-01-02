@@ -1,29 +1,148 @@
 /* ──── Dark theme + 12‑hr view ──── */
 
 /* General */
-body{
-  background:#1e1e2e;
-  color:#e0e0e0;
-  font-family:Arial,Helvetica,sans-serif;
-  margin:0;
-  padding:20px;
+body {
+  background: #1e1e2e;
+  color: #e0e0e0;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.5;
 }
-h1{margin-bottom:10px;}
+
+h1 {
+  margin-bottom: 10px;
+  color: #9ac7ff;
+}
+
+/* Controls */
+.controls {
+  background: #2a2a3a;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #444;
+}
+
+.control-group {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
+}
+
+.control-group label {
+  margin-right: 8px;
+  color: #c8c8d2;
+}
+
+.control-group select,
+.control-group input[type="text"] {
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  padding: 5px 8px;
+  border-radius: 3px;
+}
+
+.control-group button {
+  background: #444;
+  color: #e0e0e0;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.control-group button:hover {
+  background: #555;
+}
+
+.instructions {
+  color: #a0a0a0;
+  font-size: 0.9em;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #2a2a3a;
+  border-radius: 3px;
+  border-left: 3px solid #9ac7ff;
+}
 
 /* Table */
-table{
-  width:100%;
-  border-collapse:collapse;
-  background:#2a2a3a;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #2a2a3a;
+  margin-bottom: 20px;
 }
-th, td{
-  border:1px solid #444;
-  padding:8px;
-  text-align:center;
+
+th, td {
+  border: 1px solid #444;
+  padding: 8px;
+  text-align: center;
+  vertical-align: middle;
 }
-th{background:#1a1a2e; color:#c8c8d2;}
-td:first-child, td:nth-child(2){color:#c8c8d2;}
-td:nth-child(4){color:#c8c8d2;}
+
+th {
+  background: #1a1a2e;
+  color: #c8c8d2;
+  font-weight: normal;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+td:first-child, 
+td:nth-child(2) {
+  color: #c8c8d2;
+}
+
+td:nth-child(4) {
+  color: #c8c8d2;
+}
+
+/* Weight column styling */
+td:nth-child(7) {
+  min-width: 80px;
+}
+
+.weight-input {
+  width: 50px;
+  text-align: center;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.weight-controls {
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.weight-controls button {
+  font-size: 10px;
+  line-height: 12px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0 1px;
+  border: none;
+  background: #444;
+  color: #e0e0e0;
+  cursor: pointer;
+}
+
+.weight-controls button:hover {
+  background: #555;
+}
 
 /* Time picker (24‑hr) */
 input[type="time"]{
@@ -41,24 +160,140 @@ input[type="time"]{
 }
 
 /* ▲/▼ arrows & action icons */
-.time-controls{display:inline-block; margin-left:4px;}
-.time-controls button{font-size:10px; line-height:12px; width:18px; height:18px;
-  padding:0; margin:0 1px; border:none;
-  background:#444; color:#e0e0e0; cursor:pointer;}
-.time-controls button:hover{background:#555;}
+.time-controls {
+  display: inline-block;
+  margin-left: 4px;
+}
 
-.move-controls{display:inline-block;}
-.move-controls button{font-size:10px; line-height:12px; width:18px; height:18px;
-  padding:0; margin:0 1px; border:none;
-  background:#444; color:#e0e0e0; cursor:pointer;}
-.move-controls button:hover{background:#555;}
+.time-controls button {
+  font-size: 10px;
+  line-height: 12px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0 1px;
+  border: none;
+  background: #444;
+  color: #e0e0e0;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.time-controls button:hover {
+  background: #555;
+}
+
+.move-controls {
+  display: inline-block;
+}
+
+.move-controls button {
+  font-size: 10px;
+  line-height: 12px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0 1px;
+  border: none;
+  background: #444;
+  color: #e0e0e0;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.move-controls button:hover {
+  background: #555;
+}
+
+/* Action buttons */
+.actions button {
+  background: transparent;
+  border: 1px solid #555;
+  color: #e0e0e0;
+  border-radius: 3px;
+  padding: 2px 6px;
+  margin: 0 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actions button:hover {
+  background: #444;
+  border-color: #666;
+}
+
+.actions button.delete-row {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+.actions button.delete-row:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+.actions button.add-row {
+  color: #6bff6b;
+  border-color: #6bff6b;
+}
+
+.actions button.add-row:hover {
+  background: rgba(107, 255, 107, 0.2);
+}
 
 /* Global add‑at‑end button */
-.global-btn{
-  background:#444; color:#e0e0e0; border:none;
-  padding:5px 10px; cursor:pointer;
+.global-btn {
+  background: #444;
+  color: #e0e0e0;
+  border: 1px solid #666;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+  font-size: 14px;
 }
-.global-btn:hover{background:#555;}
+
+.global-btn:hover {
+  background: #555;
+  border-color: #777;
+}
+
+.global-btn:active {
+  transform: translateY(1px);
+}
+
+/* File input for import/export */
+.file-input {
+  display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .controls {
+    padding: 10px;
+  }
+  
+  .control-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .control-group > * {
+    margin-bottom: 5px;
+  }
+  
+  .control-group button {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  table {
+    font-size: 14px;
+  }
+  
+  th, td {
+    padding: 6px 4px;
+  }
+}
 
 /* Drag‑and‑drop visual cue */
 tr{cursor:move;}
