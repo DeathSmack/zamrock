@@ -2,6 +2,7 @@
 
 // Global state
 let nextId = 1;
+let use12HourFormat = true; // Default to 12hr format
 let currentSchedule = {
   id: 'default',
   name: 'My Schedule',
@@ -95,6 +96,33 @@ function format12h(time24) {
   return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
+function formatTime(time24, use12hr) {
+  if (!time24) return '';
+  if (use12hr) {
+    return format12h(time24);
+  }
+  return time24; // Already in 24hr format
+}
+
+function parseTimeInput(inputValue, use12hr) {
+  // If input is in 12hr format, convert to 24hr
+  if (use12hr && inputValue) {
+    // Check if it has AM/PM
+    const match = inputValue.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM)/i);
+    if (match) {
+      let hours = parseInt(match[1]) || 0;
+      const minutes = parseInt(match[2]) || 0;
+      const period = match[3].toUpperCase();
+      
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
+  }
+  return inputValue; // Return as-is if 24hr or already formatted
+}
+
 // Initialize data
 function initializeData() {
   // Initialize holiday select dropdown
@@ -153,6 +181,20 @@ function initializeData() {
 }
 
 function setupEventListeners() {
+  // Time format toggle
+  $('#time-format-toggle').on('change', function() {
+    use12HourFormat = $(this).is(':checked');
+    localStorage.setItem('use12HourFormat', use12HourFormat);
+    renderSchedule(); // Re-render to update time display
+  });
+  
+  // Load time format preference
+  const savedFormat = localStorage.getItem('use12HourFormat');
+  if (savedFormat !== null) {
+    use12HourFormat = savedFormat === 'true';
+    $('#time-format-toggle').prop('checked', use12HourFormat);
+  }
+  
   // Day checkboxes
   $('input[name="days"]').on('change', function() {
     currentSchedule.days = [];
@@ -578,22 +620,29 @@ function renderSchedule() {
     const overlapStr = formatDuration(overlap);
     const weight = p.weight || 3; // Default weight if not set
     
+    // Check if overnight (end < start)
+    const isOvernight = timeToMinutes(p.end) < timeToMinutes(p.start);
+    const overnightClass = isOvernight ? 'overnight-playlist' : '';
+    const overnightLabel = isOvernight ? ' (overnight)' : '';
+    
     const row = `
-      <tr data-id="${p.id}">
+      <tr data-id="${p.id}" class="${overnightClass}">
         <td><input type="text" class="playlist-name" value="${escapeHtml(p.name)}" placeholder="Playlist name"></td>
         <td><input type="text" class="playlist-description" value="${escapeHtml(p.description || '')}" placeholder="Description (shown on schedule page)"></td>
         <td>
           <div class="time-control">
             <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-            <input type="time" class="time-start" value="${p.start}" step="900">
+            <input type="time" class="time-start" value="${p.start}" step="900" title="Start time${overnightLabel}">
             <button type="button" class="time-btn inc" title="15 minutes later">+</button>
+            ${use12HourFormat ? `<span class="time-display">${format12h(p.start)}</span>` : ''}
           </div>
         </td>
         <td>
           <div class="time-control">
             <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-            <input type="time" class="time-end" value="${p.end}" step="900">
+            <input type="time" class="time-end" value="${p.end}" step="900" title="End time${overnightLabel}">
             <button type="button" class="time-btn inc" title="15 minutes later">+</button>
+            ${use12HourFormat ? `<span class="time-display">${format12h(p.end)}${isOvernight ? ' (+1 day)' : ''}</span>` : ''}
           </div>
         </td>
         <td>

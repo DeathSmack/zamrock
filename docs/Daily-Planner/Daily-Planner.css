@@ -299,9 +299,35 @@ tr:hover {
   align-items: center;
 }
 
+.time-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.time-control input[type="time"] {
+  width: 100px;
+  text-align: center;
+}
+
+.time-display {
+  color: #a0a0a0;
+  font-size: 0.85em;
+  min-width: 70px;
+  display: inline-block;
+}
+
 .time-input {
   width: 80px;
   text-align: center;
+}
+
+.overnight-playlist {
+  background-color: rgba(74, 144, 226, 0.1) !important;
+}
+
+.overnight-playlist:hover {
+  background-color: rgba(74, 144, 226, 0.2) !important;
 }
 
 .weight-input {

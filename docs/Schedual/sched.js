@@ -95,14 +95,33 @@ function createPlaylistBlock(playlist) {
     const startHour = timeToHours(playlist.start);
     const endHour = timeToHours(playlist.end);
     
-    // Handle overnight playlists
+    // Handle overnight playlists (end < start means it goes into next day)
+    const isOvernight = endHour < startHour;
+    if (isOvernight) {
+        playlistBlock.classList.add("overnight");
+    }
+    
     let displayEndHour = endHour;
-    if (endHour < startHour) {
+    if (isOvernight) {
+        // For display, extend to next day
         displayEndHour = endHour + 24;
     }
     
     const startPercent = ((startHour - startTime) / scheduleDuration) * 100;
     const durationPercent = ((displayEndHour - startHour) / scheduleDuration) * 100;
+    
+    // Clamp to visible range
+    let adjustedStartPercent = startPercent;
+    let adjustedDurationPercent = durationPercent;
+    
+    if (startPercent < 0) {
+        adjustedStartPercent = 0;
+        adjustedDurationPercent = durationPercent + startPercent;
+    }
+    
+    if (startPercent + durationPercent > 100) {
+        adjustedDurationPercent = 100 - adjustedStartPercent;
+    }
 
     // Find an available row with overlap prevention
     let row = findAvailableRow(playlist, rows);
@@ -116,8 +135,8 @@ function createPlaylistBlock(playlist) {
         end: playlist.end
     });
 
-    playlistBlock.style.left = `${startPercent}%`;
-    playlistBlock.style.width = `${durationPercent}%`;
+    playlistBlock.style.left = `${adjustedStartPercent}%`;
+    playlistBlock.style.width = `${adjustedDurationPercent}%`;
     playlistBlock.style.top = `${row * rowHeight + 40}px`;
     playlistBlock.style.height = `${rowHeight - 4}px`;
     playlistBlock.style.margin = "2px";
@@ -128,7 +147,10 @@ function createPlaylistBlock(playlist) {
     const endMinutes = Math.round((endHour % 1) * 60);
     
     const startDisplay = `${startTimeFormatted === 0 ? 24 : startTimeFormatted}:${startMinutes.toString().padStart(2, '0')}`;
-    const endDisplay = `${endTimeFormatted === 0 ? 24 : endTimeFormatted}:${endMinutes.toString().padStart(2, '0')}`;
+    let endDisplay = `${endTimeFormatted === 0 ? 24 : endTimeFormatted}:${endMinutes.toString().padStart(2, '0')}`;
+    if (isOvernight) {
+        endDisplay += ' (+1 day)';
+    }
     const timeDisplay = `${startDisplay} - ${endDisplay}`;
 
     const description = playlist.description || '';
@@ -445,9 +467,9 @@ async function loadScheduleForDay(day) {
         
         // Initial highlight
         highlightCurrentPlaylist();
-        
-        // Add the current time line
-        createCurrentTimeLine();
+
+// Add the current time line
+createCurrentTimeLine();
     } else {
         // Better error message
         const dayName = day.charAt(0).toUpperCase() + day.slice(1);
