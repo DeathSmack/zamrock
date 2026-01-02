@@ -59,14 +59,58 @@ timezoneSelect.addEventListener('change', (e) => {
     updateSchedule();     // Update schedule with new timezone
 });
     
-    // Load schedule data
+    // Load schedule data - try new format first, then fall back to old format
     try {
-        const response = await fetch('/Radio-Schedule.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Get current day
+        const now = new Date();
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const currentDay = days[now.getDay()];
+        
+        // Try to load day-specific schedule from Daily-Planner
+        let scheduleLoaded = false;
+        const dayFiles = [
+            `${currentDay}.json`,
+            `${currentDay.substring(0, 3)}.json`,
+            'schedule_montue.json',
+            'schedule_satsun.json',
+            'schedule_weekend.json',
+            'schedule_weekday.json'
+        ];
+        
+        for (const filename of dayFiles) {
+            try {
+                const response = await fetch(`/Daily-Planner/${filename}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    // Check if this schedule applies to current day
+                    if (data.playlists && Array.isArray(data.playlists)) {
+                        // Convert new format to old format for compatibility
+                        scheduleData = data.playlists.map(p => ({
+                            show: p.name || 'Untitled',
+                            start: p.start || '00:00',
+                            end: p.end || '01:00',
+                            host: 'Automated Playlist',
+                            description: p.description || ''
+                        }));
+                        scheduleLoaded = true;
+                        break;
+                    }
+                }
+            } catch (e) {
+                // Continue to next file
+            }
         }
-        const data = await response.json();
-        scheduleData = data.schedule || [];
+        
+        // Fall back to old Radio-Schedule.json format
+        if (!scheduleLoaded) {
+            const response = await fetch('/Radio-Schedule.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            scheduleData = data.schedule || [];
+        }
+        
         if (scheduleData.length === 0) {
             throw new Error('No schedule data found');
         }

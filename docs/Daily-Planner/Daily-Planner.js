@@ -172,6 +172,9 @@ function initializeData() {
     showNotification('Error loading saved schedule. Creating a new one.', 'error');
   }
   
+  // Set default sort to name
+  $('#sort-by').val('name');
+  
   // Initialize UI
   updateScheduleUI();
   renderSchedule();
@@ -567,6 +570,13 @@ function renderSchedule() {
   let sortedPlaylists = [...currentSchedule.playlists];
   
   switch (sortBy) {
+    case 'name':
+      sortedPlaylists.sort((a, b) => {
+        const nameA = (a.name || '').toLowerCase();
+        const nameB = (b.name || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+      break;
     case 'weight':
       sortedPlaylists.sort((a, b) => (b.weight || 0) - (a.weight || 0));
       break;
@@ -632,7 +642,7 @@ function renderSchedule() {
         <td>
           <div class="time-control">
             <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-            <input type="time" class="time-start" value="${p.start}" step="900" title="Start time${overnightLabel}">
+            <input type="time" class="time-start" value="${p.start}" step="900" list="time-options" title="Start time${overnightLabel}">
             <button type="button" class="time-btn inc" title="15 minutes later">+</button>
             ${use12HourFormat ? `<span class="time-display">${format12h(p.start)}</span>` : ''}
           </div>
@@ -640,7 +650,7 @@ function renderSchedule() {
         <td>
           <div class="time-control">
             <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-            <input type="time" class="time-end" value="${p.end}" step="900" title="End time${overnightLabel}">
+            <input type="time" class="time-end" value="${p.end}" step="900" list="time-options" title="End time${overnightLabel}">
             <button type="button" class="time-btn inc" title="15 minutes later">+</button>
             ${use12HourFormat ? `<span class="time-display">${format12h(p.end)}${isOvernight ? ' (+1 day)' : ''}</span>` : ''}
           </div>
