@@ -721,15 +721,17 @@ $(document).ready(function() {
     // Set up event listeners after initialization
     setupEventListeners();
     
-    // Load default schedule if no data exists
+    // Check if we have playlists, if not load default
     if (currentSchedule.playlists.length === 0) {
       loadDefaultSchedule().then(loaded => {
         if (loaded) {
           renderSchedule();
+          updateScheduleUI();
         }
       });
     } else {
       renderSchedule();
+      updateScheduleUI();
     }
   });
 });
@@ -739,7 +741,10 @@ function loadDefaultSchedule() {
   return fetch('Radio-Schedule.json')
     .then(response => {
       if (!response.ok) {
-        throw new Error('Failed to load default schedule');
+        console.log('No default schedule file found, using empty schedule');
+        // Create a default empty schedule if file not found
+        currentSchedule.playlists = [];
+        return true;
       }
       return response.json();
     })
@@ -756,12 +761,22 @@ function loadDefaultSchedule() {
         }));
         nextId = currentSchedule.playlists.length > 0 ? 
           Math.max(...currentSchedule.playlists.map(p => p.id)) + 1 : 1;
+        
+        // Save the loaded schedule
+        saveToLocalStorage();
+        return true;
+      } else if (data) {
+        console.log('Invalid schedule format, using empty schedule');
+        currentSchedule.playlists = [];
+        saveToLocalStorage();
         return true;
       }
       return false;
     })
     .catch(error => {
-      console.log('No default schedule found or error loading:', error);
+      console.error('Error loading default schedule:', error);
+      currentSchedule.playlists = [];
+      saveToLocalStorage();
       return false;
     });
 }
