@@ -28,14 +28,17 @@ h1 {
 /* Controls */
 .controls {
   background-color: #3a3a3a;
-  padding: 15px;
-  border-radius: 6px;
+  padding: 20px;
+  border-radius: 8px;
   margin-bottom: 20px;
 }
 
 .control-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
@@ -100,32 +103,134 @@ button:disabled, .btn:disabled {
   transform: none;
 }
 
+/* Selection Container */
+.selection-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #2d2d2d;
+  padding: 15px;
+  border-radius: 6px;
+}
+
 /* Day checkboxes */
 .day-checkboxes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #444;
+  margin-bottom: 10px;
 }
 
 .day-checkboxes label {
   display: flex;
   align-items: center;
-  margin: 0;
-  padding: 5px 10px;
-  background-color: #4a4a4a;
-  border-radius: 4px;
+  gap: 5px;
   cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background-color: #3a3a3a;
   transition: all 0.2s;
-  min-width: auto;
+  font-size: 0.9em;
 }
 
 .day-checkboxes label:hover {
-  background-color: #5a5a5a;
+  background-color: #4a4a4a;
+  transform: translateY(-1px);
 }
 
 .day-checkboxes input[type="checkbox"] {
-  margin-right: 5px;
+  margin: 0;
+}
+
+/* Holiday Controls */
+.holiday-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.holiday-controls select {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #3a3a3a;
+  color: #fff;
+  font-size: 0.95em;
+}
+
+.holiday-controls .btn {
+  padding: 8px 15px;
+  white-space: nowrap;
+}
+
+/* Active Selections */
+.active-selections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px;
+  background-color: #2d2d2d;
+  border-radius: 4px;
+  border: 1px dashed #444;
+}
+
+.selection-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #3a5a78;
+  color: #e0f0ff;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.85em;
+  transition: all 0.2s;
+}
+
+.selection-tag.day-tag {
+  background-color: #3a5a78;
+}
+
+.selection-tag.holiday-tag {
+  background-color: #5a3a78;
+}
+
+.selection-tag .remove-tag {
+  cursor: pointer;
+  font-size: 1.1em;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.selection-tag .remove-tag:hover {
+  opacity: 1;
+  color: #ff8a8a;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #444;
+}
+
+.button-group .btn {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 15px;
 }
 
 /* Active days display */

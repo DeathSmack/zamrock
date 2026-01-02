@@ -1,15 +1,27 @@
 /* ──── Schedule table – Enhanced with Load/Save, Weights, and Sorting ──── */
 
 /* ---------- Data & State ------------------------------- */
-let shows = [];
 let nextId = 1;
 let currentSchedule = {
   id: 'default',
   name: 'My Schedule',
-  days: [],
+  days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
   holidays: [],
   shows: []
 };
+
+const HOLIDAYS = [
+  { id: 'new-years-day', name: "New Year's Day" },
+  { id: 'valentines-day', name: "Valentine's Day" },
+  { id: 'st-patricks-day', name: "St. Patrick's Day" },
+  { id: 'easter', name: "Easter" },
+  { id: 'independence-day', name: "Independence Day" },
+  { id: 'halloween', name: "Halloween" },
+  { id: 'thanksgiving', name: "Thanksgiving" },
+  { id: 'christmas-eve', name: "Christmas Eve" },
+  { id: 'christmas-day', name: "Christmas Day" },
+  { id: 'new-years-eve', name: "New Year's Eve" }
+];
 
 // Initialize with default data if localStorage is empty
 function initializeData() {
@@ -26,6 +38,13 @@ function initializeData() {
     {id:10, name:"Artist of the Month", start:"21:30", end:"22:00", weight: 4, order: 9}
   ];
   
+  // Initialize holiday select dropdown
+  const holidaySelect = $('#holiday-select');
+  holidaySelect.empty().append('<option value="">Add Holiday...</option>');
+  HOLIDAYS.forEach(holiday => {
+    holidaySelect.append(`<option value="${holiday.id}">${holiday.name}</option>`);
+  });
+
   // Try to load from localStorage
   const savedSchedule = localStorage.getItem('radioSchedule');
   if (savedSchedule) {
@@ -34,40 +53,49 @@ function initializeData() {
       currentSchedule = {
         ...currentSchedule,
         ...parsed,
-        // Ensure arrays exist
-        days: parsed.days || [],
-        holidays: parsed.holidays || [],
-        shows: parsed.shows || []
+        days: Array.isArray(parsed.days) ? parsed.days : [],
+        holidays: Array.isArray(parsed.holidays) ? parsed.holidays : [],
+        shows: Array.isArray(parsed.shows) ? parsed.shows : []
       };
       
-      // Update UI
-      updateScheduleUI();
-      
-      // Set nextId based on existing shows
+      // Update nextId based on existing shows
       if (currentSchedule.shows.length > 0) {
-        nextId = Math.max(...currentSchedule.shows.map(s => s.id), 0) + 1;
-      } else {
-        nextId = 1;
+        nextId = Math.max(...currentSchedule.shows.map(s => s.id || 0), 0) + 1;
       }
     } catch (e) {
       console.error('Error loading schedule:', e);
-      createDefaultSchedule();
+      showNotification('Error loading saved schedule. Creating a new one.', 'error');
     }
-  } else {
-    createDefaultSchedule();
   }
   
-  // Initialize event listeners for day checkboxes
+  // Initialize UI
+  updateScheduleUI();
+  renderSchedule();
+  
+  // Set up event listeners
+  setupEventListeners();
+}
+
+function setupEventListeners() {
+  // Day checkboxes
   $('input[name="days"]').on('change', function() {
     updateActiveDays();
     saveToLocalStorage();
   });
   
-  // Holiday selector
-  $('#add-holiday').on('click', function() {
-    const holiday = $('#holiday-select').val();
-    if (holiday && !currentSchedule.holidays.includes(holiday)) {
-      currentSchedule.holidays.push(holiday);
+  // Add holiday button
+  $('#add-holiday').on('click', addHoliday);
+  
+  // Remove holiday tag
+  $(document).on('click', '.remove-tag', function() {
+    const type = $(this).data('type');
+    const value = $(this).data('value');
+    
+    if (type === 'day') {
+      $(`input[name="days"][value="${value}"]`).prop('checked', false);
+      updateActiveDays();
+    } else if (type === 'holiday') {
+      currentSchedule.holidays = currentSchedule.holidays.filter(h => h !== value);
       updateScheduleUI();
       saveToLocalStorage();
     }
@@ -75,9 +103,46 @@ function initializeData() {
   
   // Schedule name
   $('#schedule-name').on('change', function() {
-    currentSchedule.name = $(this).val();
+    currentSchedule.name = $(this).val().trim() || 'Untitled Schedule';
     saveToLocalStorage();
   });
+  
+  // File operations
+  $('#load-schedule').on('click', triggerFileInput);
+  $('#export-json').on('click', exportSchedule);
+  $('#new-schedule').on('click', createNewSchedule);
+  
+  // Sort by dropdown
+  $('#sort-by').on('change', renderSchedule);
+  
+  // Add show button
+  $('#add-show').on('click', addNewShow);
+}
+
+function addHoliday() {
+  const holidayId = $('#holiday-select').val();
+  if (!holidayId) return;
+  
+  if (!currentSchedule.holidays.includes(holidayId)) {
+    currentSchedule.holidays.push(holidayId);
+    updateScheduleUI();
+    saveToLocalStorage();
+    showNotification('Holiday added to schedule', 'success');
+  } else {
+    showNotification('This holiday is already added', 'info');
+  }
+  
+  // Reset the dropdown
+  $('#holiday-select').val('');
+}
+
+function updateActiveDays() {
+  currentSchedule.days = [];
+  $('input[name="days"]:checked').each(function() {
+    currentSchedule.days.push($(this).val());
+  });
+  updateScheduleUI();
+  saveToLocalStorage();
 }
 
 function createDefaultSchedule() {
@@ -96,69 +161,8 @@ function createDefaultSchedule() {
   };
   nextId = 6;
   updateScheduleUI();
+  renderSchedule();
   saveToLocalStorage();
-}
-
-/* ---------- Helpers ----------------------------- */
-function timeToMinutes(t) {
-  if (!t) return 0;
-  const [h, m] = t.split(':').map(Number);
-  return h * 60 + m;
-}
-
-function minutesToTime(m) {
-  const h = Math.floor(m / 60).toString().padStart(2, '0');
-  const min = (m % 60).toString().padStart(2, '0');
-  return `${h}:${min}`;
-}
-
-function formatDuration(m) {
-  const h = Math.floor(m / 60);
-  const min = m % 60;
-  return min > 0 ? `${h}h ${min}m` : `${h}h`;
-}
-
-function format12h(t) {
-  if (!t) return '';
-  const [hRaw, min] = t.split(':').map(Number);
-  const period = hRaw >= 12 ? 'PM' : 'AM';
-  const h = hRaw % 12 || 12;
-  return `${h}:${min.toString().padStart(2, '0')} ${period}`;
-}
-
-function saveToLocalStorage() {
-  // Update shows from the current DOM state before saving
-  updateShowsFromUI();
-  
-  // Save the entire schedule
-  localStorage.setItem('radioSchedule', JSON.stringify(currentSchedule));
-}
-
-function updateShowsFromUI() {
-  const updatedShows = [];
-  $('#schedule tbody tr').each(function() {
-    const id = $(this).data('id');
-    const show = {
-      id: id,
-      name: $(this).find('.show-name').val(),
-      start: $(this).find('.start').val(),
-      end: $(this).find('.end').val(),
-      weight: parseInt($(this).find('.weight-input').val(), 10) || 1,
-      order: $(this).index()
-    };
-    updatedShows.push(show);
-  });
-  
-  currentSchedule.shows = updatedShows;
-  return updatedShows;
-}
-
-function updateActiveDays() {
-  currentSchedule.days = [];
-  $('input[name="days"]:checked').each(function() {
-    currentSchedule.days.push($(this).val());
-  });
-  updateScheduleUI();
 }
 
 function updateScheduleUI() {
@@ -172,11 +176,41 @@ function updateScheduleUI() {
     $('#schedule-name').val(currentSchedule.name);
   }
   
-  // Update active days display
-  updateActiveDaysDisplay();
+  // Update active selections display
+  updateActiveSelections();
+}
+
+// Update active selections (days and holidays)
+function updateActiveSelections() {
+  const container = $('#active-selections');
+  container.empty();
   
-  // Update holiday tags
-  updateHolidayTags();
+  // Add day tags
+  currentSchedule.days.forEach(day => {
+    const dayName = day.charAt(0).toUpperCase() + day.slice(1);
+    container.append(`
+      <span class="selection-tag day-tag">
+        ${dayName}
+        <span class="remove-tag" data-type="day" data-value="${day}" title="Remove">&times;</span>
+      </span>
+    `);
+  });
+  
+  // Add holiday tags
+  currentSchedule.holidays.forEach(holidayId => {
+    const holiday = HOLIDAYS.find(h => h.id === holidayId) || { id: holidayId, name: holidayId };
+    container.append(`
+      <span class="selection-tag holiday-tag">
+        ${holiday.name}
+        <span class="remove-tag" data-type="holiday" data-value="${holidayId}" title="Remove">&times;</span>
+      </span>
+    `);
+  });
+  
+  // Show message if no selections
+  if (container.children().length === 0) {
+    container.append('<span class="no-selection">No days or holidays selected</span>');
+  }
 }
 
 function updateActiveDaysDisplay() {
@@ -185,9 +219,10 @@ function updateActiveDaysDisplay() {
     `<span class="day-tag">${day.charAt(0).toUpperCase() + day.slice(1)}</span>`
   );
   
-  const holidays = currentSchedule.holidays.map(holiday => 
-    `<span class="holiday-tag">${formatHolidayName(holiday)}</span>`
-  );
+  const holidays = currentSchedule.holidays.map(holidayId => {
+    const holiday = HOLIDAYS.find(h => h.id === holidayId) || { id: holidayId, name: holidayId };
+    return `<span class="holiday-tag">${holiday.name}</span>`;
+  });
   
   if (days.length === 0 && holidays.length === 0) {
     container.html('Active for: <span class="no-days">No days selected</span>');
@@ -196,24 +231,193 @@ function updateActiveDaysDisplay() {
   }
 }
 
-function formatHolidayName(id) {
-  const names = {
-    'new-years-day': "New Year's Day",
-    'valentines-day': "Valentine's Day",
-    'st-patricks-day': "St. Patrick's Day",
-    'easter': 'Easter',
-    'independence-day': 'Independence Day',
-    'halloween': 'Halloween',
-    'thanksgiving': 'Thanksgiving',
-    'christmas-eve': 'Christmas Eve',
-    'christmas-day': 'Christmas Day',
-    'new-years-eve': "New Year's Eve"
-  };
-  return names[id] || id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+function triggerFileInput() {
+  const fileInput = $('<input type="file" accept=".json" style="display: none;">');
+  
+  fileInput.on('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      loadScheduleFromFile(file);
+    }
+  });
+  
+  fileInput.trigger('click');
 }
 
-function updateHolidayTags() {
-  // This will be implemented to show holiday tags in the UI
+function loadScheduleFromFile(file) {
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      // Handle different file formats
+      if (Array.isArray(data)) {
+        // Simple array format - just shows
+        currentSchedule = {
+          ...currentSchedule,
+          shows: data.map(show => ({
+            id: show.id || nextId++,
+            name: show.name || 'Untitled Show',
+            start: show.start || '00:00',
+            end: show.end || '01:00',
+            weight: Math.min(25, Math.max(1, parseInt(show.weight, 10) || 10)),
+            order: show.order || 0
+          }))
+        };
+      } else if (data.shows || data.schedule) {
+        // Full schedule format with days and holidays, or legacy format
+        currentSchedule = {
+          id: data.id || 'schedule-' + Date.now(),
+          name: data.name || 'Imported Schedule',
+          days: Array.isArray(data.days) ? data.days : [],
+          holidays: Array.isArray(data.holidays) ? data.holidays : [],
+          shows: (Array.isArray(data.shows) ? data.shows : 
+                 (Array.isArray(data.schedule) ? data.schedule : [])).map((item, index) => ({
+            id: item.id || nextId++,
+            name: item.show || item.name || `Show ${index + 1}`,
+            start: item.start || '00:00',
+            end: item.end || '01:00',
+            weight: Math.min(25, Math.max(1, parseInt(item.weight, 10) || 10)),
+            order: item.order || index
+          }))
+        };
+      } else {
+        throw new Error('Unsupported file format');
+      }
+      
+      // Update nextId to be higher than any existing ID
+      if (currentSchedule.shows && currentSchedule.shows.length > 0) {
+        nextId = Math.max(...currentSchedule.shows.map(s => s.id || 0), 0) + 1;
+      } else {
+        nextId = 1;
+        currentSchedule.shows = [];
+      }
+      
+      // Ensure days and holidays are valid arrays
+      if (!Array.isArray(currentSchedule.days)) currentSchedule.days = [];
+      if (!Array.isArray(currentSchedule.holidays)) currentSchedule.holidays = [];
+      
+      // Update UI and save
+      updateScheduleUI();
+      renderSchedule();
+      saveToLocalStorage();
+      
+      showNotification(`Loaded schedule "${currentSchedule.name}" with ${currentSchedule.shows.length} shows`, 'success');
+      
+    } catch (error) {
+      console.error('Error parsing schedule file:', error);
+      showNotification(`Error loading file: ${error.message}`, 'error');
+    }
+  };
+  
+  reader.onerror = function() {
+    showNotification('Error reading file. Please try again.', 'error');
+  };
+  
+  try {
+    reader.readAsText(file);
+  } catch (error) {
+    showNotification(`Error: ${error.message}`, 'error');
+  }
+}
+
+function exportSchedule() {
+  try {
+    // Update shows from UI before exporting
+    updateShowsFromUI();
+    
+    // Create a clean export object
+    const exportData = {
+      id: currentSchedule.id || 'schedule-' + Date.now(),
+      name: currentSchedule.name || 'Untitled Schedule',
+      days: [...currentSchedule.days],
+      holidays: [...currentSchedule.holidays],
+      lastUpdated: new Date().toISOString(),
+      shows: currentSchedule.shows.map(show => ({
+        id: show.id,
+        name: show.name,
+        start: show.start,
+        end: show.end,
+        weight: show.weight,
+        order: show.order
+      }))
+    };
+    
+    // Generate filename based on schedule name and active days/holidays
+    let filename = (currentSchedule.name || 'schedule').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    
+    // Add active days to filename if any
+    if (currentSchedule.days.length > 0) {
+      filename += '-' + currentSchedule.days.join('-');
+    }
+    
+    // Add first holiday to filename if any
+    if (currentSchedule.holidays.length > 0) {
+      filename += '-' + currentSchedule.holidays[0];
+      if (currentSchedule.holidays.length > 1) {
+        filename += `-and-${currentSchedule.holidays.length - 1}-more`;
+      }
+    }
+    
+    filename += '.json';
+    
+    // Create and trigger download
+    const dataStr = 'data:text/json;charset=utf-8,' + 
+      encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute('href', dataStr);
+    downloadAnchorNode.setAttribute('download', filename);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    document.body.removeChild(downloadAnchorNode);
+    
+    showNotification(`Exported "${currentSchedule.name}" successfully!`, 'success');
+    
+  } catch (error) {
+    console.error('Error exporting schedule:', error);
+    showNotification(`Error exporting schedule: ${error.message}`, 'error');
+  }
+}
+
+function addNewShow() {
+  // Calculate default start time (end of last show or 00:00)
+  let startTime = '00:00';
+  if (currentSchedule.shows.length > 0) {
+    const lastShow = [...currentSchedule.shows].sort((a, b) => b.order - a.order)[0];
+    if (lastShow) {
+      const endTime = timeToMinutes(lastShow.end);
+      startTime = minutesToTime(endTime);
+    }
+  }
+  
+  // Calculate default end time (1 hour after start)
+  const endTime = minutesToTime((timeToMinutes(startTime) + 60) % (24 * 60));
+  
+  const newShow = {
+    id: nextId++,
+    name: 'New Show',
+    start: startTime,
+    end: endTime,
+    weight: 10,
+    order: currentSchedule.shows.length
+  };
+  
+  currentSchedule.shows.push(newShow);
+  saveToLocalStorage();
+  renderSchedule();
+  
+  // Scroll to the new row and focus the name input
+  const newRow = $(`tr[data-id="${newShow.id}"]`);
+  if (newRow.length) {
+    $('html, body').animate({
+      scrollTop: newRow.offset().top - 100
+    }, 500);
+    newRow.find('.show-name').focus().select();
+  }
+  
+  return newShow;
 }
 
 /* ---------- Render ------------------------------- */
@@ -516,6 +720,7 @@ function renderSchedule() {
 /* ---------- File Operations ------------------------------- */
 function loadScheduleFromFile(file) {
   const reader = new FileReader();
+  
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
@@ -534,124 +739,159 @@ function loadScheduleFromFile(file) {
             order: show.order || 0
           }))
         };
-      } else if (data.shows) {
-        // Full schedule format with days and holidays
+      } else if (data.shows || data.schedule) {
+        // Full schedule format with days and holidays, or legacy format
         currentSchedule = {
-          id: data.id || currentSchedule.id,
-          name: data.name || currentSchedule.name,
-          days: data.days || [],
-          holidays: data.holidays || [],
-          shows: (data.shows || []).map(show => ({
-            id: show.id || nextId++,
-            name: show.name || 'Untitled Show',
-            start: show.start || '00:00',
-            end: show.end || '01:00',
-            weight: Math.min(25, Math.max(1, parseInt(show.weight, 10) || 10)),
-            order: show.order || 0
-          }))
-        };
-      } else if (data.schedule) {
-        // Legacy format (array of schedule items)
-        currentSchedule = {
-          ...currentSchedule,
-          shows: data.schedule.map((item, index) => ({
-            id: nextId++,
+          id: data.id || 'schedule-' + Date.now(),
+          name: data.name || 'Imported Schedule',
+          days: Array.isArray(data.days) ? data.days : [],
+          holidays: Array.isArray(data.holidays) ? data.holidays : [],
+          shows: (Array.isArray(data.shows) ? data.shows : 
+                 (Array.isArray(data.schedule) ? data.schedule : [])).map((item, index) => ({
+            id: item.id || nextId++,
             name: item.show || item.name || `Show ${index + 1}`,
             start: item.start || '00:00',
             end: item.end || '01:00',
             weight: Math.min(25, Math.max(1, parseInt(item.weight, 10) || 10)),
-            order: index
+            order: item.order || index
           }))
         };
+      } else {
+        throw new Error('Unsupported file format');
       }
       
       // Update nextId to be higher than any existing ID
-      if (currentSchedule.shows.length > 0) {
-        nextId = Math.max(...currentSchedule.shows.map(s => s.id), 0) + 1;
+      if (currentSchedule.shows && currentSchedule.shows.length > 0) {
+        nextId = Math.max(...currentSchedule.shows.map(s => s.id || 0), 0) + 1;
       } else {
         nextId = 1;
+        currentSchedule.shows = [];
       }
+      
+      // Ensure days and holidays are valid arrays
+      if (!Array.isArray(currentSchedule.days)) currentSchedule.days = [];
+      if (!Array.isArray(currentSchedule.holidays)) currentSchedule.holidays = [];
       
       // Update UI and save
       updateScheduleUI();
       renderSchedule();
       saveToLocalStorage();
       
-      alert(`Loaded schedule "${currentSchedule.name}" with ${currentSchedule.shows.length} shows`);
+      showNotification(`Loaded schedule "${currentSchedule.name}" with ${currentSchedule.shows.length} shows`, 'success');
+      
     } catch (error) {
       console.error('Error parsing schedule file:', error);
-      alert('Error loading schedule file. Please check the file format.\n\n' + error.message);
+      showNotification(`Error loading file: ${error.message}`, 'error');
     }
   };
   
   reader.onerror = function() {
-    alert('Error reading file');
+    showNotification('Error reading file. Please try again.', 'error');
   };
   
-  reader.readAsText(file);
+  try {
+    reader.readAsText(file);
+  } catch (error) {
+    showNotification(`Error: ${error.message}`, 'error');
+  }
 }
 
 function exportSchedule() {
-  // Update shows from UI before exporting
-  updateShowsFromUI();
-  
-  // Create a clean export object
-  const exportData = {
-    ...currentSchedule,
-    lastUpdated: new Date().toISOString(),
-    // Ensure we don't include any functions or circular references
-    shows: currentSchedule.shows.map(show => ({
-      id: show.id,
-      name: show.name,
-      start: show.start,
-      end: show.end,
-      weight: show.weight,
-      order: show.order
-    }))
-  };
-  
-  // Create a filename based on the schedule name
-  const filename = `${currentSchedule.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`;
-  
-  // Create a download link
-  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportData, null, 2));
-  const downloadAnchorNode = document.createElement('a');
-  downloadAnchorNode.setAttribute('href', dataStr);
-  downloadAnchorNode.setAttribute('download', filename);
-  document.body.appendChild(downloadAnchorNode);
-  downloadAnchorNode.click();
-  downloadAnchorNode.remove();
+  try {
+    // Update shows from UI before exporting
+    updateShowsFromUI();
+    
+    // Create a clean export object
+    const exportData = {
+      id: currentSchedule.id || 'schedule-' + Date.now(),
+      name: currentSchedule.name || 'Untitled Schedule',
+      days: [...currentSchedule.days],
+      holidays: [...currentSchedule.holidays],
+      lastUpdated: new Date().toISOString(),
+      shows: currentSchedule.shows.map(show => ({
+        id: show.id,
+        name: show.name,
+        start: show.start,
+        end: show.end,
+        weight: show.weight,
+        order: show.order
+      }))
+    };
+    
+    // Generate filename based on schedule name and active days/holidays
+    let filename = (currentSchedule.name || 'schedule').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    
+    // Add active days to filename if any
+    if (currentSchedule.days.length > 0) {
+      filename += '-' + currentSchedule.days.join('-');
+    }
+    
+    // Add first holiday to filename if any
+    if (currentSchedule.holidays.length > 0) {
+      filename += '-' + currentSchedule.holidays[0];
+      if (currentSchedule.holidays.length > 1) {
+        filename += `-and-${currentSchedule.holidays.length - 1}-more`;
+      }
+    }
+    
+    filename += '.json';
+    
+    // Create and trigger download
+    const dataStr = 'data:text/json;charset=utf-8,' + 
+      encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute('href', dataStr);
+    downloadAnchorNode.setAttribute('download', filename);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    document.body.removeChild(downloadAnchorNode);
+    
+    showNotification(`Exported "${currentSchedule.name}" successfully!`, 'success');
+    
+  } catch (error) {
+    console.error('Error exporting schedule:', error);
+    showNotification(`Error exporting schedule: ${error.message}`, 'error');
+  }
 }
 
-function createNewSchedule() {
-  if (currentSchedule.shows.length > 0 && !confirm('Are you sure you want to create a new schedule? Any unsaved changes will be lost.')) {
-    return;
+function addNewShow() {
+  // Calculate default start time (end of last show or 00:00)
+  let startTime = '00:00';
+  if (currentSchedule.shows.length > 0) {
+    const lastShow = [...currentSchedule.shows].sort((a, b) => b.order - a.order)[0];
+    if (lastShow) {
+      const endTime = timeToMinutes(lastShow.end);
+      startTime = minutesToTime(endTime);
+    }
   }
   
-  // Create a new schedule with default values
-  currentSchedule = {
-    id: 'schedule-' + Date.now(),
-    name: 'New Schedule',
-    days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-    holidays: [],
-    shows: [{
-      id: 1,
-      name: 'Morning Show',
-      start: '06:00',
-      end: '10:00',
-      weight: 10,
-      order: 0
-    }]
+  // Calculate default end time (1 hour after start)
+  const endTime = minutesToTime((timeToMinutes(startTime) + 60) % (24 * 60));
+  
+  const newShow = {
+    id: nextId++,
+    name: 'New Show',
+    start: startTime,
+    end: endTime,
+    weight: 10,
+    order: currentSchedule.shows.length
   };
-  nextId = 2;
   
-  // Update UI
-  updateScheduleUI();
-  renderSchedule();
+  currentSchedule.shows.push(newShow);
   saveToLocalStorage();
+  renderSchedule();
   
-  // Focus the schedule name for editing
-  $('#schedule-name').focus().select();
+  // Scroll to the new row and focus the name input
+  const newRow = $(`tr[data-id="${newShow.id}"]`);
+  if (newRow.length) {
+    $('html, body').animate({
+      scrollTop: newRow.offset().top - 100
+    }, 500);
+    newRow.find('.show-name').focus().select();
+  }
+  
+  return newShow;
 }
 
 /* ---------- Initialization & Event Handlers ---------- */
@@ -759,19 +999,23 @@ $(function() {
       ? currentSchedule.shows[currentSchedule.shows.length - 1] 
       : { order: -1, end: '00:00' };
     
-    // Calculate default times
+    // Calculate default end time (30 minutes after start)
     const endTime = timeToMinutes(last.end);
-    const newStart = minutesToTime(endTime);
-    const newEnd = minutesToTime((endTime + 60) % (24 * 60)); // 1 hour after end time
+    const defaultEndTime = (endTime + 30) % (24 * 60);
     
     const newShow = {
       id: nextId++,
       name: "New Show",
-      start: newStart,
-      end: newEnd,
+      start: last.start,
+      end: minutesToTime(defaultEndTime),
       weight: 10, // Default weight to 10 (middle of 1-25)
       order: currentSchedule.shows.length > 0 ? last.order + 1 : 0
     };
+    
+    // Update orders of subsequent shows
+    currentSchedule.shows.forEach(s => { 
+      if (s.order > last.order) s.order++;
+    });
     
     currentSchedule.shows.push(newShow);
     saveToLocalStorage();

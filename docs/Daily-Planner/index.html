@@ -14,38 +14,45 @@
     <div class="controls">
       <div class="control-group">
         <label for="schedule-name">Schedule Name:</label>
-        <input type="text" id="schedule-name" placeholder="e.g., Weekday Mornings">
+        <input type="text" id="schedule-name" value="My Schedule">
       </div>
       
       <div class="control-group">
-        <label>Active Days:</label>
-        <div class="day-checkboxes">
-          <label><input type="checkbox" name="days" value="monday"> Mon</label>
-          <label><input type="checkbox" name="days" value="tuesday"> Tue</label>
-          <label><input type="checkbox" name="days" value="wednesday"> Wed</label>
-          <label><input type="checkbox" name="days" value="thursday"> Thu</label>
-          <label><input type="checkbox" name="days" value="friday"> Fri</label>
-          <label><input type="checkbox" name="days" value="saturday"> Sat</label>
-          <label><input type="checkbox" name="days" value="sunday"> Sun</label>
+        <label>Active Days/Holidays:</label>
+        <div class="selection-container">
+          <div class="day-checkboxes">
+            <label><input type="checkbox" name="days" value="monday"> Mon</label>
+            <label><input type="checkbox" name="days" value="tuesday"> Tue</label>
+            <label><input type="checkbox" name="days" value="wednesday"> Wed</label>
+            <label><input type="checkbox" name="days" value="thursday"> Thu</label>
+            <label><input type="checkbox" name="days" value="friday"> Fri</label>
+            <label><input type="checkbox" name="days" value="saturday"> Sat</label>
+            <label><input type="checkbox" name="days" value="sunday"> Sun</label>
+          </div>
+          
+          <div class="holiday-controls">
+            <select id="holiday-select">
+              <option value="">Add Holiday...</option>
+              <option value="new-years-day">New Year's Day</option>
+              <option value="valentines-day">Valentine's Day</option>
+              <option value="st-patricks-day">St. Patrick's Day</option>
+              <option value="easter">Easter</option>
+              <option value="independence-day">Independence Day</option>
+              <option value="halloween">Halloween</option>
+              <option value="thanksgiving">Thanksgiving</option>
+              <option value="christmas-eve">Christmas Eve</option>
+              <option value="christmas-day">Christmas Day</option>
+              <option value="new-years-eve">New Year's Eve</option>
+            </select>
+            <button id="add-holiday" class="btn" title="Add holiday to schedule">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
+          
+          <div id="active-selections" class="active-selections">
+            <!-- Active days and holidays will appear here -->
+          </div>
         </div>
-      </div>
-      
-      <div class="control-group">
-        <label>Holidays:</label>
-        <select id="holiday-select">
-          <option value="">-- Select Holiday --</option>
-          <option value="new-years-day">New Year's Day</option>
-          <option value="valentines-day">Valentine's Day</option>
-          <option value="st-patricks-day">St. Patrick's Day</option>
-          <option value="easter">Easter</option>
-          <option value="independence-day">Independence Day</option>
-          <option value="halloween">Halloween</option>
-          <option value="thanksgiving">Thanksgiving</option>
-          <option value="christmas-eve">Christmas Eve</option>
-          <option value="christmas-day">Christmas Day</option>
-          <option value="new-years-eve">New Year's Eve</option>
-        </select>
-        <button id="add-holiday">Add Holiday</button>
       </div>
       
       <div class="control-group button-group">
