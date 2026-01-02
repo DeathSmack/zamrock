@@ -224,21 +224,20 @@ function initializeData() {
 
 function setupEventListeners() {
   // Time format toggle (display only - always saves in 24hr)
-  $('#time-format-toggle').on('change', function() {
-    use12HourFormat = $(this).is(':checked');
-    localStorage.setItem('use12HourFormat', use12HourFormat);
-    $('#time-format-label').text(use12HourFormat ? '12hr' : '24hr');
-    
-    // Update all time inputs
-    $('input[type="time"], .time-input').each(function() {
+  function updateTimeInputsFormat() {
+    $('input[type="time"]').each(function() {
       const $input = $(this);
-      const currentValue = $input.val();
-      if (currentValue) {
-        // Trigger input event to reformat the time
-        $input.trigger('input');
-      }
+      // Update the step attribute to show appropriate picker
+      $input.attr('step', use12HourFormat ? '60' : '900');
+      // Trigger change to update the display
+      $input.trigger('change');
     });
-    
+  }
+  
+  $('input[name="time-format"]').on('change', function() {
+    use12HourFormat = $(this).val() === '12';
+    localStorage.setItem('use12HourFormat', use12HourFormat);
+    updateTimeInputsFormat();
     renderSchedule(); // Re-render to update time display
   });
   
@@ -246,9 +245,8 @@ function setupEventListeners() {
   const savedFormat = localStorage.getItem('use12HourFormat');
   if (savedFormat !== null) {
     use12HourFormat = savedFormat === 'true';
-    $('#time-format-toggle').prop('checked', use12HourFormat);
+    $(`input[name="time-format"][value="${use12HourFormat ? '12' : '24'}"]`).prop('checked', true);
   }
-  $('#time-format-label').text(use12HourFormat ? '12hr' : '24hr');
   
   // Day checkboxes
   $('input[name="days"]').on('change', function() {
@@ -432,38 +430,60 @@ function setupEventListeners() {
     renderSchedule();
   });
   
-  // Time increment/decrement buttons (15 minute increments)
-  $(document).on('click', '.time-btn', function(e) {
-    e.preventDefault();
-    const $input = $(this).siblings('input');
-    const minutes = $(this).hasClass('inc') ? 15 : -15;
-    const time = timeToMinutes($input.val() || '00:00');
-    const newTime = (time + minutes + (24 * 60)) % (24 * 60);
-    const newTimeStr = minutesToTime(newTime);
-    $input.val(newTimeStr).trigger('input');
-  });
-  
-  // Weight controls
-  $(document).on('click', '.weight-btn', function(e) {
-    e.preventDefault();
-    const $input = $(this).siblings('.weight-input');
-    const change = $(this).hasClass('inc') ? 1 : -1;
-    let value = parseInt($input.val()) || 1;
-    value = Math.min(25, Math.max(1, value + change));
-    $input.val(value).trigger('change');
-  });
-
-  // Handle direct weight input
-  $(document).on('change', '.weight-input', function() {
+  // Time input handling
+  $(document).on('input change', 'input[type="time"]', function() {
     const $input = $(this);
-    let value = parseInt($input.val()) || 1;
-    value = Math.min(25, Math.max(1, value));
-    $input.val(value);
-    
     const id = $input.closest('tr').data('id');
     const playlist = currentSchedule.playlists.find(p => p.id === id);
+    if (!playlist) return;
+
+    // Always parse as 24h since we're using native time input
+    let time24 = $input.val();
+    
+    // Convert to 24h format if needed
+    if (use12HourFormat) {
+      time24 = parseTimeInput(time24, true);
+    }
+    
+    if ($input.hasClass('time-start')) {
+      playlist.start = time24;
+    } else if ($input.hasClass('time-end')) {
+      playlist.end = time24;
+    }
+    
+    saveToLocalStorage();
+    // Update just the time display without full re-render
+    updateTimeDisplays();
+  });
+  
+  // Update time displays without re-rendering the whole schedule
+  function updateTimeDisplays() {
+    $('input[type="time"]').each(function() {
+      const $input = $(this);
+      const id = $input.closest('tr').data('id');
+      const playlist = currentSchedule.playlists.find(p => p.id === id);
+      if (!playlist) return;
+      
+      const time24 = $input.hasClass('time-start') ? playlist.start : playlist.end;
+      
+      // Update the input value
+      $input.val(time24);
+      
+      // Update the display below
+      const $display = $input.closest('.time-control').find('.time-format-display');
+      if ($display.length) {
+        $display.text(use12HourFormat ? format12h(time24) : time24);
+      }
+    });
+  }
+  
+  // Handle weight changes
+  $(document).on('change', '.weight-input', function() {
+    const id = $(this).closest('tr').data('id');
+    const playlist = currentSchedule.playlists.find(p => p.id === id);
     if (playlist) {
-      playlist.weight = value;
+      playlist.weight = Math.min(25, Math.max(1, parseInt($(this).val()) || 5));
+      $(this).val(playlist.weight);
       saveToLocalStorage();
     }
   });
@@ -491,10 +511,6 @@ function setupEventListeners() {
       saveToLocalStorage();
     }
   });
-  
-  // Handle weight changes
-  $(document).on('change', '.weight-input', function() {
-    const id = $(this).closest('tr').data('id');
     const playlist = currentSchedule.playlists.find(p => p.id === id);
     if (playlist) {
       playlist.weight = Math.min(25, Math.max(1, parseInt($(this).val()) || 5));
@@ -683,29 +699,39 @@ function renderSchedule() {
           <div class="time-control">
             <div class="time-control-group">
               <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-              <input type="time" class="time-start" value="${p.start}" step="900" list="time-options" 
-                     title="Start time${overnightLabel}" data-format="${use12HourFormat ? '12' : '24'}">
+              <input type="time" class="time-start" value="${p.start}" 
+                     step="${use12HourFormat ? '60' : '900'}" 
+                     ${use12HourFormat ? 'data-display-format="12h"' : 'data-display-format="24h"'}
+                     title="Start time${overnightLabel}">
               <button type="button" class="time-btn inc" title="15 minutes later">+</button>
             </div>
-            ${use12HourFormat ? `<div class="time-12h">${format12h(p.start)}</div>` : ''}
+            <div class="time-format-display">
+              ${use12HourFormat ? format12h(p.start) : p.start}
+            </div>
           </div>
         </td>
         <td class="time-cell">
           <div class="time-control">
             <div class="time-control-group">
               <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
-              <input type="time" class="time-end" value="${p.end}" step="900" list="time-options" 
-                     title="End time${overnightLabel}" data-format="${use12HourFormat ? '12' : '24'}">
+              <input type="time" class="time-end" value="${p.end}" 
+                     step="${use12HourFormat ? '60' : '900'}" 
+                     ${use12HourFormat ? 'data-display-format="12h"' : 'data-display-format="24h"'}
+                     title="End time${overnightLabel}">
               <button type="button" class="time-btn inc" title="15 minutes later">+</button>
             </div>
-            ${use12HourFormat ? `<div class="time-12h">${format12h(p.end)}${isOvernight ? ' (+1 day)' : ''}</div>` : ''}
+            <div class="time-format-display">
+              ${use12HourFormat ? format12h(p.end) : p.start}${isOvernight ? ' (+1 day)' : ''}
+            </div>
           </div>
         </td>
         <td>
           <div class="weight-control">
-            <button type="button" class="weight-btn weight-dec" title="Decrease weight">-</button>
-            <input type="number" class="weight-input" min="1" max="25" value="${Math.min(25, Math.max(1, p.weight || 10))}">
-            <button type="button" class="weight-btn weight-inc" title="Increase weight">+</button>
+            <div class="weight-control-inner">
+              <button type="button" class="weight-btn weight-dec" title="Decrease weight">-</button>
+              <input type="number" class="weight-input" min="1" max="25" value="${Math.min(25, Math.max(1, p.weight || 10))}">
+              <button type="button" class="weight-btn weight-inc" title="Increase weight">+</button>
+            </div>
           </div>
         </td>
         <td>
