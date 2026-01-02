@@ -29,7 +29,9 @@ h1 {
 .time-display {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  min-height: 60px;
+  justify-content: center;
 }
 
 .time-picker {
@@ -39,13 +41,24 @@ h1 {
   border-radius: 4px;
   padding: 6px 8px;
   font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .time-format-display {
-  font-size: 12px;
+  font-size: 13px;
+  color: #e0e0e0;
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.time-format-secondary {
+  font-size: 11px;
   color: #999;
   text-align: center;
   white-space: nowrap;
+  opacity: 0.8;
 }
 
 /* Controls */
