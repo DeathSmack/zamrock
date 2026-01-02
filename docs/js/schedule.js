@@ -253,7 +253,7 @@ function updateSchedule() {
             currentShows.push({
                 ...show,
                 isCurrent: true,
-                timeString: `${formatTime(displayStartTime)} - ${formatTime(displayEndTime)}`,
+                timeString: `${displayStartTime} - ${displayEndTime}`,
                 description: show.description || 'No description available',
                 sortTime: showStartTime
             });
@@ -264,7 +264,7 @@ function updateSchedule() {
             upcomingShows.push({
                 ...show,
                 isCurrent: false,
-                timeString: `${formatTime(displayStartTime)} - ${formatTime(displayEndTime)}`,
+                timeString: `${displayStartTime} - ${displayEndTime}`,
                 minutesUntil: minutesUntil,
                 startsIn: minutesUntil <= 120 ? `in ${minutesUntil} min` : null,
                 description: show.description || 'No description available',
