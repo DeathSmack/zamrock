@@ -173,16 +173,6 @@ function initializeData() {
     holidaySelect.append(`<option value="${holiday.id}">${holiday.name}</option>`);
   });
   
-  // Start with default playlists (will be loaded from Radio-Schedule.json if available)
-  currentSchedule.playlists = [];
-  nextId = 1;
-  
-  // Set default days (Mon-Fri)
-  $('input[name="days"]').each(function() {
-    const day = $(this).val();
-    $(this).prop('checked', currentSchedule.days.includes(day));
-  });
-  
   // Try to load from localStorage
   try {
     const savedSchedule = localStorage.getItem('radioSchedule');
@@ -193,35 +183,31 @@ function initializeData() {
         ...parsed,
         days: Array.isArray(parsed.days) ? parsed.days : [],
         holidays: Array.isArray(parsed.holidays) ? parsed.holidays : [],
-        shows: Array.isArray(parsed.shows) ? parsed.shows : []
+        playlists: Array.isArray(parsed.playlists) ? parsed.playlists : []
       };
       
       // Update nextId based on existing playlists
       if (currentSchedule.playlists.length > 0) {
         nextId = Math.max(...currentSchedule.playlists.map(p => p.id || 0), 0) + 1;
       }
-      
-      // Update UI with loaded data
-      $('#schedule-name').val(currentSchedule.name);
-      $('input[name="days"]').each(function() {
-        const day = $(this).val();
-        $(this).prop('checked', currentSchedule.days.includes(day));
-      });
     }
   } catch (e) {
-    console.error('Error loading schedule:', e);
-    showNotification('Error loading saved schedule. Creating a new one.', 'error');
+    console.error('Error loading from localStorage:', e);
   }
   
-  // Set default sort to name
-  $('#sort-by').val('name');
+  // Set default days (Mon-Fri)
+  $('input[name="days"]').each(function() {
+    const day = $(this).val();
+    $(this).prop('checked', currentSchedule.days.includes(day));
+  });
   
   // Initialize UI
   updateScheduleUI();
-  renderSchedule();
   
-  // Set up event listeners
-  setupEventListeners();
+  // Set default sort
+  $('#sort-by').val('name');
+  
+  return Promise.resolve();
 }
 
 function setupEventListeners() {
@@ -229,8 +215,14 @@ function setupEventListeners() {
   $('input[name="time-format"]').on('change', function() {
     use12HourFormat = $(this).val() === '12';
     localStorage.setItem('use12HourFormat', use12HourFormat);
-    // Re-render the schedule to update all time displays
-    renderSchedule();
+    // Update all time displays
+    $('.time-format-display').each(function() {
+      const $display = $(this);
+      const time24 = $display.siblings('.time-picker').val();
+      if (time24) {
+        $display.text(use12HourFormat ? TimeUtils.format12h(time24) : time24);
+      }
+    });
   });
   
   // Load saved time format preference
@@ -719,83 +711,58 @@ function renderSchedule() {
     }
   });
 
-  // Initialize time pickers
-  $('.time-picker').each(function() {
-    const $input = $(this);
-    const time24 = $input.val();
-    if (time24) {
-      $input.val(time24);
-      // Update the display
-      $input.siblings('.time-format-display').text(
-        use12HourFormat ? TimeUtils.format12h(time24) : time24
-      );
-    }
-    
-    $input.off('change').on('change', function() {
-      const tr = $(this).closest('tr');
-      const id = tr.data('id');
-      const playlist = currentSchedule.playlists.find(x => x.id === id);
-      if (!playlist) return;
-
-      const time24 = $(this).val();
-      if (time24) {
-        if ($(this).hasClass('time-start')) {
-          playlist.start = time24;
-        } else {
-          playlist.end = time24;
-        }
-        // Update the display
-        $(this).siblings('.time-format-display').text(
-          use12HourFormat ? TimeUtils.format12h(time24) : time24
-        );
-        saveToLocalStorage();
-      }
-    });
-  });
-
-  // ... (rest of the code remains the same)
-
-  // Remove any existing drag handles
-  $('.drag-handle').remove();
+// Initialize the application when the DOM is ready
+$(document).ready(function() {
+  // Add hidden file input for imports
+  $('body').append('<input type="file" id="file-input" accept=".json" style="display: none;">');
   
-  // Load default schedule
-  loadDefaultSchedule().then(response => {
-    if (!response.ok) return null;
-    return response.json();
-  })
+  // Initialize data and UI
+  initializeData().then(() => {
+    // Set up event listeners after initialization
+    setupEventListeners();
+    
+    // Load default schedule if no data exists
+    if (currentSchedule.playlists.length === 0) {
+      loadDefaultSchedule().then(loaded => {
+        if (loaded) {
+          renderSchedule();
+        }
+      });
+    } else {
+      renderSchedule();
+    }
+  });
+});
+
+// Load default schedule if no data exists
+function loadDefaultSchedule() {
+  return fetch('Radio-Schedule.json')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to load default schedule');
+      }
+      return response.json();
+    })
     .then(data => {
-      if (data && data.schedule && Array.isArray(data.schedule)) {
-        // Convert old format to new format
-        const playlists = data.schedule.map((item, index) => ({
+      if (data && Array.isArray(data.schedule)) {
+        currentSchedule.playlists = data.schedule.map((item, index) => ({
           id: index + 1,
-          name: item.show || item.name || 'Untitled Playlist',
+          name: item.name || `Playlist ${index + 1}`,
+          description: item.description || '',
           start: item.start || '00:00',
           end: item.end || '01:00',
-          weight: 10,
+          weight: item.weight || 10,
           order: index
         }));
-        
-        // Only use if we don't have existing data
-        if (currentSchedule.playlists.length === 0) {
-          currentSchedule.name = 'Radio Schedule';
-          currentSchedule.days = (data.days || []).map(d => d.toLowerCase());
-          currentSchedule.playlists = playlists;
-          nextId = playlists.length + 1;
-          
-          // Update UI
-          $('#schedule-name').val(currentSchedule.name);
-          $('input[name="days"]').each(function() {
-            const day = $(this).val();
-            $(this).prop('checked', currentSchedule.days.includes(day));
-          });
-          
-          renderSchedule();
-          updateActiveSelections();
-        }
+        nextId = currentSchedule.playlists.length > 0 ? 
+          Math.max(...currentSchedule.playlists.map(p => p.id)) + 1 : 1;
+        return true;
       }
+      return false;
     })
     .catch(error => {
       console.log('No default schedule found or error loading:', error);
+      return false;
     });
 }
 
