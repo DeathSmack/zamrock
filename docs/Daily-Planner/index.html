@@ -2,53 +2,124 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ZamRock Radio Schedule – Dark 12‑hr + Add / Delete</title>
-
-  <!-- 1. jQuery UI CSS (drag‑and‑drop) -->
-  <link rel="stylesheet"
-        href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-
-  <!-- 2. Your custom CSS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radio Schedule Planner</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
   <link rel="stylesheet" href="Daily-Planner.css">
 </head>
-
 <body>
-  <h1>ZamRock Radio Schedule</h1>
-  <p>
-    Drag rows to reorder, use ▲/▼ arrows to adjust times,
-    move rows with the arrows in column 2,
-    add a new row after any row with the “+” button, and
-    delete any row with the trash icon.
-  </p>
-
-  <table id="schedule">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Move</th>
-        <th>Show</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Duration</th>
-        <th>Overlap with previous</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- Global “Add at End” button -->
-  <div style="margin-top: 10px;">
-    <button id="add-at-end" class="global-btn">
-      <span>+ Add at End</span>
-    </button>
+  <div class="container">
+    <h1>Radio Schedule Planner</h1>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label for="schedule-name">Schedule Name:</label>
+        <input type="text" id="schedule-name" value="My Schedule">
+      </div>
+      
+      <div class="control-group">
+        <label>Active Days/Holidays:</label>
+        <div class="selection-container">
+          <div class="day-checkboxes">
+            <label><input type="checkbox" name="days" value="monday"> Mon</label>
+            <label><input type="checkbox" name="days" value="tuesday"> Tue</label>
+            <label><input type="checkbox" name="days" value="wednesday"> Wed</label>
+            <label><input type="checkbox" name="days" value="thursday"> Thu</label>
+            <label><input type="checkbox" name="days" value="friday"> Fri</label>
+            <label><input type="checkbox" name="days" value="saturday"> Sat</label>
+            <label><input type="checkbox" name="days" value="sunday"> Sun</label>
+          </div>
+          
+          <div class="holiday-controls">
+            <select id="holiday-select">
+              <option value="">Add Holiday...</option>
+              <option value="new-years-day">New Year's Day</option>
+              <option value="valentines-day">Valentine's Day</option>
+              <option value="st-patricks-day">St. Patrick's Day</option>
+              <option value="easter">Easter</option>
+              <option value="independence-day">Independence Day</option>
+              <option value="halloween">Halloween</option>
+              <option value="thanksgiving">Thanksgiving</option>
+              <option value="christmas-eve">Christmas Eve</option>
+              <option value="christmas-day">Christmas Day</option>
+              <option value="new-years-eve">New Year's Eve</option>
+            </select>
+            <button id="add-holiday" class="btn" title="Add holiday to schedule">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
+          
+          <div id="active-selections" class="active-selections">
+            <!-- Active days and holidays will appear here -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="control-group button-group">
+        <button id="load-schedule" class="btn">
+          <i class="fas fa-upload"></i> Import
+        </button>
+        <button id="new-schedule" class="btn">
+          <i class="fas fa-plus"></i> New Schedule
+        </button>
+        <button id="export-json" class="btn">
+          <i class="fas fa-download"></i> Export
+        </button>
+      </div>
+      
+      <div class="control-group">
+        <label>Sort by:</label>
+        <select id="sort-by">
+          <option value="name">Name (A-Z)</option>
+          <option value="start">Start Time</option>
+          <option value="weight">Weight (High to Low)</option>
+          <option value="weight-asc">Weight (Low to High)</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label>Time Format:</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="time-format-toggle" checked>
+          <span class="toggle-slider"></span>
+          <span class="toggle-label" id="time-format-label">12hr</span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="schedule-container">
+      <div class="active-days-display" id="active-days-display">
+        Active for: <span class="no-days">No days selected</span>
+      </div>
+      
+      <table id="schedule">
+        <thead>
+          <tr>
+            <th>Playlist Name</th>
+            <th>Description</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Weight (1-25)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Schedule rows will be added here by JavaScript -->
+        </tbody>
+      </table>
+      
+      <div class="add-row-container">
+        <button id="add-at-end" class="btn">+ Add Playlist at End</button>
+      </div>
+    </div>
   </div>
 
-  <!-- 3. JavaScript dependencies -->
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <!-- Add jQuery and jQuery UI -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
-  <!-- 4. Your custom script (defer ensures it runs after DOM) -->
-  <script defer src="Daily-Planner.js"></script>
+  <!-- Add Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Main application script -->
+  <script src="Daily-Planner.js"></script>
 </body>
 </html>

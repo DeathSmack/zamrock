@@ -141,6 +141,16 @@ h2 {
     text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
+.show.overnight {
+    border: 1px dashed #4a90e2;
+    background-color: rgba(74, 144, 226, 0.1);
+    border-left: 3px solid #4a90e2;
+}
+
+.show.overnight .time {
+    color: #4a90e2;
+}
+
 /* Blinking animation */
 @keyframes blinker {
     50% {

@@ -59,14 +59,58 @@ timezoneSelect.addEventListener('change', (e) => {
     updateSchedule();     // Update schedule with new timezone
 });
     
-    // Load schedule data
+    // Load schedule data - try new format first, then fall back to old format
     try {
-        const response = await fetch('/Radio-Schedule.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Get current day
+        const now = new Date();
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const currentDay = days[now.getDay()];
+        
+        // Try to load day-specific schedule from Daily-Planner
+        let scheduleLoaded = false;
+        const dayFiles = [
+            `${currentDay}.json`,
+            `${currentDay.substring(0, 3)}.json`,
+            'schedule_montue.json',
+            'schedule_satsun.json',
+            'schedule_weekend.json',
+            'schedule_weekday.json'
+        ];
+        
+        for (const filename of dayFiles) {
+            try {
+                const response = await fetch(`/Daily-Planner/${filename}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    // Check if this schedule applies to current day
+                    if (data.playlists && Array.isArray(data.playlists)) {
+                        // Convert new format to old format for compatibility
+                        scheduleData = data.playlists.map(p => ({
+                            show: p.name || 'Untitled',
+                            start: p.start || '00:00',
+                            end: p.end || '01:00',
+                            host: 'Automated Playlist',
+                            description: p.description || ''
+                        }));
+                        scheduleLoaded = true;
+                        break;
+                    }
+                }
+            } catch (e) {
+                // Continue to next file
+            }
         }
-        const data = await response.json();
-        scheduleData = data.schedule || [];
+        
+        // Fall back to old Radio-Schedule.json format
+        if (!scheduleLoaded) {
+            const response = await fetch('/Radio-Schedule.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            scheduleData = data.schedule || [];
+        }
+        
         if (scheduleData.length === 0) {
             throw new Error('No schedule data found');
         }
@@ -176,10 +220,12 @@ function updateSchedule() {
         const showEndTime = endDate.getTime();
         const currentTime = nowInStationTz.getTime();
         
-        // Format times for display in user's timezone
-        let displayStartTime = show.start;
-        let displayEndTime = show.end;
+        // Format times for display - always show in 12hr format
+        // Times are stored in 24hr format (HH:MM), convert to 12hr for display
+        let displayStartTime = formatTime(show.start); // Convert 24hr to 12hr
+        let displayEndTime = formatTime(show.end);   // Convert 24hr to 12hr
         
+        // If user has selected a timezone, convert the times
         if (userTimezone !== 'auto') {
             try {
                 const formatOptions = { 
@@ -194,6 +240,9 @@ function updateSchedule() {
                 displayEndTime = endDate.toLocaleTimeString('en-US', formatOptions);
             } catch (e) {
                 console.error('Error converting time:', e);
+                // Fallback to formatting the 24hr times
+                displayStartTime = formatTime(show.start);
+                displayEndTime = formatTime(show.end);
             }
         }
         
@@ -204,7 +253,7 @@ function updateSchedule() {
             currentShows.push({
                 ...show,
                 isCurrent: true,
-                timeString: `${formatTime(displayStartTime)} - ${formatTime(displayEndTime)}`,
+                timeString: `${displayStartTime} - ${displayEndTime}`,
                 description: show.description || 'No description available',
                 sortTime: showStartTime
             });
@@ -215,7 +264,7 @@ function updateSchedule() {
             upcomingShows.push({
                 ...show,
                 isCurrent: false,
-                timeString: `${formatTime(displayStartTime)} - ${formatTime(displayEndTime)}`,
+                timeString: `${displayStartTime} - ${displayEndTime}`,
                 minutesUntil: minutesUntil,
                 startsIn: minutesUntil <= 120 ? `in ${minutesUntil} min` : null,
                 description: show.description || 'No description available',
