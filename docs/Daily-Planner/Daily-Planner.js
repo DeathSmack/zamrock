@@ -1,6 +1,6 @@
-/* ──── Schedule table – Enhanced with Load/Save, Weights, and Sorting ──── */
+/* ──── Radio Schedule Planner ──── */
 
-/* ---------- Data & State ------------------------------- */
+// Global state
 let nextId = 1;
 let currentSchedule = {
   id: 'default',
@@ -23,21 +23,34 @@ const HOLIDAYS = [
   { id: 'new-years-eve', name: "New Year's Eve" }
 ];
 
-// Initialize with default data if localStorage is empty
-function initializeData() {
-  const defaultShows = [
-    {id:1, name:"The Morning Coffee Mix", start:"06:00", end:"10:30", weight: 5, order: 0},
-    {id:2, name:"Acid Trip, Psychedelic Sounds", start:"09:30", end:"13:30", weight: 4, order: 1},
-    {id:3, name:"Cloud Pants, Ethereal Soundscapes", start:"12:15", end:"15:15", weight: 3, order: 2},
-    {id:4, name:"ZamDelic Trance, Psychedelic Trance", start:"14:00", end:"17:00", weight: 4, order: 3},
-    {id:5, name:"Blues in Every Tongue", start:"15:45", end:"18:00", weight: 3, order: 4},
-    {id:6, name:"The Funky Truth, Funk Grooves", start:"16:45", end:"19:00", weight: 4, order: 5},
-    {id:7, name:"Afrobeat Legacy", start:"18:00", end:"21:30", weight: 5, order: 6},
-    {id:8, name:"Zamrock Rising", start:"20:00", end:"22:00", weight: 4, order: 7},
-    {id:9, name:"ZamRock Classics", start:"20:45", end:"22:00", weight: 5, order: 8},
-    {id:10, name:"Artist of the Month", start:"21:30", end:"22:00", weight: 4, order: 9}
-  ];
+// Helper functions
+function timeToMinutes(timeStr) {
+  if (!timeStr) return 0;
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function minutesToTime(minutes) {
+  const h = Math.floor(minutes / 60) % 24;
+  const m = minutes % 60;
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
+function showNotification(message, type = 'info') {
+  // Remove any existing notifications
+  $('.notification').remove();
   
+  const notification = $(`<div class="notification ${type}">${message}</div>`);
+  $('body').append(notification);
+  
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    notification.fadeOut(500, () => notification.remove());
+  }, 3000);
+}
+
+// Initialize data
+function initializeData() {
   // Initialize holiday select dropdown
   const holidaySelect = $('#holiday-select');
   holidaySelect.empty().append('<option value="">Add Holiday...</option>');
@@ -86,7 +99,7 @@ function setupEventListeners() {
   // Add holiday button
   $('#add-holiday').on('click', addHoliday);
   
-  // Remove holiday tag
+  // Remove tag (day or holiday)
   $(document).on('click', '.remove-tag', function() {
     const type = $(this).data('type');
     const value = $(this).data('value');
@@ -116,7 +129,34 @@ function setupEventListeners() {
   $('#sort-by').on('change', renderSchedule);
   
   // Add show button
-  $('#add-show').on('click', addNewShow);
+  $('#add-show, #add-at-end').on('click', addNewShow);
+  
+  // Delete show button
+  $(document).on('click', '.delete-show', function() {
+    const id = $(this).closest('tr').data('id');
+    deleteShow(id);
+  });
+  
+  // Time increment/decrement buttons
+  $(document).on('click', '.time-btn', function() {
+    const input = $(this).siblings('input');
+    const minutes = $(this).hasClass('inc') ? 30 : -30;
+    const time = timeToMinutes(input.val());
+    const newTime = (time + minutes + (24 * 60)) % (24 * 60);
+    input.val(minutesToTime(newTime)).trigger('change');
+  });
+  
+  // Weight increment/decrement buttons
+  $(document).on('click', '.weight-btn', function() {
+    const input = $(this).siblings('input');
+    const change = $(this).hasClass('weight-inc') ? 1 : -1;
+    let weight = parseInt(input.val()) + change;
+    weight = Math.min(25, Math.max(1, weight));
+    input.val(weight).trigger('change');
+  });
+  
+  // Save on input changes
+  $(document).on('change', 'input, select', saveToLocalStorage);
 }
 
 function addHoliday() {
@@ -180,18 +220,17 @@ function updateScheduleUI() {
   updateActiveSelections();
 }
 
-// Update active selections (days and holidays)
 function updateActiveSelections() {
   const container = $('#active-selections');
   container.empty();
   
-  // Add day tags
-  currentSchedule.days.forEach(day => {
-    const dayName = day.charAt(0).toUpperCase() + day.slice(1);
+  // Add rows for each show
+  currentSchedule.shows.forEach(show => {
+    const dayName = show.day.charAt(0).toUpperCase() + show.day.slice(1);
     container.append(`
       <span class="selection-tag day-tag">
         ${dayName}
-        <span class="remove-tag" data-type="day" data-value="${day}" title="Remove">&times;</span>
+        <span class="remove-tag" data-type="day" data-value="${show.day}" title="Remove">&times;</span>
       </span>
     `);
   });
@@ -213,220 +252,10 @@ function updateActiveSelections() {
   }
 }
 
-function updateActiveDaysDisplay() {
-  const container = $('#active-days-display');
-  const days = currentSchedule.days.map(day => 
-    `<span class="day-tag">${day.charAt(0).toUpperCase() + day.slice(1)}</span>`
-  );
-  
-  const holidays = currentSchedule.holidays.map(holidayId => {
-    const holiday = HOLIDAYS.find(h => h.id === holidayId) || { id: holidayId, name: holidayId };
-    return `<span class="holiday-tag">${holiday.name}</span>`;
-  });
-  
-  if (days.length === 0 && holidays.length === 0) {
-    container.html('Active for: <span class="no-days">No days selected</span>');
-  } else {
-    container.html('Active for: ' + [...days, ...holidays].join(' '));
-  }
-}
-
-function triggerFileInput() {
-  const fileInput = $('<input type="file" accept=".json" style="display: none;">');
-  
-  fileInput.on('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      loadScheduleFromFile(file);
-    }
-  });
-  
-  fileInput.trigger('click');
-}
-
-function loadScheduleFromFile(file) {
-  const reader = new FileReader();
-  
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      
-      // Handle different file formats
-      if (Array.isArray(data)) {
-        // Simple array format - just shows
-        currentSchedule = {
-          ...currentSchedule,
-          shows: data.map(show => ({
-            id: show.id || nextId++,
-            name: show.name || 'Untitled Show',
-            start: show.start || '00:00',
-            end: show.end || '01:00',
-            weight: Math.min(25, Math.max(1, parseInt(show.weight, 10) || 10)),
-            order: show.order || 0
-          }))
-        };
-      } else if (data.shows || data.schedule) {
-        // Full schedule format with days and holidays, or legacy format
-        currentSchedule = {
-          id: data.id || 'schedule-' + Date.now(),
-          name: data.name || 'Imported Schedule',
-          days: Array.isArray(data.days) ? data.days : [],
-          holidays: Array.isArray(data.holidays) ? data.holidays : [],
-          shows: (Array.isArray(data.shows) ? data.shows : 
-                 (Array.isArray(data.schedule) ? data.schedule : [])).map((item, index) => ({
-            id: item.id || nextId++,
-            name: item.show || item.name || `Show ${index + 1}`,
-            start: item.start || '00:00',
-            end: item.end || '01:00',
-            weight: Math.min(25, Math.max(1, parseInt(item.weight, 10) || 10)),
-            order: item.order || index
-          }))
-        };
-      } else {
-        throw new Error('Unsupported file format');
-      }
-      
-      // Update nextId to be higher than any existing ID
-      if (currentSchedule.shows && currentSchedule.shows.length > 0) {
-        nextId = Math.max(...currentSchedule.shows.map(s => s.id || 0), 0) + 1;
-      } else {
-        nextId = 1;
-        currentSchedule.shows = [];
-      }
-      
-      // Ensure days and holidays are valid arrays
-      if (!Array.isArray(currentSchedule.days)) currentSchedule.days = [];
-      if (!Array.isArray(currentSchedule.holidays)) currentSchedule.holidays = [];
-      
-      // Update UI and save
-      updateScheduleUI();
-      renderSchedule();
-      saveToLocalStorage();
-      
-      showNotification(`Loaded schedule "${currentSchedule.name}" with ${currentSchedule.shows.length} shows`, 'success');
-      
-    } catch (error) {
-      console.error('Error parsing schedule file:', error);
-      showNotification(`Error loading file: ${error.message}`, 'error');
-    }
-  };
-  
-  reader.onerror = function() {
-    showNotification('Error reading file. Please try again.', 'error');
-  };
-  
-  try {
-    reader.readAsText(file);
-  } catch (error) {
-    showNotification(`Error: ${error.message}`, 'error');
-  }
-}
-
-function exportSchedule() {
-  try {
-    // Update shows from UI before exporting
-    updateShowsFromUI();
-    
-    // Create a clean export object
-    const exportData = {
-      id: currentSchedule.id || 'schedule-' + Date.now(),
-      name: currentSchedule.name || 'Untitled Schedule',
-      days: [...currentSchedule.days],
-      holidays: [...currentSchedule.holidays],
-      lastUpdated: new Date().toISOString(),
-      shows: currentSchedule.shows.map(show => ({
-        id: show.id,
-        name: show.name,
-        start: show.start,
-        end: show.end,
-        weight: show.weight,
-        order: show.order
-      }))
-    };
-    
-    // Generate filename based on schedule name and active days/holidays
-    let filename = (currentSchedule.name || 'schedule').toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    
-    // Add active days to filename if any
-    if (currentSchedule.days.length > 0) {
-      filename += '-' + currentSchedule.days.join('-');
-    }
-    
-    // Add first holiday to filename if any
-    if (currentSchedule.holidays.length > 0) {
-      filename += '-' + currentSchedule.holidays[0];
-      if (currentSchedule.holidays.length > 1) {
-        filename += `-and-${currentSchedule.holidays.length - 1}-more`;
-      }
-    }
-    
-    filename += '.json';
-    
-    // Create and trigger download
-    const dataStr = 'data:text/json;charset=utf-8,' + 
-      encodeURIComponent(JSON.stringify(exportData, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute('href', dataStr);
-    downloadAnchorNode.setAttribute('download', filename);
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    document.body.removeChild(downloadAnchorNode);
-    
-    showNotification(`Exported "${currentSchedule.name}" successfully!`, 'success');
-    
-  } catch (error) {
-    console.error('Error exporting schedule:', error);
-    showNotification(`Error exporting schedule: ${error.message}`, 'error');
-  }
-}
-
-function addNewShow() {
-  // Calculate default start time (end of last show or 00:00)
-  let startTime = '00:00';
-  if (currentSchedule.shows.length > 0) {
-    const lastShow = [...currentSchedule.shows].sort((a, b) => b.order - a.order)[0];
-    if (lastShow) {
-      const endTime = timeToMinutes(lastShow.end);
-      startTime = minutesToTime(endTime);
-    }
-  }
-  
-  // Calculate default end time (1 hour after start)
-  const endTime = minutesToTime((timeToMinutes(startTime) + 60) % (24 * 60));
-  
-  const newShow = {
-    id: nextId++,
-    name: 'New Show',
-    start: startTime,
-    end: endTime,
-    weight: 10,
-    order: currentSchedule.shows.length
-  };
-  
-  currentSchedule.shows.push(newShow);
-  saveToLocalStorage();
-  renderSchedule();
-  
-  // Scroll to the new row and focus the name input
-  const newRow = $(`tr[data-id="${newShow.id}"]`);
-  if (newRow.length) {
-    $('html, body').animate({
-      scrollTop: newRow.offset().top - 100
-    }, 500);
-    newRow.find('.show-name').focus().select();
-  }
-  
-  return newShow;
-}
-
-/* ---------- Render ------------------------------- */
+// Render schedule
 function renderSchedule() {
   const tbody = $('#schedule tbody');
   tbody.empty();
-  
-  // Update shows from UI before rendering
-  updateShowsFromUI();
   
   // Sort shows based on current sort option
   const sortBy = $('#sort-by').val();
@@ -486,54 +315,38 @@ function renderSchedule() {
     const overlapStr = formatDuration(overlap);
     const weight = s.weight || 3; // Default weight if not set
     
-    const tr = $("<tr>").attr("data-id", s.id);
-    tr.append($("<td>").text(i + 1));
-    tr.append($("<td>").html('<div class="move-controls"><button class="move-up" title="Move up">▲</button><button class="move-down" title="Move down">▼</button></div>'));
-    
-    // Show name column (editable)
-    const nameCell = $("<td>").append(
-      $("<input>").attr({
-        type: "text",
-        class: "show-name",
-        value: s.name
-      })
-    );
-    tr.append(nameCell);
-
-    // Start column
-    tr.append($("<td>").html(`
-      <input type="time" class="time-input start" value="${s.start}">
-      <span class="time-12h start-12h">${format12h(s.start)}</span>
-      <div class="time-controls"><button class="dec start-dec" title="Decrease time">▼</button><button class="inc start-inc" title="Increase time">▲</button></div>
-    `));
-
-    // End column
-    tr.append($("<td>").html(`
-      <input type="time" class="time-input end" value="${s.end}">
-      <span class="time-12h end-12h">${format12h(s.end)}</span>
-      <div class="time-controls"><button class="dec end-dec" title="Decrease time">▼</button><button class="inc end-inc" title="Increase time">▲</button></div>
-    `));
-
-    tr.append($("<td>").text(durationStr));
-    
-    // Weight column
-    tr.append($("<td>").html(`
-      <input type="number" class="weight-input" value="${weight}" min="1" max="25">
-      <div class="weight-controls">
-        <button class="weight-dec" title="Decrease weight">-</button>
-        <button class="weight-inc" title="Increase weight">+</button>
-      </div>
-    `));
-    
-    tr.append($("<td>").text(overlapStr));
-    
-    // Actions column
-    tr.append($("<td class=\"actions\">").html(`
-      <button class="add-row" title="Add row below">+</button>
-      <button class="delete-row" title="Delete row">🗑️</button>
-    `));
-    
-    tbody.append(tr);
+    const row = `
+      <tr data-id="${s.id}">
+        <td><input type="text" class="show-name" value="${escapeHtml(s.name)}"></td>
+        <td>
+          <div class="time-control">
+            <button type="button" class="time-btn dec" title="30 minutes earlier">-</button>
+            <input type="time" class="time-start" value="${s.start}" step="300">
+            <button type="button" class="time-btn inc" title="30 minutes later">+</button>
+          </div>
+        </td>
+        <td>
+          <div class="time-control">
+            <button type="button" class="time-btn dec" title="30 minutes earlier">-</button>
+            <input type="time" class="time-end" value="${s.end}" step="300">
+            <button type="button" class="time-btn inc" title="30 minutes later">+</button>
+          </div>
+        </td>
+        <td>
+          <div class="weight-control">
+            <button type="button" class="weight-btn weight-dec" title="Decrease weight">-</button>
+            <input type="number" class="weight-input" min="1" max="25" value="${Math.min(25, Math.max(1, s.weight || 10))}">
+            <button type="button" class="weight-btn weight-inc" title="Increase weight">+</button>
+          </div>
+        </td>
+        <td>
+          <button type="button" class="btn delete-show" title="Delete show">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+    tbody.append(row);
   });
   
   // Save to localStorage after rendering
@@ -552,10 +365,10 @@ function renderSchedule() {
   });
 
   // 24‑hr → 12‑hr updates
-  $(".time-input").off('change').on('change', function() {
+  $(".time-start, .time-end").off('change').on('change', function() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
-    const field = $(this).hasClass('start') ? 'start' : 'end';
+    const field = $(this).hasClass('time-start') ? 'start' : 'end';
     const show = currentSchedule.shows.find(x => x.id === id);
     
     if (show) {
@@ -644,7 +457,7 @@ function renderSchedule() {
     if ((isUp && idx === 0) || (!isUp && idx === currentSchedule.shows.length - 1)) return;
     
     const id = tr.data('id');
-    const current = currentSchedule.shows.find(x => x.id === id);
+    const current = currentSchedule.shows.find(item => item.id === id);
     const targetIdx = isUp ? idx - 1 : idx + 1;
     const targetId = $(`#schedule tbody tr`).eq(targetIdx).data('id');
     const targetShow = currentSchedule.shows.find(x => x.id === targetId);
@@ -717,202 +530,37 @@ function renderSchedule() {
   });
 }
 
-/* ---------- File Operations ------------------------------- */
-function loadScheduleFromFile(file) {
-  const reader = new FileReader();
-  
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      
-      // Handle different file formats
-      if (Array.isArray(data)) {
-        // Simple array format - just shows
-        currentSchedule = {
-          ...currentSchedule,
-          shows: data.map(show => ({
-            id: show.id || nextId++,
-            name: show.name || 'Untitled Show',
-            start: show.start || '00:00',
-            end: show.end || '01:00',
-            weight: Math.min(25, Math.max(1, parseInt(show.weight, 10) || 10)),
-            order: show.order || 0
-          }))
-        };
-      } else if (data.shows || data.schedule) {
-        // Full schedule format with days and holidays, or legacy format
-        currentSchedule = {
-          id: data.id || 'schedule-' + Date.now(),
-          name: data.name || 'Imported Schedule',
-          days: Array.isArray(data.days) ? data.days : [],
-          holidays: Array.isArray(data.holidays) ? data.holidays : [],
-          shows: (Array.isArray(data.shows) ? data.shows : 
-                 (Array.isArray(data.schedule) ? data.schedule : [])).map((item, index) => ({
-            id: item.id || nextId++,
-            name: item.show || item.name || `Show ${index + 1}`,
-            start: item.start || '00:00',
-            end: item.end || '01:00',
-            weight: Math.min(25, Math.max(1, parseInt(item.weight, 10) || 10)),
-            order: item.order || index
-          }))
-        };
-      } else {
-        throw new Error('Unsupported file format');
-      }
-      
-      // Update nextId to be higher than any existing ID
-      if (currentSchedule.shows && currentSchedule.shows.length > 0) {
-        nextId = Math.max(...currentSchedule.shows.map(s => s.id || 0), 0) + 1;
-      } else {
-        nextId = 1;
-        currentSchedule.shows = [];
-      }
-      
-      // Ensure days and holidays are valid arrays
-      if (!Array.isArray(currentSchedule.days)) currentSchedule.days = [];
-      if (!Array.isArray(currentSchedule.holidays)) currentSchedule.holidays = [];
-      
-      // Update UI and save
-      updateScheduleUI();
-      renderSchedule();
-      saveToLocalStorage();
-      
-      showNotification(`Loaded schedule "${currentSchedule.name}" with ${currentSchedule.shows.length} shows`, 'success');
-      
-    } catch (error) {
-      console.error('Error parsing schedule file:', error);
-      showNotification(`Error loading file: ${error.message}`, 'error');
-    }
-  };
-  
-  reader.onerror = function() {
-    showNotification('Error reading file. Please try again.', 'error');
-  };
-  
-  try {
-    reader.readAsText(file);
-  } catch (error) {
-    showNotification(`Error: ${error.message}`, 'error');
-  }
-}
-
-function exportSchedule() {
-  try {
-    // Update shows from UI before exporting
-    updateShowsFromUI();
-    
-    // Create a clean export object
-    const exportData = {
-      id: currentSchedule.id || 'schedule-' + Date.now(),
-      name: currentSchedule.name || 'Untitled Schedule',
-      days: [...currentSchedule.days],
-      holidays: [...currentSchedule.holidays],
-      lastUpdated: new Date().toISOString(),
-      shows: currentSchedule.shows.map(show => ({
-        id: show.id,
-        name: show.name,
-        start: show.start,
-        end: show.end,
-        weight: show.weight,
-        order: show.order
-      }))
-    };
-    
-    // Generate filename based on schedule name and active days/holidays
-    let filename = (currentSchedule.name || 'schedule').toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    
-    // Add active days to filename if any
-    if (currentSchedule.days.length > 0) {
-      filename += '-' + currentSchedule.days.join('-');
-    }
-    
-    // Add first holiday to filename if any
-    if (currentSchedule.holidays.length > 0) {
-      filename += '-' + currentSchedule.holidays[0];
-      if (currentSchedule.holidays.length > 1) {
-        filename += `-and-${currentSchedule.holidays.length - 1}-more`;
-      }
-    }
-    
-    filename += '.json';
-    
-    // Create and trigger download
-    const dataStr = 'data:text/json;charset=utf-8,' + 
-      encodeURIComponent(JSON.stringify(exportData, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute('href', dataStr);
-    downloadAnchorNode.setAttribute('download', filename);
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    document.body.removeChild(downloadAnchorNode);
-    
-    showNotification(`Exported "${currentSchedule.name}" successfully!`, 'success');
-    
-  } catch (error) {
-    console.error('Error exporting schedule:', error);
-    showNotification(`Error exporting schedule: ${error.message}`, 'error');
-  }
-}
-
-function addNewShow() {
-  // Calculate default start time (end of last show or 00:00)
-  let startTime = '00:00';
-  if (currentSchedule.shows.length > 0) {
-    const lastShow = [...currentSchedule.shows].sort((a, b) => b.order - a.order)[0];
-    if (lastShow) {
-      const endTime = timeToMinutes(lastShow.end);
-      startTime = minutesToTime(endTime);
-    }
-  }
-  
-  // Calculate default end time (1 hour after start)
-  const endTime = minutesToTime((timeToMinutes(startTime) + 60) % (24 * 60));
-  
-  const newShow = {
-    id: nextId++,
-    name: 'New Show',
-    start: startTime,
-    end: endTime,
-    weight: 10,
-    order: currentSchedule.shows.length
-  };
-  
-  currentSchedule.shows.push(newShow);
-  saveToLocalStorage();
-  renderSchedule();
-  
-  // Scroll to the new row and focus the name input
-  const newRow = $(`tr[data-id="${newShow.id}"]`);
-  if (newRow.length) {
-    $('html, body').animate({
-      scrollTop: newRow.offset().top - 100
-    }, 500);
-    newRow.find('.show-name').focus().select();
-  }
-  
-  return newShow;
-}
-
-/* ---------- Initialization & Event Handlers ---------- */
-$(function() {
+// Initialize the application when the DOM is ready
+$(document).ready(function() {
   // Initialize data
   initializeData();
   
-  // Set up jQuery UI sortable
+  // Set up jQuery UI sortable for the schedule table
   $("#schedule tbody").sortable({
     items: "tr",
     update: function(event, ui) {
-      $(this).children('tr').each(function(idx) {
-        const id = $(this).data('id');
-        const show = currentSchedule.shows.find(item => item.id === id);
-        if (show) show.order = idx;
-      });
+      // Update the order of shows when dragged
+      updateShowsFromUI();
       saveToLocalStorage();
-      renderSchedule();
-    }
+    },
+    handle: 'td:not(:last-child)', // Don't make the delete button draggable
+    helper: 'clone',
+    opacity: 0.8,
+    cursor: 'move',
+    placeholder: 'sortable-placeholder',
+    forcePlaceholderSize: true
   }).disableSelection();
-
+  
+  // Initialize tooltips
+  $(document).tooltip({
+    items: '[title]',
+    content: function() {
+      return $(this).attr('title');
+    },
+    show: { effect: 'fadeIn', duration: 100 },
+    hide: { effect: 'fadeOut', duration: 100 }
+  });
+  
   // Day/Event selection
   $('#day-select').on('change', function() {
     const day = $(this).val();
