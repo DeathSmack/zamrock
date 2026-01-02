@@ -81,11 +81,11 @@
         <label>Time Format:</label>
         <div class="time-format-selector">
           <label class="radio-label">
-            <input type="radio" name="time-format" value="12" checked>
+            <input type="radio" name="time-format" value="12" ${use12HourFormat ? 'checked' : ''}>
             <span>12-hour</span>
           </label>
           <label class="radio-label">
-            <input type="radio" name="time-format" value="24">
+            <input type="radio" name="time-format" value="24" ${!use12HourFormat ? 'checked' : ''}>
             <span>24-hour</span>
           </label>
         </div>
