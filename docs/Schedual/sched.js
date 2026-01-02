@@ -131,11 +131,33 @@ function createPlaylistBlock(playlist) {
     const endDisplay = `${endTimeFormatted === 0 ? 24 : endTimeFormatted}:${endMinutes.toString().padStart(2, '0')}`;
     const timeDisplay = `${startDisplay} - ${endDisplay}`;
 
+    const description = playlist.description || '';
+    
     playlistBlock.innerHTML = `
         <div class="time">${timeDisplay}</div>
         <div class="title">${playlist.name}</div>
-        <div class="description">${playlist.description || ''}</div>
+        <div class="description">${description}</div>
     `;
+    
+    // Add tooltip for hover and long press
+    if (description) {
+        playlistBlock.setAttribute('title', description);
+        playlistBlock.setAttribute('data-description', description);
+        
+        // Handle long press on mobile
+        let longPressTimer;
+        playlistBlock.addEventListener('touchstart', function(e) {
+            longPressTimer = setTimeout(() => {
+                alert(description);
+            }, 500);
+        });
+        playlistBlock.addEventListener('touchend', function(e) {
+            clearTimeout(longPressTimer);
+        });
+        playlistBlock.addEventListener('touchmove', function(e) {
+            clearTimeout(longPressTimer);
+        });
+    }
 
     container.appendChild(playlistBlock);
     return playlistBlock;
@@ -218,14 +240,14 @@ async function getAvailableSchedules() {
 // Check if a filename matches the current day
 function filenameMatchesDay(filename, day) {
     const dayLower = day.toLowerCase();
-    const filenameLower = filename.toLowerCase();
+    const filenameLower = filename.toLowerCase().replace('.json', '');
     
     // Check for full day name
     if (filenameLower.includes(dayLower)) {
         return true;
     }
     
-    // Check for abbreviations
+    // Check for abbreviations (new export format uses 3-letter abbrevs)
     const abbrevMap = {
         'monday': 'mon',
         'tuesday': 'tue',
@@ -237,8 +259,30 @@ function filenameMatchesDay(filename, day) {
     };
     
     const abbrev = abbrevMap[dayLower];
-    if (abbrev && filenameLower.includes(abbrev)) {
-        return true;
+    if (abbrev) {
+        // Check if filename contains the abbreviation (e.g., "montue", "satsun")
+        if (filenameLower.includes(abbrev)) {
+            return true;
+        }
+        
+        // Check for common combinations
+        const combinations = {
+            'monday': ['montue', 'monwed', 'monthu', 'monfri', 'weekday', 'monfri'],
+            'tuesday': ['montue', 'tuewed', 'tuethu', 'tuefri', 'weekday'],
+            'wednesday': ['wedthu', 'wedfri', 'weekday'],
+            'thursday': ['thufri', 'weekday'],
+            'friday': ['weekday', 'monfri'],
+            'saturday': ['satsun', 'weekend'],
+            'sunday': ['satsun', 'sunsat', 'weekend']
+        };
+        
+        if (combinations[dayLower]) {
+            for (const combo of combinations[dayLower]) {
+                if (filenameLower.includes(combo)) {
+                    return true;
+                }
+            }
+        }
     }
     
     return false;
@@ -276,7 +320,7 @@ async function tryLoadSchedule(filename) {
     try {
         const response = await fetch(`../Daily-Planner/${filename}`);
         if (!response.ok) {
-            return null;
+            return { error: 'File not found', filename: filename };
         }
         const data = await response.json();
         
@@ -291,25 +335,25 @@ async function tryLoadSchedule(filename) {
                 filenameMatchesDay(d, currentDay)
             );
             if (dayMatches) {
-                return data;
+                return { data: data, filename: filename };
             }
         }
         
         // Check holidays array
         if (currentHoliday && data.holidays && Array.isArray(data.holidays)) {
             if (data.holidays.includes(currentHoliday)) {
-                return data;
+                return { data: data, filename: filename };
             }
         }
         
-        // Check filename for day match
+        // Check filename for day match (e.g., "montue", "satsun")
         if (filenameMatchesDay(filename, currentDay)) {
-            return data;
+            return { data: data, filename: filename };
         }
         
-        return null;
+        return { error: 'Day mismatch', filename: filename };
     } catch (error) {
-        return null;
+        return { error: error.message, filename: filename };
     }
 }
 
@@ -317,51 +361,61 @@ async function tryLoadSchedule(filename) {
 async function loadScheduleForDay(day) {
     const currentHoliday = getCurrentHoliday();
     
-    // Try different filename patterns
+    // Try different filename patterns - check Daily-Planner directory
     const patternsToTry = [
         // Exact day match
         `${day}.json`,
         // Day abbreviation
         `${day.substring(0, 3)}.json`,
-        // Common combinations
-        'sat-sun.json',
-        'sun-sat.json',
+        // Common day combinations (abbreviated format from export)
+        'satsun.json',
+        'sunsat.json',
         'weekend.json',
-        'mon-fri.json',
+        'montuewedthufri.json',
+        'monfri.json',
         'weekday.json',
         // Holiday files
         currentHoliday ? `${currentHoliday}.json` : null,
-        // Any file with day in name (we'll need to check contents)
+        currentHoliday ? `hol_${currentHoliday.substring(0, 4)}.json` : null,
     ].filter(p => p !== null);
     
-    // Also try to find files that might match by checking common patterns
-    // Since we can't list directory, we'll try a few common patterns
-    const commonPatterns = [
-        'schedule',
-        'radio-schedule',
-        'default'
+    // Also try patterns with underscores (new export format)
+    const underscorePatterns = [
+        `*_${day.substring(0, 3)}.json`,
+        `*_${day}.json`,
+        `*_satsun.json`,
+        `*_montue.json`,
     ];
     
     let loadedData = null;
     let loadedFilename = null;
+    const triedFiles = [];
     
     // Try exact day first
     for (const pattern of patternsToTry) {
-        const data = await tryLoadSchedule(pattern);
-        if (data) {
-            loadedData = data;
-            loadedFilename = pattern;
+        const result = await tryLoadSchedule(pattern);
+        triedFiles.push(pattern);
+        if (result && result.data) {
+            loadedData = result.data;
+            loadedFilename = result.filename;
             break;
         }
     }
     
     // If no exact match, try common patterns and check their days/holidays
     if (!loadedData) {
+        const commonPatterns = [
+            'schedule',
+            'radio-schedule',
+            'default'
+        ];
+        
         for (const pattern of commonPatterns) {
-            const data = await tryLoadSchedule(`${pattern}.json`);
-            if (data) {
-                loadedData = data;
-                loadedFilename = pattern;
+            const result = await tryLoadSchedule(`${pattern}.json`);
+            triedFiles.push(`${pattern}.json`);
+            if (result && result.data) {
+                loadedData = result.data;
+                loadedFilename = result.filename;
                 break;
             }
         }
@@ -395,7 +449,24 @@ async function loadScheduleForDay(day) {
         // Add the current time line
         createCurrentTimeLine();
     } else {
-        container.innerHTML = `<div style="padding: 20px; color: #fff;">No schedule found for ${day}${currentHoliday ? ` or ${currentHoliday}` : ''}. Please create and export a schedule for this day in the Daily Planner.</div>`;
+        // Better error message
+        const dayName = day.charAt(0).toUpperCase() + day.slice(1);
+        const holidayText = currentHoliday ? ` or holiday (${currentHoliday})` : '';
+        const triedText = triedFiles.length > 0 ? `\n\nTried files: ${triedFiles.join(', ')}` : '';
+        
+        container.innerHTML = `
+            <div style="padding: 30px; color: #fff; text-align: center; max-width: 600px; margin: 50px auto; background: rgba(255,0,0,0.1); border: 2px solid #ff6b6b; border-radius: 8px;">
+                <h2 style="color: #ff6b6b; margin-top: 0;">Schedule Not Found</h2>
+                <p>No schedule found for <strong>${dayName}</strong>${holidayText}.</p>
+                <p style="font-size: 0.9em; color: #aaa;">Please create and export a schedule for this day in the Daily Planner.</p>
+                <p style="font-size: 0.85em; color: #888; margin-top: 20px;">
+                    Looking in: <code>../Daily-Planner/</code> directory${triedText}
+                </p>
+                <p style="font-size: 0.85em; color: #888; margin-top: 10px;">
+                    Expected filename format: <code>name_${day.substring(0, 3)}.json</code> or <code>name_montue.json</code>
+                </p>
+            </div>
+        `;
     }
 }
 

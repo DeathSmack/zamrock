@@ -256,30 +256,40 @@ function setupEventListeners() {
       playlists: currentSchedule.playlists.map(({id, ...rest}) => rest) // Remove id from playlists
     };
     
-    // Build filename: name-day1-day2.json or name-holiday1-holiday2.json
+    // Build filename with better formatting: name_days_holidays.json
     let filenameParts = [];
-    const namePart = currentSchedule.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-').toLowerCase();
+    
+    // Add name part
+    const namePart = currentSchedule.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_').toLowerCase();
     if (namePart) {
       filenameParts.push(namePart);
     }
     
-    // Add days
+    // Add days as a group (sorted, abbreviated)
     const sortedDays = [...currentSchedule.days].sort();
-    sortedDays.forEach(day => {
-      filenameParts.push(day);
-    });
+    if (sortedDays.length > 0) {
+      const dayAbbrevs = sortedDays.map(day => day.substring(0, 3));
+      filenameParts.push(dayAbbrevs.join(''));
+    }
     
-    // Add holidays
+    // Add holidays as a group (sorted, abbreviated)
     const sortedHolidays = [...currentSchedule.holidays].sort();
-    sortedHolidays.forEach(holidayId => {
-      const holiday = HOLIDAYS.find(h => h.id === holidayId);
-      if (holiday) {
-        const holidayName = holiday.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-').toLowerCase();
-        filenameParts.push(holidayName);
+    if (sortedHolidays.length > 0) {
+      const holidayAbbrevs = sortedHolidays.map(holidayId => {
+        const holiday = HOLIDAYS.find(h => h.id === holidayId);
+        if (holiday) {
+          // Use first 3-4 chars of holiday name
+          return holiday.name.replace(/[^\w]/gi, '').substring(0, 4).toLowerCase();
+        }
+        return '';
+      }).filter(h => h);
+      if (holidayAbbrevs.length > 0) {
+        filenameParts.push('hol_' + holidayAbbrevs.join(''));
       }
-    });
+    }
     
-    const filename = filenameParts.join('-') + '.json';
+    // Format: name_days_holidays.json (e.g., "schedule_montue.json" or "schedule_satsun_hol_xmas.json")
+    const filename = filenameParts.join('_') + '.json';
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -369,6 +379,16 @@ function setupEventListeners() {
     const playlist = currentSchedule.playlists.find(p => p.id === id);
     if (playlist) {
       playlist.name = $(this).val();
+      saveToLocalStorage();
+    }
+  });
+  
+  // Handle playlist description changes
+  $(document).on('change', '.playlist-description', function() {
+    const id = $(this).closest('tr').data('id');
+    const playlist = currentSchedule.playlists.find(p => p.id === id);
+    if (playlist) {
+      playlist.description = $(this).val();
       saveToLocalStorage();
     }
   });
@@ -560,7 +580,8 @@ function renderSchedule() {
     
     const row = `
       <tr data-id="${p.id}">
-        <td><input type="text" class="playlist-name" value="${escapeHtml(p.name)}"></td>
+        <td><input type="text" class="playlist-name" value="${escapeHtml(p.name)}" placeholder="Playlist name"></td>
+        <td><input type="text" class="playlist-description" value="${escapeHtml(p.description || '')}" placeholder="Description (shown on schedule page)"></td>
         <td>
           <div class="time-control">
             <button type="button" class="time-btn dec" title="30 minutes earlier">-</button>
@@ -603,6 +624,16 @@ function renderSchedule() {
     const playlist = currentSchedule.playlists.find(x => x.id === id);
     if (playlist) {
       playlist.name = $(this).val();
+      saveToLocalStorage();
+    }
+  });
+  
+  // Playlist description changes
+  $(".playlist-description").off('change').on('change', function() {
+    const id = $(this).closest('tr').data('id');
+    const playlist = currentSchedule.playlists.find(x => x.id === id);
+    if (playlist) {
+      playlist.description = $(this).val();
       saveToLocalStorage();
     }
   });
@@ -716,6 +747,7 @@ function renderSchedule() {
       const newPlaylist = {
         id: nextId++,
         name: "New Playlist",
+        description: '',
         start: currentPlaylist.start,
         end: minutesToTime(defaultEndTime),
         weight: 10, // Default weight to 10 (middle of 1-25)
@@ -866,6 +898,7 @@ function addNewPlaylist() {
   const newPlaylist = {
     id: nextId++,
     name: 'New Playlist',
+    description: '',
     start: startTime,
     end: endTime,
     weight: 10,

@@ -67,6 +67,12 @@ select {
   margin-right: 10px;
 }
 
+.playlist-description {
+  min-width: 200px;
+  width: 100%;
+  max-width: 300px;
+}
+
 input[type="text"]:focus,
 input[type="time"]:focus,
 input[type="number"]:focus,
