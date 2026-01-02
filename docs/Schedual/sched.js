@@ -1,95 +1,30 @@
-const scheduleData = [{
-        title: "Fresh Fish!",
-        start: 6,
-        end: 22,
-        description: "Recently added tracks"
-    },
-    {
-        title: "Acid Trip, A Journey Through Psychedelic Sounds",
-        start: 6,
-        end: 12,
-        description: "Wake up to a psychedelic journey, perfect for a mind-bending start to the day."
-    },
-    {
-        title: "The Morning Coffee Mix, Smooth Jams to Ease You In",
-        start: 6,
-        end: 9,
-        description: "Smooth and mellow tunes to ease you into the morning with your coffee."
-    },
-    {
-        title: "Afrobeat Legacy, A Vibrant Celebration of Music",
-        start: 7,
-        end: 13,
-        description: "Celebrate the vibrant rhythms and timeless sounds of Afrobeat."
-    },
-    {
-        title: "Blues in Every Tongue, An Exploration of the Blues",
-        start: 8,
-        end: 14,
-        description: "Explore the blues from around the world, in every language imaginable."
-    },
-    {
-        title: "Cloud Pants, Ethereal Soundscapes",
-        start: 9,
-        end: 15,
-        description: "Dreamy and ethereal soundscapes for a relaxed and carefree vibe."
-    },
-    {
-        title: "The Funky Truth, Get Down with Funky Grooves",
-        start: 10,
-        end: 16,
-        description: "Get down with the funkiest grooves to energize your morning."
-    },
-    {
-        title: "ZamDelic Trance, A Blend of Psychedelic Trance",
-        start: 11,
-        end: 17,
-        description: "A heady mix of Zambian sounds and psychedelic trance to get you moving."
-    },
-    {
-        title: "Zamrock Rising, Contemporary Zamrock Artists",
-        start: 12,
-        end: 22,
-        description: "Showcasing the best of contemporary Zamrock artists."
-    },
-    {
-        title: "ZamRock Classics, Timeless Zamrock Tracks",
-        start: 12,
-        end: 22,
-        description: "A journey through the iconic sounds of classic Zamrock."
-    },
-    {
-        title: "Artist of the Month, A Spotlight on Influential Artists",
-        start: 13,
-        end: 18,
-        description: "Spotlighting a different influential artist each month."
-    },
-    {
-        title: "The Catnip Sessions, Mellow Grooves",
-        start: 18,
-        end: 22,
-        description: "A mix of our favorite Zamrock tracks."
-    },
-    {
-        title: "Endless Mixtapes, Curated Collections",
-        start: 22,
-        end: 30,
-        description: "Curated collection of private mixtapes for late-night listening."
-    },
-    {
-        title: "Dublab Sessions, Exclusive Tracks",
-        start: 22,
-        end: 30,
-        description: "Exclusive Dublab sessions for late-night listening."
-    },
-{
-        title: "Country",
-        start: 14,
-        end: 16,
-        description: "Old & Rare"
-    }
-];
+// Get current day and load appropriate schedule
+function getCurrentDay() {
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const today = new Date();
+  return days[today.getDay()];
+}
 
+// Convert time string "HH:MM" to decimal hours
+function timeToHours(timeStr) {
+  if (!timeStr) return 0;
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours + (minutes / 60);
+}
+
+// Check if current time is within playlist time range (handles overnight)
+function isTimeInRange(currentHour, startTime, endTime) {
+  const startHour = timeToHours(startTime);
+  const endHour = timeToHours(endTime);
+  
+  // Handle overnight playlists (end time is next day)
+  if (endHour < startHour) {
+    return currentHour >= startHour || currentHour < endHour;
+  }
+  return currentHour >= startHour && currentHour < endHour;
+}
+
+let scheduleData = [];
 const container = document.getElementById("scheduleContainer");
 const timeAxis = document.getElementById("timeAxis");
 
@@ -108,14 +43,31 @@ for (let i = startTime; i <= endTime; i++) {
 }
 
 // Function to check for overlaps
-function isOverlapping(show, rowData) {
-    return rowData.some(r => show.start < r.end && show.end > r.start);
+function isOverlapping(playlist, rowData) {
+    return rowData.some(r => {
+        const rStart = timeToHours(r.start);
+        const rEnd = timeToHours(r.end);
+        const pStart = timeToHours(playlist.start);
+        const pEnd = timeToHours(playlist.end);
+        
+        // Handle overnight for both
+        if (rEnd < rStart && pEnd < pStart) {
+            return true; // Both overnight, assume overlap
+        }
+        if (rEnd < rStart) {
+            return pStart < rEnd || pEnd > rStart;
+        }
+        if (pEnd < pStart) {
+            return rStart < pEnd || rEnd > pStart;
+        }
+        return pStart < rEnd && pEnd > rStart;
+    });
 }
 
 // Modified row assignment logic to minimize overlaps
-function findAvailableRow(show, rows) {
+function findAvailableRow(playlist, rows) {
     for (let i = 0; i < rows.length; i++) {
-        if (!isOverlapping(show, rows[i])) {
+        if (!isOverlapping(playlist, rows[i])) {
             return i;
         }
     }
@@ -123,9 +75,7 @@ function findAvailableRow(show, rows) {
 }
 
 // Create a data structure to track row occupancy
-const rows = [
-    []
-];
+const rows = [[]];
 
 // Function to get current time in Denver
 function getCurrentDenverTime() {
@@ -135,81 +85,95 @@ function getCurrentDenverTime() {
     return denverTime;
 }
 
-let currentShowElement = null; // Store the currently highlighted show
+let currentPlaylistElement = null; // Store the currently highlighted playlist
 
-// Function to create and position a show block
-function createShowBlock(show) {
-    const showBlock = document.createElement("div");
-    showBlock.classList.add("show");
+// Function to create and position a playlist block
+function createPlaylistBlock(playlist) {
+    const playlistBlock = document.createElement("div");
+    playlistBlock.classList.add("show");
 
-    const startPercent = ((show.start - startTime) / scheduleDuration) * 100;
-    const durationPercent = ((show.end - show.start) / scheduleDuration) * 100;
+    const startHour = timeToHours(playlist.start);
+    const endHour = timeToHours(playlist.end);
+    
+    // Handle overnight playlists
+    let displayEndHour = endHour;
+    if (endHour < startHour) {
+        displayEndHour = endHour + 24;
+    }
+    
+    const startPercent = ((startHour - startTime) / scheduleDuration) * 100;
+    const durationPercent = ((displayEndHour - startHour) / scheduleDuration) * 100;
 
     // Find an available row with overlap prevention
-    let row = findAvailableRow(show, rows);
+    let row = findAvailableRow(playlist, rows);
 
     // If the row doesn't exist, create it
     if (!rows[row]) {
         rows[row] = [];
     }
     rows[row].push({
-        start: show.start,
-        end: show.end
+        start: playlist.start,
+        end: playlist.end
     });
 
-    showBlock.style.left = `${startPercent}%`;
-    showBlock.style.width = `${durationPercent}%`;
-    showBlock.style.top = `${row * rowHeight + 40}px`;
-    showBlock.style.height = `${rowHeight - 4}px`; // ADJUSTED HEIGHT CALCULATION: rowHeight - (top margin + bottom margin)
-    showBlock.style.margin = "2px"; // This is set in the CSS
+    playlistBlock.style.left = `${startPercent}%`;
+    playlistBlock.style.width = `${durationPercent}%`;
+    playlistBlock.style.top = `${row * rowHeight + 40}px`;
+    playlistBlock.style.height = `${rowHeight - 4}px`;
+    playlistBlock.style.margin = "2px";
 
-    const startTimeFormatted = show.start % 24;
-    const endTimeFormatted = show.end % 24;
-    const timeDisplay = `${startTimeFormatted === 0 ? 24 : startTimeFormatted}:00 - ${endTimeFormatted === 0 ? 24 : endTimeFormatted}:00`;
+    const startTimeFormatted = Math.floor(startHour) % 24;
+    const endTimeFormatted = Math.floor(endHour) % 24;
+    const startMinutes = Math.round((startHour % 1) * 60);
+    const endMinutes = Math.round((endHour % 1) * 60);
+    
+    const startDisplay = `${startTimeFormatted === 0 ? 24 : startTimeFormatted}:${startMinutes.toString().padStart(2, '0')}`;
+    const endDisplay = `${endTimeFormatted === 0 ? 24 : endTimeFormatted}:${endMinutes.toString().padStart(2, '0')}`;
+    const timeDisplay = `${startDisplay} - ${endDisplay}`;
 
-    showBlock.innerHTML = `
+    playlistBlock.innerHTML = `
         <div class="time">${timeDisplay}</div>
-        <div class="title">${show.title}</div>
-        <div class="description">${show.description}</div>
+        <div class="title">${playlist.name}</div>
+        <div class="description">${playlist.description || ''}</div>
     `;
 
-    container.appendChild(showBlock);
-    return showBlock; // Return the created show block
+    container.appendChild(playlistBlock);
+    return playlistBlock;
 }
 
-// Function to find the currently playing show
-function findCurrentShow(currentTime) {
-    const currentHour = currentTime.getHours();
+// Function to find the currently playing playlist
+function findCurrentPlaylist(currentTime) {
+    const currentHour = currentTime.getHours() + (currentTime.getMinutes() / 60);
+    
     for (let i = 0; i < scheduleData.length; i++) {
-        const show = scheduleData[i];
-        if (currentHour >= show.start && currentHour < show.end) {
-            return show;
+        const playlist = scheduleData[i];
+        if (isTimeInRange(currentHour, playlist.start, playlist.end)) {
+            return playlist;
         }
     }
-    return null; // No show found for the current time
+    return null; // No playlist found for the current time
 }
 
-// Function to highlight the currently playing show
-function highlightCurrentShow() {
+// Function to highlight the currently playing playlist
+function highlightCurrentPlaylist() {
     const denverTime = getCurrentDenverTime();
-    const currentShow = findCurrentShow(denverTime);
+    const currentPlaylist = findCurrentPlaylist(denverTime);
 
-    // Remove highlight from previous show
-    if (currentShowElement) {
-        currentShowElement.classList.remove("current-show");
+    // Remove highlight from previous playlist
+    if (currentPlaylistElement) {
+        currentPlaylistElement.classList.remove("current-show");
     }
 
-    // Find and highlight the new current show
-    if (currentShow) {
-        //Find element with a matching title
-        currentShowElement = Array.from(container.children).find(child => {
-            return child.querySelector('.title').textContent === currentShow.title;
+    // Find and highlight the new current playlist
+    if (currentPlaylist) {
+        // Find element with a matching name
+        currentPlaylistElement = Array.from(container.children).find(child => {
+            return child.querySelector('.title').textContent === currentPlaylist.name;
         });
 
-        if (currentShowElement) {
-            currentShowElement.classList.add("current-show");
+        if (currentPlaylistElement) {
+            currentPlaylistElement.classList.add("current-show");
         }
-
     }
 }
 
@@ -239,17 +203,58 @@ function updateClock() {
     document.getElementById('local-time').innerHTML = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
 
-// Create show blocks and store references to them
-const showElements = scheduleData.map(show => createShowBlock(show));
+// Load schedule for current day
+function loadScheduleForDay(day) {
+    const filename = `../Daily-Planner/${day}.json`;
+    
+    fetch(filename)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Schedule not found for ${day}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Convert new format to display format
+            const playlists = data.playlists || data.shows || [];
+            
+            scheduleData = playlists.map(playlist => ({
+                name: playlist.name || playlist.show || 'Untitled',
+                start: playlist.start || '00:00',
+                end: playlist.end || '01:00',
+                description: playlist.description || ''
+            }));
+            
+            // Clear container
+            container.innerHTML = '';
+            container.appendChild(timeAxis);
+            
+            // Reset rows
+            rows.length = 1;
+            rows[0] = [];
+            
+            // Create playlist blocks
+            const playlistElements = scheduleData.map(playlist => createPlaylistBlock(playlist));
+            
+            // Initial highlight
+            highlightCurrentPlaylist();
+            
+            // Add the current time line
+            createCurrentTimeLine();
+        })
+        .catch(error => {
+            console.error('Error loading schedule:', error);
+            container.innerHTML = `<div style="padding: 20px; color: #fff;">Schedule not found for ${day}. Please create a schedule for this day in the Daily Planner.</div>`;
+        });
+}
 
-// Initial highlight and update interval
-highlightCurrentShow();
+// Initialize: Load schedule for current day
+const currentDay = getCurrentDay();
+loadScheduleForDay(currentDay);
 
-// Set interval to update highlighting every minute (or desired interval)
-setInterval(highlightCurrentShow, 60000);
-
-// Add the current time line
-createCurrentTimeLine();
+// Set interval to update highlighting every minute
+setInterval(highlightCurrentPlaylist, 60000);
 
 // Set interval to update clock
 setInterval(updateClock, 1000);
+updateClock(); // Initial update

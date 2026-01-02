@@ -7,7 +7,7 @@ let currentSchedule = {
   name: 'My Schedule',
   days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
   holidays: [],
-  shows: []
+  playlists: []
 };
 
 const HOLIDAYS = [
@@ -104,14 +104,9 @@ function initializeData() {
     holidaySelect.append(`<option value="${holiday.id}">${holiday.name}</option>`);
   });
   
-  // Start with default shows
-  currentSchedule.shows = [
-    {id: 1, name: "The Morning Show", start: "06:00", end: "10:00", weight: 5, order: 0},
-    {id: 2, name: "Midday Mix", start: "10:00", end: "14:00", weight: 4, order: 1},
-    {id: 3, name: "Afternoon Drive", start: "14:00", end: "18:00", weight: 5, order: 2},
-    {id: 4, name: "Evening Vibes", start: "18:00", end: "22:00", weight: 4, order: 3}
-  ];
-  nextId = 5;
+  // Start with default playlists (will be loaded from Radio-Schedule.json if available)
+  currentSchedule.playlists = [];
+  nextId = 1;
   
   // Set default days (Mon-Fri)
   $('input[name="days"]').each(function() {
@@ -132,9 +127,9 @@ function initializeData() {
         shows: Array.isArray(parsed.shows) ? parsed.shows : []
       };
       
-      // Update nextId based on existing shows
-      if (currentSchedule.shows.length > 0) {
-        nextId = Math.max(...currentSchedule.shows.map(s => s.id || 0), 0) + 1;
+      // Update nextId based on existing playlists
+      if (currentSchedule.playlists.length > 0) {
+        nextId = Math.max(...currentSchedule.playlists.map(p => p.id || 0), 0) + 1;
       }
       
       // Update UI with loaded data
@@ -213,16 +208,18 @@ function setupEventListeners() {
     reader.onload = function(e) {
       try {
         const data = JSON.parse(e.target.result);
-        if (data.shows && Array.isArray(data.shows)) {
+        // Support both old format (shows) and new format (playlists)
+        const playlists = data.playlists || data.shows || [];
+        if (Array.isArray(playlists) && playlists.length > 0) {
           currentSchedule = {
             ...currentSchedule,
             name: data.name || 'My Schedule',
             days: data.days || [],
             holidays: data.holidays || [],
-            shows: data.shows.map(show => ({
-              ...show,
+            playlists: playlists.map(playlist => ({
+              ...playlist,
               id: nextId++,
-              weight: Math.min(25, Math.max(1, show.weight || 5))
+              weight: Math.min(25, Math.max(1, playlist.weight || 5))
             }))
           };
           
@@ -248,25 +245,29 @@ function setupEventListeners() {
   // Export button
   $('#export-json').on('click', function() {
     const data = {
-      ...currentSchedule,
-      shows: currentSchedule.shows.map(({id, ...rest}) => rest) // Remove id from shows
+      name: currentSchedule.name,
+      days: currentSchedule.days,
+      holidays: currentSchedule.holidays,
+      playlists: currentSchedule.playlists.map(({id, ...rest}) => rest) // Remove id from playlists
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${currentSchedule.name.replace(/[^\w\s]/gi, '')}_schedule.json`;
+    const filename = currentSchedule.name.replace(/[^\w\s]/gi, '').replace(/\s+/g, '-').toLowerCase();
+    a.download = `${filename}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    showNotification('Schedule exported successfully!', 'success');
   });
   
   // New schedule button
   $('#new-schedule').on('click', function() {
-    if (confirm('Are you sure you want to create a new schedule? This will clear all current shows.')) {
-      currentSchedule.shows = [];
+    if (confirm('Are you sure you want to create a new schedule? This will clear all current playlists.')) {
+      currentSchedule.playlists = [];
       currentSchedule.name = 'My Schedule';
       currentSchedule.holidays = [];
       currentSchedule.days = [];
@@ -284,13 +285,13 @@ function setupEventListeners() {
   // Sort by dropdown
   $('#sort-by').on('change', renderSchedule);
   
-  // Add show button
-  $('#add-at-end').on('click', addNewShow);
+  // Add playlist button
+  $('#add-at-end').on('click', addNewPlaylist);
   
-  // Delete show button
-  $(document).on('click', '.delete-show', function() {
+  // Delete playlist button
+  $(document).on('click', '.delete-playlist', function() {
     const id = $(this).closest('tr').data('id');
-    currentSchedule.shows = currentSchedule.shows.filter(show => show.id !== id);
+    currentSchedule.playlists = currentSchedule.playlists.filter(playlist => playlist.id !== id);
     saveToLocalStorage();
     renderSchedule();
   });
@@ -303,14 +304,14 @@ function setupEventListeners() {
     const newTime = (time + minutes + (24 * 60)) % (24 * 60);
     input.val(minutesToTime(newTime));
     
-    // Update the show data
+    // Update the playlist data
     const id = input.closest('tr').data('id');
-    const show = currentSchedule.shows.find(s => s.id === id);
-    if (show) {
+    const playlist = currentSchedule.playlists.find(p => p.id === id);
+    if (playlist) {
       if (input.hasClass('time-start')) {
-        show.start = input.val();
+        playlist.start = input.val();
       } else {
-        show.end = input.val();
+        playlist.end = input.val();
       }
       saveToLocalStorage();
     }
@@ -324,21 +325,21 @@ function setupEventListeners() {
     weight = Math.min(25, Math.max(1, weight));
     input.val(weight);
     
-    // Update the show data
+    // Update the playlist data
     const id = input.closest('tr').data('id');
-    const show = currentSchedule.shows.find(s => s.id === id);
-    if (show) {
-      show.weight = weight;
+    const playlist = currentSchedule.playlists.find(p => p.id === id);
+    if (playlist) {
+      playlist.weight = weight;
       saveToLocalStorage();
     }
   });
   
-  // Handle show name changes
-  $(document).on('change', '.show-name', function() {
+  // Handle playlist name changes
+  $(document).on('change', '.playlist-name', function() {
     const id = $(this).closest('tr').data('id');
-    const show = currentSchedule.shows.find(s => s.id === id);
-    if (show) {
-      show.name = $(this).val();
+    const playlist = currentSchedule.playlists.find(p => p.id === id);
+    if (playlist) {
+      playlist.name = $(this).val();
       saveToLocalStorage();
     }
   });
@@ -346,12 +347,12 @@ function setupEventListeners() {
   // Handle time changes
   $(document).on('change', '.time-start, .time-end', function() {
     const id = $(this).closest('tr').data('id');
-    const show = currentSchedule.shows.find(s => s.id === id);
-    if (show) {
+    const playlist = currentSchedule.playlists.find(p => p.id === id);
+    if (playlist) {
       if ($(this).hasClass('time-start')) {
-        show.start = $(this).val();
+        playlist.start = $(this).val();
       } else {
-        show.end = $(this).val();
+        playlist.end = $(this).val();
       }
       saveToLocalStorage();
     }
@@ -360,10 +361,10 @@ function setupEventListeners() {
   // Handle weight changes
   $(document).on('change', '.weight-input', function() {
     const id = $(this).closest('tr').data('id');
-    const show = currentSchedule.shows.find(s => s.id === id);
-    if (show) {
-      show.weight = Math.min(25, Math.max(1, parseInt($(this).val()) || 5));
-      $(this).val(show.weight);
+    const playlist = currentSchedule.playlists.find(p => p.id === id);
+    if (playlist) {
+      playlist.weight = Math.min(25, Math.max(1, parseInt($(this).val()) || 5));
+      $(this).val(playlist.weight);
       saveToLocalStorage();
     }
   });
@@ -470,20 +471,20 @@ function renderSchedule() {
   const tbody = $('#schedule tbody');
   tbody.empty();
   
-  // Sort shows based on current sort option
+  // Sort playlists based on current sort option
   const sortBy = $('#sort-by').val();
-  let sortedShows = [...currentSchedule.shows];
+  let sortedPlaylists = [...currentSchedule.playlists];
   
   switch (sortBy) {
     case 'weight':
-      sortedShows.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+      sortedPlaylists.sort((a, b) => (b.weight || 0) - (a.weight || 0));
       break;
     case 'weight-asc':
-      sortedShows.sort((a, b) => (a.weight || 0) - (b.weight || 0));
+      sortedPlaylists.sort((a, b) => (a.weight || 0) - (b.weight || 0));
       break;
     default: // 'start'
-      sortedShows.sort((a, b) => {
-        // Handle overnight shows (end time < start time)
+      sortedPlaylists.sort((a, b) => {
+        // Handle overnight playlists (end time < start time)
         const aIsOvernight = timeToMinutes(a.end) <= timeToMinutes(a.start);
         const bIsOvernight = timeToMinutes(b.end) <= timeToMinutes(b.start);
         
@@ -495,16 +496,16 @@ function renderSchedule() {
   }
   
   // Update order to match current sort
-  sortedShows.forEach((show, index) => {
-    show.order = index;
+  sortedPlaylists.forEach((playlist, index) => {
+    playlist.order = index;
   });
   
-  sortedShows.forEach((s, i) => {
-    const startMin = timeToMinutes(s.start);
-    const endMin = timeToMinutes(s.end);
+  sortedPlaylists.forEach((p, i) => {
+    const startMin = timeToMinutes(p.start);
+    const endMin = timeToMinutes(p.end);
     let duration = endMin - startMin;
     
-    // Handle overnight shows (end time is next day)
+    // Handle overnight playlists (end time is next day)
     if (endMin < startMin) {
       duration = (24 * 60 - startMin) + endMin;
     }
@@ -512,48 +513,48 @@ function renderSchedule() {
     const durationStr = formatDuration(duration);
 
     // Overlap with previous programme
-    const prev = sortedShows[i-1];
+    const prev = sortedPlaylists[i-1];
     let overlap = 0;
     if (prev) {
       const prevEnd = timeToMinutes(prev.end);
       overlap = Math.max(0, prevEnd - startMin);
       
-      // Handle overnight shows for overlap calculation
+      // Handle overnight playlists for overlap calculation
       if (prevEnd < timeToMinutes(prev.start)) {
-        // Previous show ends the next day
-        overlap = Math.max(0, (24 * 60 - timeToMinutes(prev.start)) + timeToMinutes(s.start));
+        // Previous playlist ends the next day
+        overlap = Math.max(0, (24 * 60 - timeToMinutes(prev.start)) + timeToMinutes(p.start));
       }
     }
     
     const overlapStr = formatDuration(overlap);
-    const weight = s.weight || 3; // Default weight if not set
+    const weight = p.weight || 3; // Default weight if not set
     
     const row = `
-      <tr data-id="${s.id}">
-        <td><input type="text" class="show-name" value="${escapeHtml(s.name)}"></td>
+      <tr data-id="${p.id}">
+        <td><input type="text" class="playlist-name" value="${escapeHtml(p.name)}"></td>
         <td>
           <div class="time-control">
             <button type="button" class="time-btn dec" title="30 minutes earlier">-</button>
-            <input type="time" class="time-start" value="${s.start}" step="300">
+            <input type="time" class="time-start" value="${p.start}" step="300">
             <button type="button" class="time-btn inc" title="30 minutes later">+</button>
           </div>
         </td>
         <td>
           <div class="time-control">
             <button type="button" class="time-btn dec" title="30 minutes earlier">-</button>
-            <input type="time" class="time-end" value="${s.end}" step="300">
+            <input type="time" class="time-end" value="${p.end}" step="300">
             <button type="button" class="time-btn inc" title="30 minutes later">+</button>
           </div>
         </td>
         <td>
           <div class="weight-control">
             <button type="button" class="weight-btn weight-dec" title="Decrease weight">-</button>
-            <input type="number" class="weight-input" min="1" max="25" value="${Math.min(25, Math.max(1, s.weight || 10))}">
+            <input type="number" class="weight-input" min="1" max="25" value="${Math.min(25, Math.max(1, p.weight || 10))}">
             <button type="button" class="weight-btn weight-inc" title="Increase weight">+</button>
           </div>
         </td>
         <td>
-          <button type="button" class="btn delete-show" title="Delete show">
+          <button type="button" class="btn delete-playlist" title="Delete playlist">
             <i class="fas fa-trash"></i>
           </button>
         </td>
@@ -567,12 +568,12 @@ function renderSchedule() {
 
   /* ---------- Event listeners (re‑bind after every render) ---------- */
 
-  // Show name changes
-  $(".show-name").off('change').on('change', function() {
+  // Playlist name changes
+  $(".playlist-name").off('change').on('change', function() {
     const id = $(this).closest('tr').data('id');
-    const show = currentSchedule.shows.find(x => x.id === id);
-    if (show) {
-      show.name = $(this).val();
+    const playlist = currentSchedule.playlists.find(x => x.id === id);
+    if (playlist) {
+      playlist.name = $(this).val();
       saveToLocalStorage();
     }
   });
@@ -582,18 +583,18 @@ function renderSchedule() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
     const field = $(this).hasClass('time-start') ? 'start' : 'end';
-    const show = currentSchedule.shows.find(x => x.id === id);
+    const playlist = currentSchedule.playlists.find(x => x.id === id);
     
-    if (show) {
-      show[field] = $(this).val();
+    if (playlist) {
+      playlist[field] = $(this).val();
       
       // Auto-adjust end time if it's before start time (for the same day)
-      if (field === 'start' && timeToMinutes(show.end) < timeToMinutes(show.start)) {
-        show.end = show.start;
+      if (field === 'start' && timeToMinutes(playlist.end) < timeToMinutes(playlist.start)) {
+        playlist.end = playlist.start;
       }
       
       // Update the display
-      tr.find(`.${field}-12h`).text(format12h(show[field]));
+      tr.find(`.${field}-12h`).text(format12h(playlist[field]));
       saveToLocalStorage();
       renderSchedule();
     }
@@ -603,16 +604,16 @@ function renderSchedule() {
   $(".time-btn.inc, .time-btn.dec, .weight-inc, .weight-dec").off('click').on('click', function() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
-    const show = currentSchedule.shows.find(x => x.id === id);
-    if (!show) return;
+    const playlist = currentSchedule.playlists.find(x => x.id === id);
+    if (!playlist) return;
     
     const isWeight = $(this).hasClass('weight-inc') || $(this).hasClass('weight-dec');
     
     if (isWeight) {
       // Handle weight adjustment
       const isInc = $(this).hasClass('weight-inc');
-      show.weight = Math.min(25, Math.max(1, (show.weight || 10) + (isInc ? 1 : -1)));
-      tr.find('.weight-input').val(show.weight);
+      playlist.weight = Math.min(25, Math.max(1, (playlist.weight || 10) + (isInc ? 1 : -1)));
+      tr.find('.weight-input').val(playlist.weight);
       saveToLocalStorage();
       renderSchedule();
     } else {
@@ -622,20 +623,20 @@ function renderSchedule() {
       const isInc = $(this).hasClass('inc');
       const field = isStart ? 'start' : 'end';
       
-      let minutes = timeToMinutes(show[field]);
+      let minutes = timeToMinutes(playlist[field]);
       minutes += isInc ? 30 : -30;
       
       // Handle day wrap-around
       if (minutes >= 24 * 60) minutes = 0;
       if (minutes < 0) minutes = 23 * 60 + 30; // 23:30
       
-      show[field] = minutesToTime(minutes);
-      input.val(show[field]);
+      playlist[field] = minutesToTime(minutes);
+      input.val(playlist[field]);
       
       // Auto-adjust end time if it's before start time
-      if (!isStart && timeToMinutes(show.end) < timeToMinutes(show.start)) {
-        show.end = show.start;
-        tr.find('.time-end').val(show.end);
+      if (!isStart && timeToMinutes(playlist.end) < timeToMinutes(playlist.start)) {
+        playlist.end = playlist.start;
+        tr.find('.time-end').val(playlist.end);
       }
       
       saveToLocalStorage();
@@ -646,11 +647,11 @@ function renderSchedule() {
   // Weight input changes
   $(".weight-input").off('change').on('change', function() {
     const id = $(this).closest('tr').data('id');
-    const show = currentSchedule.shows.find(x => x.id === id);
-    if (show) {
+    const playlist = currentSchedule.playlists.find(x => x.id === id);
+    if (playlist) {
       let weight = parseInt($(this).val(), 10);
       weight = Math.min(25, Math.max(1, isNaN(weight) ? 3 : weight));
-      show.weight = weight;
+      playlist.weight = weight;
       $(this).val(weight);
       saveToLocalStorage();
       
@@ -668,17 +669,17 @@ function renderSchedule() {
     const idx = tr.index();
     const isUp = $(this).hasClass('move-up');
     
-    if ((isUp && idx === 0) || (!isUp && idx === currentSchedule.shows.length - 1)) return;
+    if ((isUp && idx === 0) || (!isUp && idx === currentSchedule.playlists.length - 1)) return;
     
     const id = tr.data('id');
-    const current = currentSchedule.shows.find(item => item.id === id);
+    const current = currentSchedule.playlists.find(item => item.id === id);
     const targetIdx = isUp ? idx - 1 : idx + 1;
     const targetId = $(`#schedule tbody tr`).eq(targetIdx).data('id');
-    const targetShow = currentSchedule.shows.find(x => x.id === targetId);
+    const targetPlaylist = currentSchedule.playlists.find(x => x.id === targetId);
     
-    if (current && targetShow) {
+    if (current && targetPlaylist) {
       // Swap orders
-      [current.order, targetShow.order] = [targetShow.order, current.order];
+      [current.order, targetPlaylist.order] = [targetPlaylist.order, current.order];
       saveToLocalStorage();
       renderSchedule();
     }
@@ -687,56 +688,56 @@ function renderSchedule() {
   // Add row after this row
   $(".add-row").off('click').on('click', function() {
     const tr = $(this).closest('tr');
-    const currentShow = currentSchedule.shows.find(s => s.id === tr.data('id'));
+    const currentPlaylist = currentSchedule.playlists.find(p => p.id === tr.data('id'));
     
-    if (currentShow) {
+    if (currentPlaylist) {
       // Calculate default end time (30 minutes after start)
-      const startTime = timeToMinutes(currentShow.start);
+      const startTime = timeToMinutes(currentPlaylist.start);
       const defaultEndTime = (startTime + 30) % (24 * 60);
       
-      const newShow = {
+      const newPlaylist = {
         id: nextId++,
-        name: "New Show",
-        start: currentShow.start,
+        name: "New Playlist",
+        start: currentPlaylist.start,
         end: minutesToTime(defaultEndTime),
         weight: 10, // Default weight to 10 (middle of 1-25)
-        order: currentShow.order + 1
+        order: currentPlaylist.order + 1
       };
       
-      // Update orders of subsequent shows
-      currentSchedule.shows.forEach(s => { 
-        if (s.order > currentShow.order) s.order++;
+      // Update orders of subsequent playlists
+      currentSchedule.playlists.forEach(p => { 
+        if (p.order > currentPlaylist.order) p.order++;
       });
       
-      currentSchedule.shows.push(newShow);
+      currentSchedule.playlists.push(newPlaylist);
       saveToLocalStorage();
       renderSchedule();
       
-      // Focus the new show's name input
-      $(`tr[data-id="${newShow.id}"] .show-name`).focus().select();
+      // Focus the new playlist's name input
+      $(`tr[data-id="${newPlaylist.id}"] .playlist-name`).focus().select();
     }
   });
 
   // Delete this row
   $(".delete-row").off('click').on('click', function() {
-    if (currentSchedule.shows.length <= 1) {
-      alert('You must have at least one show in the schedule.');
+    if (currentSchedule.playlists.length <= 1) {
+      alert('You must have at least one playlist in the schedule.');
       return;
     }
     
-    if (confirm('Are you sure you want to delete this show?')) {
+    if (confirm('Are you sure you want to delete this playlist?')) {
       const tr = $(this).closest('tr');
       const id = tr.data('id');
-      const showToDelete = currentSchedule.shows.find(s => s.id === id);
+      const playlistToDelete = currentSchedule.playlists.find(p => p.id === id);
       
-      if (showToDelete) {
-        // Update orders of subsequent shows
-        currentSchedule.shows.forEach(s => {
-          if (s.order > showToDelete.order) s.order--;
+      if (playlistToDelete) {
+        // Update orders of subsequent playlists
+        currentSchedule.playlists.forEach(p => {
+          if (p.order > playlistToDelete.order) p.order--;
         });
         
-        // Remove the show
-        currentSchedule.shows = currentSchedule.shows.filter(s => s.id !== id);
+        // Remove the playlist
+        currentSchedule.playlists = currentSchedule.playlists.filter(p => p.id !== id);
         saveToLocalStorage();
         renderSchedule();
       }
@@ -757,17 +758,17 @@ $(document).ready(function() {
   $("#schedule tbody").sortable({
     items: "tr:not(.ui-sortable-helper)",
     update: function() {
-      // Update the order of shows when dragged
+      // Update the order of playlists when dragged
       const newOrder = [];
       $("#schedule tbody tr").each(function(index) {
         const id = $(this).data('id');
-        const show = currentSchedule.shows.find(s => s.id === id);
-        if (show) {
-          show.order = index;
-          newOrder.push(show);
+        const playlist = currentSchedule.playlists.find(p => p.id === id);
+        if (playlist) {
+          playlist.order = index;
+          newOrder.push(playlist);
         }
       });
-      currentSchedule.shows = newOrder;
+      currentSchedule.playlists = newOrder;
       saveToLocalStorage();
       renderSchedule();
     },
@@ -778,41 +779,94 @@ $(document).ready(function() {
     placeholder: 'sortable-placeholder',
     forcePlaceholderSize: true
   }).disableSelection();
+  
+  // Try to load Radio-Schedule.json as default
+  loadDefaultSchedule();
 });
 
-function addNewShow() {
-  // Calculate default start time (end of last show or 06:00)
+// Load default schedule from Radio-Schedule.json
+function loadDefaultSchedule() {
+  fetch('Radio-Schedule.json')
+    .then(response => {
+      if (!response.ok) return null;
+      return response.json();
+    })
+    .then(data => {
+      if (data && data.schedule && Array.isArray(data.schedule)) {
+        // Convert old format to new format
+        const playlists = data.schedule.map((item, index) => ({
+          id: index + 1,
+          name: item.show || item.name || 'Untitled Playlist',
+          start: item.start || '00:00',
+          end: item.end || '01:00',
+          weight: 10,
+          order: index
+        }));
+        
+        // Only use if we don't have existing data
+        if (currentSchedule.playlists.length === 0) {
+          currentSchedule.name = 'Radio Schedule';
+          currentSchedule.days = (data.days || []).map(d => d.toLowerCase());
+          currentSchedule.playlists = playlists;
+          nextId = playlists.length + 1;
+          
+          // Update UI
+          $('#schedule-name').val(currentSchedule.name);
+          $('input[name="days"]').each(function() {
+            const day = $(this).val();
+            $(this).prop('checked', currentSchedule.days.includes(day));
+          });
+          
+          renderSchedule();
+          updateActiveSelections();
+        }
+      }
+    })
+    .catch(error => {
+      console.log('No default schedule found or error loading:', error);
+    });
+}
+
+let isAddingPlaylist = false; // Guard to prevent double-add
+
+function addNewPlaylist() {
+  if (isAddingPlaylist) return; // Prevent double calls
+  isAddingPlaylist = true;
+  
+  // Calculate default start time (end of last playlist or 06:00)
   let startTime = '06:00';
-  if (currentSchedule.shows.length > 0) {
-    const lastShow = [...currentSchedule.shows].sort((a, b) => b.order - a.order)[0];
-    if (lastShow && lastShow.end) {
-      startTime = lastShow.end;
+  if (currentSchedule.playlists.length > 0) {
+    const lastPlaylist = [...currentSchedule.playlists].sort((a, b) => b.order - a.order)[0];
+    if (lastPlaylist && lastPlaylist.end) {
+      startTime = lastPlaylist.end;
     }
   }
   
   // Calculate default end time (1 hour after start)
   const endTime = minutesToTime((timeToMinutes(startTime) + 60) % (24 * 60));
   
-  const newShow = {
+  const newPlaylist = {
     id: nextId++,
-    name: 'New Show',
+    name: 'New Playlist',
     start: startTime,
     end: endTime,
     weight: 10,
-    order: currentSchedule.shows.length
+    order: currentSchedule.playlists.length
   };
   
-  currentSchedule.shows.push(newShow);
+  currentSchedule.playlists.push(newPlaylist);
+  saveToLocalStorage();
   renderSchedule();
   
   // Scroll to the new row and focus the name input
   setTimeout(() => {
-    const newRow = $(`tr[data-id="${newShow.id}"]`);
+    const newRow = $(`tr[data-id="${newPlaylist.id}"]`);
     if (newRow.length) {
       $('html, body').animate({
         scrollTop: newRow.offset().top - 100
       }, 100);
-      newRow.find('.show-name').focus().select();
+      newRow.find('.playlist-name').focus().select();
     }
+    isAddingPlaylist = false; // Reset guard
   }, 100);
 }
