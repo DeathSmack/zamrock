@@ -335,10 +335,10 @@ function setupEventListeners() {
     renderSchedule();
   });
   
-  // Time increment/decrement buttons
+  // Time increment/decrement buttons (15 minute increments)
   $(document).on('click', '.time-btn', function() {
     const input = $(this).siblings('input');
-    const minutes = $(this).hasClass('inc') ? 30 : -30;
+    const minutes = $(this).hasClass('inc') ? 15 : -15;
     const time = timeToMinutes(input.val());
     const newTime = (time + minutes + (24 * 60)) % (24 * 60);
     input.val(minutesToTime(newTime));
@@ -584,16 +584,16 @@ function renderSchedule() {
         <td><input type="text" class="playlist-description" value="${escapeHtml(p.description || '')}" placeholder="Description (shown on schedule page)"></td>
         <td>
           <div class="time-control">
-            <button type="button" class="time-btn dec" title="30 minutes earlier">-</button>
-            <input type="time" class="time-start" value="${p.start}" step="300">
-            <button type="button" class="time-btn inc" title="30 minutes later">+</button>
+            <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
+            <input type="time" class="time-start" value="${p.start}" step="900">
+            <button type="button" class="time-btn inc" title="15 minutes later">+</button>
           </div>
         </td>
         <td>
           <div class="time-control">
-            <button type="button" class="time-btn dec" title="30 minutes earlier">-</button>
-            <input type="time" class="time-end" value="${p.end}" step="300">
-            <button type="button" class="time-btn inc" title="30 minutes later">+</button>
+            <button type="button" class="time-btn dec" title="15 minutes earlier">-</button>
+            <input type="time" class="time-end" value="${p.end}" step="900">
+            <button type="button" class="time-btn inc" title="15 minutes later">+</button>
           </div>
         </td>
         <td>
@@ -638,29 +638,58 @@ function renderSchedule() {
     }
   });
 
-  // 24‑hr → 12‑hr updates
-  $(".time-start, .time-end").off('change').on('change', function() {
+  // Time input handling - use blur instead of change to allow free typing
+  $(".time-start, .time-end").off('blur change').on('blur change', function() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
     const field = $(this).hasClass('time-start') ? 'start' : 'end';
     const playlist = currentSchedule.playlists.find(x => x.id === id);
     
     if (playlist) {
-      playlist[field] = $(this).val();
+      let timeValue = $(this).val();
       
-      // Auto-adjust end time if it's before start time (for the same day)
-      if (field === 'start' && timeToMinutes(playlist.end) < timeToMinutes(playlist.start)) {
-        playlist.end = playlist.start;
+      // Validate and format time input
+      // If user typed something like "9:30" or "930", convert to "09:30"
+      if (timeValue && !timeValue.match(/^\d{2}:\d{2}$/)) {
+        // Try to parse various formats
+        const cleaned = timeValue.replace(/[^\d]/g, '');
+        if (cleaned.length >= 3) {
+          const hours = parseInt(cleaned.substring(0, cleaned.length - 2)) || 0;
+          const mins = parseInt(cleaned.substring(cleaned.length - 2)) || 0;
+          if (hours >= 0 && hours < 24 && mins >= 0 && mins < 60) {
+            timeValue = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+            $(this).val(timeValue);
+          }
+        }
       }
       
-      // Update the display
-      tr.find(`.${field}-12h`).text(format12h(playlist[field]));
-      saveToLocalStorage();
-      renderSchedule();
+      // Only update if valid time format
+      if (timeValue.match(/^\d{2}:\d{2}$/)) {
+        playlist[field] = timeValue;
+        
+        // Auto-adjust end time if it's before start time (for the same day)
+        if (field === 'start' && timeToMinutes(playlist.end) < timeToMinutes(playlist.start)) {
+          playlist.end = playlist.start;
+          tr.find('.time-end').val(playlist.end);
+        }
+        
+        // Update the display
+        tr.find(`.${field}-12h`).text(format12h(playlist[field]));
+        saveToLocalStorage();
+        renderSchedule();
+      } else {
+        // Invalid format, restore previous value
+        $(this).val(playlist[field]);
+      }
     }
   });
+  
+  // Allow typing without immediate validation
+  $(".time-start, .time-end").off('input').on('input', function() {
+    // Just allow typing, validation happens on blur
+  });
 
-  // ▲ / ▼ arrow helpers (30‑min steps) - weight controls handled separately
+  // ▲ / ▼ arrow helpers (15‑min steps) - weight controls handled separately
   $(".time-btn.inc, .time-btn.dec").off('click').on('click', function() {
     const tr = $(this).closest('tr');
     const id = tr.data('id');
@@ -674,11 +703,11 @@ function renderSchedule() {
     const field = isStart ? 'start' : 'end';
     
     let minutes = timeToMinutes(playlist[field]);
-    minutes += isInc ? 30 : -30;
+    minutes += isInc ? 15 : -15;
     
     // Handle day wrap-around
     if (minutes >= 24 * 60) minutes = 0;
-    if (minutes < 0) minutes = 23 * 60 + 30; // 23:30
+    if (minutes < 0) minutes = 23 * 60 + 45; // 23:45
     
     playlist[field] = minutesToTime(minutes);
     input.val(playlist[field]);
