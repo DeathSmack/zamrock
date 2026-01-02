@@ -710,6 +710,7 @@ function renderSchedule() {
       $display.text(use12HourFormat ? TimeUtils.format12h(time24) : time24);
     }
   });
+}
 
 // Initialize the application when the DOM is ready
 $(document).ready(function() {

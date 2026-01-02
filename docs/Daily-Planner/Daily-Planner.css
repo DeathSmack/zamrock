@@ -143,6 +143,7 @@ select {
   text-align: center;
   margin: 0 4px;
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .weight-input::-webkit-outer-spin-button,
