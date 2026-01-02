@@ -216,11 +216,19 @@ function setupEventListeners() {
     use12HourFormat = $(this).val() === '12';
     localStorage.setItem('use12HourFormat', use12HourFormat);
     // Update all time displays
-    $('.time-format-display').each(function() {
-      const $display = $(this);
-      const time24 = $display.siblings('.time-picker').val();
+    $('.time-display').each(function() {
+      const $primary = $(this).find('.time-format-primary');
+      const $secondary = $(this).find('.time-format-secondary');
+      const time24 = $(this).find('.time-picker').val();
+      
       if (time24) {
-        $display.text(use12HourFormat ? TimeUtils.format12h(time24) : time24);
+        if (use12HourFormat) {
+          $primary.text(TimeUtils.format12h(time24));
+          $secondary.text(time24);
+        } else {
+          $primary.text(time24);
+          $secondary.text(TimeUtils.format12h(time24));
+        }
       }
     });
   });
@@ -677,13 +685,15 @@ function renderSchedule() {
         <td class="time-cell">
           <div class="time-display">
             <input type="time" class="time-picker" value="${p.start}">
-            <div class="time-format-display">${use12HourFormat ? TimeUtils.format12h(p.start) : p.start}</div>
+            <div class="time-format-primary">${use12HourFormat ? TimeUtils.format12h(p.start) : p.start}</div>
+            <div class="time-format-secondary">${use12HourFormat ? p.start : TimeUtils.format12h(p.start)}</div>
           </div>
         </td>
         <td class="time-cell">
           <div class="time-display">
             <input type="time" class="time-picker" value="${p.end}">
-            <div class="time-format-display">${use12HourFormat ? TimeUtils.format12h(p.end) : p.end}</div>
+            <div class="time-format-primary">${use12HourFormat ? TimeUtils.format12h(p.end) : p.end}</div>
+            <div class="time-format-secondary">${use12HourFormat ? p.end : TimeUtils.format12h(p.end)}</div>
           </div>
         </td>
         <td class="weight-cell">
@@ -703,11 +713,18 @@ function renderSchedule() {
   saveToLocalStorage();
 
   // Update time displays based on current format
-  $('.time-format-display').each(function() {
-    const $display = $(this);
-    const time24 = $display.siblings('.time-picker').val();
+  $('.time-display').each(function() {
+    const $primary = $(this).find('.time-format-primary');
+    const $secondary = $(this).find('.time-format-secondary');
+    const time24 = $(this).find('.time-picker').val();
     if (time24) {
-      $display.text(use12HourFormat ? TimeUtils.format12h(time24) : time24);
+      if (use12HourFormat) {
+        $primary.text(TimeUtils.format12h(time24));
+        $secondary.text(time24);
+      } else {
+        $primary.text(time24);
+        $secondary.text(TimeUtils.format12h(time24));
+      }
     }
   });
 }

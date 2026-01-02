@@ -33,6 +33,7 @@ h1 {
   min-height: 60px;
   justify-content: center;
   position: relative;
+  padding: 4px 0;
 }
 
 .time-picker {
@@ -44,20 +45,28 @@ h1 {
   font-size: 14px;
   width: 100%;
   box-sizing: border-box;
-  /* Show the time picker dropdown arrow */
   -webkit-appearance: menulist;
   -moz-appearance: menulist;
   appearance: menulist;
 }
 
-.time-format-display {
-  font-size: 12px;
+.time-format-primary {
+  font-size: 13px;
+  color: #e0e0e0;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.2;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.time-format-secondary {
+  font-size: 11px;
   color: #999;
   text-align: center;
   white-space: nowrap;
-  height: 16px;
-  line-height: 16px;
-  margin-top: 2px;
+  line-height: 1.2;
+  opacity: 0.8;
 }
 
 /* Controls */
