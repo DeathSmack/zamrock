@@ -19,6 +19,11 @@
     margin-bottom: 30px;
 }
 
+.news-header .avatar {
+  width: clamp(32px, 5vw, 48px);
+  height: clamp(32px, 5vw, 48px);
+}
+
 .news-card {
     background: rgba(46, 52, 64, 0.8);
     border: 2px solid var(--border-color);
