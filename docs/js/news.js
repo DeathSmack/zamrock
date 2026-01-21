@@ -1,132 +1,139 @@
-// news.js - Handles fetching and displaying Mastodon posts
+let isLoading = false;
+let lastPostId = null;
 
-// Function to format date
-function formatDate(dateString) {
-    const options = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    };
-    return new Date(dateString).toLocaleDateString('en-US', options);
-}
+const buffer = [];      // cache fetched posts
+const displayCount = 2; // posts shown per click
+const prefetchPages = 5; // pages fetched at once
+const pageLimit = 2;    // posts per API call
 
-// Function to create a news card with Mastodon embed
 function createNewsCard(post) {
-    const card = document.createElement('div');
-    card.className = 'news-card';
-    
-    // Create iframe for Mastodon embed
-    const iframe = document.createElement('iframe');
-    iframe.className = 'mastodon-embed';
-    iframe.src = `${post.url}/embed`;
-    iframe.width = '100%';
-    iframe.height = '300';
-    iframe.style.border = '0';
-    iframe.allowFullscreen = true;
-    iframe.loading = 'lazy';
-    iframe.setAttribute('data-lang', 'en');
-    
-    // Add loading indicator
-    const loading = document.createElement('div');
-    loading.className = 'loading-embed';
-    loading.textContent = 'Loading post...';
-    
-    // Handle iframe load
-    iframe.onload = function() {
-        loading.style.display = 'none';
-        // Force dark theme
-        const style = document.createElement('style');
-        style.textContent = `
-            .mastodon-embed {
-                background: #2e3440 !important;
-                color: #d8dee9 !important;
-            }
-            .mastodon-embed .button {
-                background: #81a1c1 !important;
-                color: #2e3440 !important;
-            }
-            .mastodon-embed .button:hover {
-                background: #88c0d0 !important;
-            }
-        `;
-        iframe.contentDocument.head.appendChild(style);
-    };
-    
-    card.appendChild(loading);
-    card.appendChild(iframe);
-    
-    return card;
+  const card = document.createElement('article');
+  card.className = 'news-card';
+
+  card.innerHTML = `
+    <div class="news-header">
+      <img src="${post.account.avatar_static}" alt="" class="avatar" loading="lazy">
+      <div>
+        <strong>${post.account.display_name || post.account.username}</strong><br>
+        <small>${new Date(post.created_at).toLocaleString()}</small>
+      </div>
+    </div>
+
+    <div class="news-content">
+      ${post.content}
+    </div>
+
+    ${post.media_attachments.length ? `
+      <div class="news-media">
+        ${post.media_attachments.map(m =>
+          `<img src="${m.preview_url}" loading="lazy">`
+        ).join('')}
+      </div>
+    ` : ''}
+
+    <div class="news-footer">
+      <a href="${post.url}" target="_blank" rel="noopener">
+        View on Mastodon
+      </a>
+    </div>
+  `;
+
+  return card;
 }
 
-// Function to load news from Mastodon with CORS proxy
-async function loadNews(limit = 4, containerId = 'newsContainer') {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    
-    container.innerHTML = '<div class="loading">Loading news...</div>';
-    
-    try {
-        // Using CORS proxy for GitHub Pages
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const apiUrl = `https://musicworld.social/api/v1/accounts/114289974100154452/statuses?limit=${limit}&exclude_replies=true&exclude_reblogs=true`;
-        const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const posts = JSON.parse(data.contents);
-        
-        if (!Array.isArray(posts) || posts.length === 0) {
-            container.innerHTML = '<div class="no-news">No news available at the moment.</div>';
-            return;
-        }
-        
-        // Clear loading message
-        container.innerHTML = '';
-        container.className = 'news-grid';
-        
-        // Create and append news cards
-        posts.forEach(post => {
-            const card = createNewsCard(post);
-            container.appendChild(card);
-        });
-        
-        // Load Mastodon embed script if not already loaded
-        if (!window.MastodonEmbed) {
-            const script = document.createElement('script');
-            script.src = 'https://mastodon.social/embed.js';
-            script.async = true;
-            document.body.appendChild(script);
-        } else {
-            // Refresh embeds if script was already loaded
-            window.MastodonEmbed?.();
-        }
-        
-    } catch (error) {
-        console.error('Error loading news:', error);
-        container.innerHTML = `
-            <div class="error">
-                <p>Failed to load news 😿 <BR> Pound that reload button ftw!</p>
-                <p><small>Error: ${error.message}</small></p>
-            </div>`;
+async function fetchPosts(limit, maxId) {
+  const proxy = 'https://corsproxy.io/?url=';
+  let api =
+    'https://musicworld.social/api/v1/accounts/114289974100154452/statuses' +
+    `?limit=${limit}&exclude_replies=true&exclude_reblogs=true`;
+
+  if (maxId) api += `&max_id=${maxId}`;
+
+  const res = await fetch(proxy + encodeURIComponent(api));
+  if (!res.ok) throw new Error('Network error');
+
+  return res.json();
+}
+
+async function prefetch() {
+  if (isLoading) return;
+  isLoading = true;
+
+  try {
+    for (let i = 0; i < prefetchPages; i++) {
+      const posts = await fetchPosts(pageLimit, lastPostId);
+
+      if (!posts.length) {
+  document.getElementById('newsContainer').innerHTML = '<div class="no-news">No more posts.</div>';
+  document.getElementById('loadMoreNews')?.remove();
+  return;
+}
+
+      buffer.push(...posts);
+      lastPostId = posts[posts.length - 1].id;
     }
+  } catch (err) {
+    console.error(err);
+    document.getElementById('newsContainer').innerHTML = `
+      <div class="error">
+        Failed to load news 😿<br>
+        <small>${err.message}</small>
+      </div>`;
+  } finally {
+    isLoading = false;
+  }
+}
+
+async function displayNext() {
+  const container = document.getElementById('newsContainer');
+  if (!container) return;
+
+  if (container.querySelector('.loading')) {
+    container.innerHTML = '';
+  }
+
+  if (buffer.length < displayCount * 2) await prefetch();
+
+  for (let i = 0; i < displayCount; i++) {
+    const post = buffer.shift();
+    if (!post) {
+      document.getElementById('loadMoreNews')?.remove();
+      return;
+    }
+    container.appendChild(createNewsCard(post));
+  }
+}
+
+
+function setupLazyLoad() {
+  const container = document.getElementById('newsContainer');
+  if (!container) return;
+
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      displayNext();
+      observer.disconnect();
+    }
+  }, {
+    rootMargin: '200px'
+  });
+
+  observer.observe(container);
+}
+
+function addLoadMoreButton() {
+  if (document.getElementById('loadMoreNews')) return;
+
+  const btn = document.createElement('button');
+  btn.id = 'loadMoreNews';
+  btn.className = 'btn load-more';
+  btn.textContent = 'Load More';
+  btn.onclick = displayNext;
+
+  document.querySelector('.news-section')?.appendChild(btn);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const container = document.getElementById('newsContainer');
-
-  if (!container) {
-    console.error('newsContainer not found');
-    return;
-  }
-
-  loadNews(2, 'newsContainer');
+  setupLazyLoad();
+  addLoadMoreButton();
 });
-
-
-// Make loadNews available globally
-window.loadNews = loadNews;
