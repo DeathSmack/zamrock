@@ -55,7 +55,7 @@ async function loadNews(limit = 2, containerId = 'newsContainer', append = false
       'https://musicworld.social/api/v1/accounts/114289974100154452/statuses' +
       `?limit=${limit}&exclude_replies=true&exclude_reblogs=true`;
 
-    const response = await fetch(proxy + encodeURIComponent(api));
+    const response = await fetch(api);
     if (!response.ok) throw new Error('Network error');
 
     const posts = await response.json();
