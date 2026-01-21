@@ -3,7 +3,7 @@ let lastPostId = null;
 
 const buffer = [];      // cache fetched posts
 const displayCount = 2; // posts shown per click
-const prefetchPages = 5; // pages fetched at once
+const prefetchPages = 6; // pages fetched at once
 const pageLimit = 2;    // posts per API call
 
 function createNewsCard(post) {
