@@ -1,42 +1,6 @@
-// news.js — Lazy-loaded Mastodon news
-
 let isLoading = false;
 let loadedOnce = false;
-
-function createNewsCard(post) {
-  const card = document.createElement('article');
-  card.className = 'news-card';
-
-  card.innerHTML = `
-    <div class="news-header">
-      <img src="${post.account.avatar_static}" alt="" class="avatar" loading="lazy">
-      <div>
-        <strong>${post.account.display_name || post.account.username}</strong><br>
-        <small>${new Date(post.created_at).toLocaleString()}</small>
-      </div>
-    </div>
-
-    <div class="news-content">
-      ${post.content}
-    </div>
-
-    ${post.media_attachments.length ? `
-      <div class="news-media">
-        ${post.media_attachments.map(m =>
-          `<img src="${m.preview_url}" loading="lazy">`
-        ).join('')}
-      </div>
-    ` : ''}
-
-    <div class="news-footer">
-      <a href="${post.url}" target="_blank" rel="noopener">
-        View on Mastodon
-      </a>
-    </div>
-  `;
-
-  return card;
-}
+let lastPostId = null;  // NEW: track pagination
 
 async function loadNews(limit = 2, containerId = 'newsContainer', append = false) {
   if (isLoading) return;
@@ -47,15 +11,21 @@ async function loadNews(limit = 2, containerId = 'newsContainer', append = false
 
   if (!append) {
     container.innerHTML = '<div class="loading">Loading news...</div>';
+    lastPostId = null;  // reset when not appending
   }
 
   try {
-    const proxy = 'https://api.allorigins.win/raw?url=';
-    const api =
+    const proxy = 'https://corsproxy.io/?url=';
+    let api =
       'https://musicworld.social/api/v1/accounts/114289974100154452/statuses' +
       `?limit=${limit}&exclude_replies=true&exclude_reblogs=true`;
 
-    const response = await fetch(api);
+    // ADD PAGINATION
+    if (lastPostId) {
+      api += `&max_id=${lastPostId}`;
+    }
+
+    const response = await fetch(proxy + encodeURIComponent(api));
     if (!response.ok) throw new Error('Network error');
 
     const posts = await response.json();
@@ -70,9 +40,10 @@ async function loadNews(limit = 2, containerId = 'newsContainer', append = false
       container.className = 'news-grid';
     }
 
-    posts.forEach(post =>
-      container.appendChild(createNewsCard(post))
-    );
+    posts.forEach(post => container.appendChild(createNewsCard(post)));
+
+    // UPDATE lastPostId for pagination
+    lastPostId = posts[posts.length - 1].id;
 
     addLoadMoreButton(containerId);
 
@@ -106,7 +77,7 @@ function setupLazyLoad() {
   observer.observe(container);
 }
 
-// Pagination
+// Pagination button
 function addLoadMoreButton(containerId) {
   if (document.getElementById('loadMoreNews')) return;
 
