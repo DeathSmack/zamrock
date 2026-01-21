@@ -116,5 +116,17 @@ async function loadNews(limit = 4, containerId = 'newsContainer') {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('newsContainer');
+
+  if (!container) {
+    console.error('newsContainer not found');
+    return;
+  }
+
+  loadNews(2, 'newsContainer');
+});
+
+
 // Make loadNews available globally
 window.loadNews = loadNews;
