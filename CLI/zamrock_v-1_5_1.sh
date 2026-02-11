@@ -10,7 +10,7 @@ command -v jq >/dev/null 2>&1 || { echo "jq is required but it's not installed. 
 AUDIO_URL="https://zamrock.deathsmack.com/listen/zamrock/test_stream_7e335"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RECORD_DIR="$SCRIPT_DIR/ZamRock Recordings"  # Directory to save recordings
-API_URL="https://zamrock.deathsmack.com/api/nowplaying/1"  # AzuraCast API endpoint
+API_URL="https://icy-voice-api.deathsmack-a51.workers.dev/"  # AzuraCast API endpoint
 WEBSITE_LINK="https://zamrock.net"
 
 # Define colors
