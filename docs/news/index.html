@@ -88,19 +88,16 @@
       <a href="../about/" class="nav-btn">About</a>
     </nav>
 
-    <main class="main-content">
-      <div class="news-container">
-        <h1>Latest News & Updates</h1>
-        <div id="newsContainer" class="news-grid">
-          <div class="loading">Loading news...</div>
-        </div>
-      </div>
-    </main>
+  <section class="news-section">
+  <h2>Latest News & Updates</h2>
+  <div id="newsContainer" class="news-grid">
+    <div class="loading">Loading news...</div>
   </div>
+</section>
   
   <footer class="site-footer">
     <div class="footer-content">
-      <p> 2025 ZamRock Radio - All Rights Reserved</p>
+      <p>&copy; <script>document.write(new Date().getFullYear());</script> ZamRock Radio - All Rights Reserved</p>
       <div class="footer-links">
         <a href="../about/">About</a>
         <a href="../contact/">Contact</a>
@@ -112,19 +109,6 @@
   
   <script src="../js/main.js"></script>
   <script src="../js/news.js"></script>
-  <script>
-    // Load news when the page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof loadNews === 'function') {
-        loadNews(9, 'newsContainer');
-      } else {
-        console.error('loadNews function not found');
-        const container = document.getElementById('newsContainer');
-        if (container) {
-          container.innerHTML = '<div class="error">News functionality not available. Please try again later.</div>';
-        }
-      }
-    });
-  </script>
+
 </body>
 </html>

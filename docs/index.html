@@ -57,16 +57,16 @@
   <div id="newsContainer" class="news-grid">
     <div class="loading">Loading news...</div>
   </div>
-  <div class="view-more">
+</section>
+<div class="view-more">
     <a href="news/" class="btn">View All Updates</a>
   </div>
-</section>
 
   </div>
   
   <footer class="site-footer">
     <div class="footer-content">
-      <p> 2025 ZamRock Radio - All Rights Reserved</p>
+      <p>&copy; <script>document.write(new Date().getFullYear());</script> ZamRock Radio - All Rights Reserved</p>
       <div class="footer-links">
         <a href="about/">About</a>
         <a href="contact/">Contact</a>
@@ -78,13 +78,5 @@
   
   <script src="js/main.js"></script>
   <script src="js/news.js"></script>
-  <script>
-    // Load news when the page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof loadNews === 'function') {
-        loadNews(2, 'newsContainer');
-      }
-    });
-  </script>
 </body>
 </html>
