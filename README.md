@@ -7,7 +7,7 @@
 
 ## Discover Rare Music
 
-> * Zamrock is a musical genre that emerged and gained popularity in Zambia during the early 1970s.[1] It has been described as a fusion of traditional African music and psychedelic rock, garage rock, hard rock, blues and funk, taking influence from popular bands like Black Sabbath, Blue Cheer, the Rolling Stones, Deep Purple, and Cream.
+> * Zamrock is a musical genre that emerged and gained popularity in Zambia during the early 1970s.[1] It has been described as a fusion of traditional African music and psychedelic rock, garage rock, hard rock, blues and funk, taking influence from popular bands like Black Sabbath, Blue Cheer, the Rolling Stones, Deep Purple, and Cream..
 
 
 ## Join Our Community
