@@ -1,8 +1,8 @@
 # Home of ZamRock Projects
 <a href="https://zamrock.deathsmack.com/public/zamrock" target="_blank"><img src="https://github.com/DeathSmack/zamrock/blob/main/Graphics/media_pack/git_readme_001-modified.png?raw=true" alt="GitHub Logo"></a>
-# Welcome to ZamRock
+## Welcome to ZamRock
 
-> This is a search and rescue mission for Zamrock music, and all oppressed musicians. 
+> This is a search and rescue mission for Zamrock music, and all oppressed musicians.
 > * We are currently looking for any Zamrock source material... all format's should apply.
 
 ## Discover Rare Music
@@ -19,13 +19,13 @@
 > * Website support...
 
 ## Official Links
-> * Website - https://zamrock.net
-> * Matrix - https://matrix.to/#/#zamrock:unredacted.org
-> * Mastodon - https://musicworld.social/@ZamRock
-> * BlueSky - https://bsky.app/profile/zamrock.net
-> * Discord Server - https://discord.gg/TGNSc9kTjR
-> * Revolt Server - https://stt.gg/CsjKzYWm
-> * SimpleX - Limited acesss please request a link for alhpa
+> * [Website](https://zamrock.net)
+> * [Matrix](https://matrix.to/#/#zamrock:unredacted.org)
+> * [Mastodon](https://musicworld.social/@ZamRock)
+> * [BlueSky](https://bsky.app/profile/zamrock.net)
+> * [Discord Server](https://discord.gg/TGNSc9kTjR)
+> * [Revolt Server](https://stt.gg/CsjKzYWm)
+> * SimpleX - Limited access, please request a link for alpha
 
 
 Thanks for reading my md too!!
