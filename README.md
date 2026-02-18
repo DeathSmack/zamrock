@@ -19,13 +19,13 @@
 > * Website support...
 
 ## Official Links
-> * Website - https://zamrock.net
-> * Matrix - https://matrix.to/#/#zamrock:unredacted.org
-> * Mastodon - https://musicworld.social/@ZamRock
-> * BlueSky - https://bsky.app/profile/zamrock.net
-> * Discord Server - https://discord.gg/TGNSc9kTjR
-> * Revolt Server - https://stt.gg/CsjKzYWm
-> * SimpleX - Limited acesss please request a link for alhpa
+> * [Website](https://zamrock.net)
+> * [Matrix](https://matrix.to/#/#zamrock:unredacted.org)
+> * [Mastodon](https://musicworld.social/@ZamRock)
+> * [BlueSky](https://bsky.app/profile/zamrock.net)
+> * [Discord Server](https://discord.gg/TGNSc9kTjR)
+> * [Revolt Server](https://stt.gg/CsjKzYWm)
+> * SimpleX - Limited access, please request a link for alpha
 
 
 Thanks for reading my md too!!
