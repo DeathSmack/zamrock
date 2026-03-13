@@ -185,7 +185,7 @@ if [[ $action == switch ]]; then
 
   # Convert numeric selection to a branch name
   if [[ $sel =~ ^[0-9]+$ ]]; then
-    branches=($(git branch -r | grep -v -- '->' | sed 's|origin/||'))
+    mapfile -t branches < <(git branch -r | grep -v -- '->' | sed 's|origin/||')
     if (( sel < 0 || sel >= ${#branches[@]} )); then
       echo "❌  Invalid index." >&2; exit 1
     fi
@@ -319,8 +319,8 @@ if [[ $action == stage ]]; then
     git commit -m "$msg"
 
     # Behind-ahead handling — ONLY if upstream exists
-    if git rev-parse --abbrev-ref --symbolic-full-name @{u} &>/dev/null; then
-      upstream=$(git rev-parse --abbrev-ref --symbolic-full-name @{u})
+    if git rev-parse --abbrev-ref --symbolic-full-name "@{u}" &>/dev/null; then
+      upstream=$(git rev-parse --abbrev-ref --symbolic-full-name "@{u}")
       echo "git status -sb"
       git status -sb
 
